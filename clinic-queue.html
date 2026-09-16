@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0f4c6c">
+<title>نظام متابعة الأدوار - عيادة الأسنان</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<style>
+  /* ===== خط RB — ضع ملفات الخط داخل مجلد fonts بجوار الملف ===== */
+  @font-face{
+    font-family:'RB';
+    src:url('fonts/RB-Regular.woff2') format('woff2'),
+        url('fonts/RB-Regular.woff') format('woff'),
+        url('fonts/RB-Regular.ttf') format('truetype');
+    font-weight:400; font-display:swap;
+  }
+  @font-face{
+    font-family:'RB';
+    src:url('fonts/RB-Bold.woff2') format('woff2'),
+        url('fonts/RB-Bold.woff') format('woff'),
+        url('fonts/RB-Bold.ttf') format('truetype');
+    font-weight:700; font-display:swap;
+  }
+
+  :root{
+    --navy:#0f4c6c;
+    --teal:#0284c7;
+    --snow:#f0f4f8;
+    --green:#16a34a;
+    --amber:#d97706;
+    --red:#dc2626;
+  }
+
+  *{ -webkit-tap-highlight-color:transparent; }
+  body{
+    font-family:'RB','Tajawal','Segoe UI',system-ui,sans-serif;
+    background:var(--snow);
+    color:var(--navy);
+    margin:0;
+    overscroll-behavior:none;
+  }
+  .num{ font-variant-numeric:tabular-nums; }
+
+  /* ===== بكرة الأرقام ===== */
+  #wheel{
+    height:240px;
+    overflow-y:scroll;
+    scroll-snap-type:y mandatory;
+    -ms-overflow-style:none;
+    scrollbar-width:none;
+    -webkit-overflow-scrolling:touch;
+    cursor:grab;
+    mask-image:linear-gradient(to bottom,transparent,#000 22%,#000 78%,transparent);
+    -webkit-mask-image:linear-gradient(to bottom,transparent,#000 22%,#000 78%,transparent);
+  }
+  #wheel::-webkit-scrollbar{ display:none; }
+  #wheel.dragging{ cursor:grabbing; scroll-snap-type:none; }
+  .wheel-item{
+    height:80px; display:flex; align-items:center; justify-content:center;
+    scroll-snap-align:center;
+    font-size:44px; font-weight:700; color:#94a3b8;
+    transition:color .18s ease, transform .18s ease, opacity .18s ease;
+    opacity:.55;
+  }
+  .wheel-item.active{ color:var(--navy); transform:scale(1.35); opacity:1; }
+  .wheel-frame{
+    position:absolute; top:50%; left:0; right:0; height:80px; margin-top:-40px;
+    border-top:2px solid rgba(2,132,199,.35);
+    border-bottom:2px solid rgba(2,132,199,.35);
+    background:rgba(2,132,199,.06);
+    pointer-events:none; border-radius:14px;
+  }
+
+  /* ===== شاشة التلفزيون ===== */
+  .tv-number{
+    font-size:clamp(9rem,26vw,24rem);
+    line-height:.9; font-weight:700;
+    letter-spacing:-.02em;
+    color:var(--navy);
+  }
+  @keyframes callPulse{
+    0%{ transform:scale(1); }
+    18%{ transform:scale(1.14); }
+    40%{ transform:scale(.99); }
+    60%{ transform:scale(1.05); }
+    100%{ transform:scale(1); }
+  }
+  @keyframes cardFlash{
+    0%{ box-shadow:0 0 0 0 rgba(2,132,199,.55); background:#fff; }
+    35%{ box-shadow:0 0 0 34px rgba(2,132,199,0); background:#e0f2fe; }
+    100%{ box-shadow:0 0 0 0 rgba(2,132,199,0); background:#fff; }
+  }
+  .pulsing .tv-number{ animation:callPulse 1s ease-out; }
+  .pulsing{ animation:cardFlash 1.6s ease-out; }
+
+  .dot{ width:14px;height:14px;border-radius:50%;display:inline-block; }
+  @keyframes blip{ 0%,100%{opacity:1} 50%{opacity:.35} }
+  .live .dot{ animation:blip 1.6s infinite; }
+
+  @media (prefers-reduced-motion:reduce){
+    *{ animation:none !important; transition:none !important; }
+  }
+  .hidden-view{ display:none !important; }
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     1) شاشة تسجيل الدخول (حساب العيادة الثابت)
+============================================================ -->
+<section id="view-login" class="hidden-view min-h-screen flex items-center justify-center p-5">
+  <div class="w-full max-w-sm bg-white rounded-3xl shadow-xl shadow-slate-300/40 p-7">
+    <div class="text-center mb-6">
+      <img src="logo.png" alt="" class="h-16 mx-auto mb-3" onerror="this.style.display='none'">
+      <h1 class="text-2xl font-bold">دخول العيادة</h1>
+      <p class="text-slate-500 text-sm mt-1">عيادة طب وجراحة الفم والأسنان</p>
+    </div>
+    <label class="block text-sm mb-1 text-slate-600">البريد الإلكتروني للعيادة</label>
+    <input id="loginEmail" type="email" inputmode="email" autocomplete="username"
+      class="w-full mb-4 px-4 py-3 rounded-xl bg-slate-100 outline-none focus:ring-2 focus:ring-sky-500" placeholder="dental@clinic.com">
+    <label class="block text-sm mb-1 text-slate-600">كلمة المرور</label>
+    <input id="loginPass" type="password" autocomplete="current-password"
+      class="w-full mb-5 px-4 py-3 rounded-xl bg-slate-100 outline-none focus:ring-2 focus:ring-sky-500" placeholder="••••••••">
+    <button id="loginBtn" class="w-full py-3.5 rounded-xl text-white font-bold text-lg" style="background:var(--navy)">
+      تسجيل الدخول
+    </button>
+    <p id="loginMsg" class="text-red-600 text-sm mt-3 text-center min-h-[20px]"></p>
+  </div>
+</section>
+
+<!-- ============================================================
+     2) واجهة التمريض
+============================================================ -->
+<section id="view-nurse" class="hidden-view min-h-screen pb-10">
+  <header class="text-white px-5 py-4 flex items-center justify-between" style="background:var(--navy)">
+    <div>
+      <h1 class="font-bold text-lg leading-tight">لوحة التمريض</h1>
+      <p class="text-sky-200 text-xs" id="nurseClinicName">عيادة الأسنان</p>
+    </div>
+    <button id="logoutBtn" class="text-xs bg-white/15 px-3 py-2 rounded-lg">تسليم الوردية</button>
+  </header>
+
+  <!-- بدء جلسة -->
+  <div class="p-4">
+    <div class="bg-white rounded-2xl shadow-sm p-4 mb-4">
+      <h2 class="font-bold mb-3">بدء جلسة طبيب</h2>
+      <label class="block text-sm text-slate-600 mb-1">الطبيب المباشر</label>
+      <input id="fDoctor" list="doctorsList" class="w-full mb-3 px-3 py-2.5 rounded-xl bg-slate-100 outline-none focus:ring-2 focus:ring-sky-500" placeholder="د. ...">
+      <datalist id="doctorsList"></datalist>
+
+      <div class="grid grid-cols-2 gap-3 mb-3">
+        <div>
+          <label class="block text-sm text-slate-600 mb-1">الفترة</label>
+          <select id="fPeriod" class="w-full px-3 py-2.5 rounded-xl bg-slate-100 outline-none focus:ring-2 focus:ring-sky-500">
+            <option>الفترة الأولى</option>
+            <option>الفترة الثانية</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm text-slate-600 mb-1">مكان العيادة</label>
+          <input id="fLocation" class="w-full px-3 py-2.5 rounded-xl bg-slate-100 outline-none focus:ring-2 focus:ring-sky-500" placeholder="الدور الأرضي - عيادة 001">
+        </div>
+      </div>
+
+      <button id="startSessionBtn" class="w-full py-3 rounded-xl text-white font-bold" style="background:var(--teal)">
+        بدء جلسة الطبيب — يبدأ العد من ١
+      </button>
+    </div>
+
+    <!-- البكرة -->
+    <div class="bg-white rounded-2xl shadow-sm p-4 mb-4">
+      <div class="flex items-center justify-between mb-2">
+        <h2 class="font-bold">رقم الدور الحالي</h2>
+        <span id="syncBadge" class="text-xs px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700">متصل</span>
+      </div>
+
+      <div class="relative">
+        <div class="wheel-frame"></div>
+        <div id="wheel"></div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3 mt-4">
+        <button id="minusBtn" class="py-4 rounded-xl bg-slate-100 text-3xl font-bold active:bg-slate-200">−١</button>
+        <button id="plusBtn" class="py-4 rounded-xl text-3xl font-bold text-white active:opacity-80" style="background:var(--navy)">+١</button>
+      </div>
+    </div>
+
+    <!-- الحالة -->
+    <div class="bg-white rounded-2xl shadow-sm p-4">
+      <h2 class="font-bold mb-3">حالة العيادة</h2>
+      <div class="grid grid-cols-3 gap-2">
+        <button data-status="active"   class="statusBtn py-3 rounded-xl bg-slate-100 text-sm font-bold">🟢<br>تعمل</button>
+        <button data-status="break"    class="statusBtn py-3 rounded-xl bg-slate-100 text-sm font-bold">🟡<br>استراحة</button>
+        <button data-status="finished" class="statusBtn py-3 rounded-xl bg-slate-100 text-sm font-bold">🔴<br>إنهاء</button>
+      </div>
+      <p class="text-xs text-slate-500 mt-3" id="nurseMeta"></p>
+    </div>
+
+    <div class="grid grid-cols-3 gap-2 mt-4 text-center text-xs">
+      <a href="#/tv" target="_blank" class="py-2.5 rounded-xl bg-white shadow-sm">شاشة التلفزيون</a>
+      <a href="#/reception" target="_blank" class="py-2.5 rounded-xl bg-white shadow-sm">شاشة الاستقبال</a>
+      <a href="#/patient" target="_blank" class="py-2.5 rounded-xl bg-white shadow-sm">رابط المريض</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     3) شاشة التلفزيون
+============================================================ -->
+<section id="view-tv" class="hidden-view min-h-screen flex flex-col">
+  <header class="text-white px-8 py-4 flex items-center justify-between" style="background:var(--navy)">
+    <div class="flex items-center gap-4">
+      <img src="logo.png" alt="" class="h-14" onerror="this.style.display='none'">
+      <div>
+        <p class="text-xl font-bold">رعايتكم أولويتنا</p>
+        <p class="text-sky-200 text-sm">لصحة أفضل</p>
+      </div>
+    </div>
+    <div class="text-left">
+      <p id="tvClock" class="text-3xl font-bold num">--:--:--</p>
+      <p id="tvDate" class="text-sky-200 text-sm"></p>
+    </div>
+  </header>
+
+  <main class="flex-1 flex items-center justify-center p-6">
+    <div id="tvCard" class="bg-white rounded-[2.5rem] shadow-xl shadow-slate-300/50 w-full max-w-5xl overflow-hidden">
+      <div class="text-white text-center py-3 text-2xl font-bold" style="background:var(--teal)">
+        <span id="tvLocation">—</span>
+      </div>
+
+      <div class="px-8 py-6 text-center">
+        <div class="flex items-center justify-center gap-3 mb-1">
+          <!-- أيقونة سن -->
+          <svg viewBox="0 0 24 24" class="w-9 h-9" fill="none" stroke="var(--navy)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3.2c-1.6 0-2.3.8-4 .8-2.4 0-4 1.7-4 4.4 0 2.6.8 4 1.5 6.4.5 1.9.6 4.2 1.5 5.4.7.9 1.9.6 2.2-.6.4-1.5.6-3.6 1.4-4.5.3-.3.5-.4.9-.4s.6.1.9.4c.8.9 1 3 1.4 4.5.3 1.2 1.5 1.5 2.2.6.9-1.2 1-3.5 1.5-5.4.7-2.4 1.5-3.8 1.5-6.4 0-2.7-1.6-4.4-4-4.4-1.7 0-2.4-.8-4-.8Z"/>
+          </svg>
+          <h2 class="text-3xl font-bold">عيادة طب وجراحة الفم والأسنان</h2>
+        </div>
+        <p id="tvDoctor" class="text-4xl font-bold mt-3" style="color:var(--teal)">—</p>
+        <p id="tvPeriod" class="text-slate-500 text-lg mt-1"></p>
+
+        <div id="tvNumberWrap" class="my-4">
+          <p class="text-slate-500 text-2xl">رقم الدور الحالي</p>
+          <p id="tvNumber" class="tv-number num">—</p>
+        </div>
+
+        <div id="tvStatus" class="inline-flex items-center gap-3 px-8 py-3 rounded-full text-2xl font-bold bg-slate-100">
+          <span class="dot bg-slate-400"></span><span>في انتظار بدء العيادة</span>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="text-white text-center py-3 text-lg" style="background:var(--navy)">
+    صحتكم هي رسالتنا .. معاً لمجتمع أكثر صحة
+  </footer>
+
+  <button id="fsBtn" class="fixed bottom-4 left-4 bg-white/80 text-slate-600 text-xs px-3 py-2 rounded-lg shadow">ملء الشاشة</button>
+</section>
+
+<!-- ============================================================
+     4) شاشة الاستقبال
+============================================================ -->
+<section id="view-reception" class="hidden-view min-h-screen p-4">
+  <div class="max-w-md mx-auto">
+    <h1 class="font-bold text-xl mb-3 text-center">متابعة الأدوار — الاستقبال</h1>
+
+    <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+      <div class="text-white px-4 py-2.5 flex justify-between items-center" style="background:var(--navy)">
+        <span class="font-bold">عيادة الأسنان</span>
+        <span id="rcLocation" class="text-sky-200 text-sm">—</span>
+      </div>
+      <div class="p-4">
+        <p class="text-slate-500 text-sm">الطبيب المباشر</p>
+        <p id="rcDoctor" class="text-xl font-bold mb-3">—</p>
+
+        <div class="flex items-center gap-4">
+          <div class="flex-1 text-center rounded-2xl py-4" style="background:var(--snow)">
+            <p class="text-slate-500 text-sm">الرقم بالداخل</p>
+            <p id="rcNumber" class="text-6xl font-bold num" style="color:var(--teal)">—</p>
+          </div>
+          <div class="flex-1 text-sm space-y-2">
+            <div id="rcStatus" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 font-bold">
+              <span class="dot bg-slate-400"></span><span>—</span>
+            </div>
+            <p class="text-slate-500">الفترة: <span id="rcPeriod" class="text-slate-700">—</span></p>
+            <p class="text-slate-500">آخر نداء: <span id="rcTime" class="text-slate-700 num">—</span></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-sm p-4 mt-4 text-center">
+      <p class="font-bold mb-2">كود المريض (QR)</p>
+      <p class="text-xs text-slate-500 mb-3">اطبعه وضعه على مكتب الاستقبال ليتابع المريض دوره من موبايله</p>
+      <div id="qrBox" class="flex justify-center"></div>
+      <p id="qrLink" class="text-[10px] text-slate-400 mt-2 break-all"></p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     5) صفحة المريض
+============================================================ -->
+<section id="view-patient" class="hidden-view min-h-screen flex flex-col">
+  <header class="text-white px-5 py-4 text-center" style="background:var(--navy)">
+    <img src="logo.png" alt="" class="h-12 mx-auto mb-2" onerror="this.style.display='none'">
+    <p class="font-bold">متابعة دورك مباشرة</p>
+  </header>
+
+  <main class="flex-1 p-4">
+    <div class="bg-white rounded-3xl shadow-sm overflow-hidden max-w-md mx-auto">
+      <div class="text-white text-center py-2.5 font-bold" style="background:var(--teal)">
+        <span id="ptLocation">—</span>
+      </div>
+      <div class="p-5 text-center">
+        <h1 class="text-xl font-bold">عيادة طب وجراحة الفم والأسنان</h1>
+        <p id="ptDoctor" class="text-2xl font-bold mt-2" style="color:var(--teal)">—</p>
+
+        <div class="my-5 rounded-2xl py-5" style="background:var(--snow)">
+          <p class="text-slate-500">الرقم الجاري الكشف عليه</p>
+          <p id="ptNumber" class="text-8xl font-bold num">—</p>
+        </div>
+
+        <div id="ptStatus" class="inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-lg font-bold bg-slate-100">
+          <span class="dot bg-slate-400"></span><span>—</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="max-w-md mx-auto mt-4 rounded-2xl p-4 text-center font-bold" style="background:#fef3c7;color:#92400e">
+      يرجى التواجد أمام العيادة قبل موعد دورك بحالتين لضمان عدم تخطي الرقم
+    </div>
+  </main>
+
+  <footer class="text-center text-slate-400 text-xs py-4">صحتكم هي رسالتنا .. معاً لمجتمع أكثر صحة</footer>
+</section>
+
+<script>
+/* ==========================================================
+   ①  إعدادات Firebase — ضع بيانات مشروعك هنا
+   ========================================================== */
+const firebaseConfig = {
+  apiKey:            "AIzaSyBHKLznpRQNfcTPgOWRPykLJbcxo0Q6Inw",
+  authDomain:        "islah-queue.firebaseapp.com",
+  databaseURL:       "https://islah-queue-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId:         "islah-queue",
+  storageBucket:     "islah-queue.firebasestorage.app",
+  messagingSenderId: "1055876482195",
+  appId:             "1:1055876482195:web:99bb8eca3f828a1acd3966"
+};
+
+/* معرّف العيادة داخل قاعدة البيانات — غيّره عند إضافة عيادات أخرى */
+const CLINIC_ID = "dental";
+const MAX_NUMBER = 300;
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const clinicRef = firebase.database().ref("clinics/" + CLINIC_ID);
+
+/* ==========================================================
+   ②  أدوات مساعدة
+   ========================================================== */
+const $ = (s) => document.querySelector(s);
+const ar = (n) => Number(n).toLocaleString("ar-EG");
+
+const STATUS = {
+  active:   { label:"جاري الكشف",      dot:"bg-emerald-500", bg:"bg-emerald-100", text:"text-emerald-700" },
+  break:    { label:"استراحة مؤقتة",   dot:"bg-amber-500",   bg:"bg-amber-100",   text:"text-amber-700"   },
+  finished: { label:"انتهت العيادة",   dot:"bg-red-500",     bg:"bg-red-100",     text:"text-red-700"     },
+  idle:     { label:"في انتظار بدء العيادة", dot:"bg-slate-400", bg:"bg-slate-100", text:"text-slate-600" }
+};
+
+function paintStatus(el, key, big){
+  const s = STATUS[key] || STATUS.idle;
+  el.className = "inline-flex items-center gap-3 rounded-full font-bold " + s.bg + " " + s.text +
+                 (big ? " px-8 py-3 text-2xl" : " px-4 py-1.5 text-sm") +
+                 (key === "active" ? " live" : "");
+  el.innerHTML = '<span class="dot ' + s.dot + '"></span><span>' + s.label + '</span>';
+}
+
+function timeStr(ts){
+  if(!ts) return "—";
+  return new Date(ts).toLocaleTimeString("ar-EG",{hour:"2-digit",minute:"2-digit",hour12:true});
+}
+
+/* نغمة تنبيه بدون ملفات صوت */
+let audioCtx = null;
+function chime(){
+  try{
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    if(audioCtx.state === "suspended") audioCtx.resume();
+    [[880,0],[1174.7,.16]].forEach(([f,d])=>{
+      const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.type = "sine"; o.frequency.value = f;
+      o.connect(g); g.connect(audioCtx.destination);
+      const t = audioCtx.currentTime + d;
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(.32, t + .02);
+      g.gain.exponentialRampToValueAtTime(.001, t + .55);
+      o.start(t); o.stop(t + .6);
+    });
+  }catch(e){}
+}
+
+/* ==========================================================
+   ③  التوجيه بين الشاشات
+   ========================================================== */
+const VIEWS = ["login","nurse","tv","reception","patient"];
+function show(v){
+  VIEWS.forEach(x => $("#view-" + x).classList.add("hidden-view"));
+  $("#view-" + v).classList.remove("hidden-view");
+}
+function route(){
+  const h = (location.hash || "#/nurse").replace("#/","");
+  if(h === "tv")        { show("tv"); startClock(); }
+  else if(h === "reception"){ show("reception"); drawQR(); }
+  else if(h === "patient")  { show("patient"); }
+  else { show(auth.currentUser ? "nurse" : "login"); }
+}
+window.addEventListener("hashchange", route);
+
+/* ==========================================================
+   ④  الحالة المشتركة + الاستماع اللحظي
+   ========================================================== */
+let state = { doctor:"", period:"", location:"", current:0, status:"idle", updatedAt:0 };
+let lastSeen = null;
+
+clinicRef.on("value", (snap) => {
+  const d = snap.val() || {};
+  state = {
+    doctor:   d.doctor   || "—",
+    period:   d.period   || "",
+    location: d.location || "—",
+    current:  typeof d.current === "number" ? d.current : 0,
+    status:   d.status   || "idle",
+    updatedAt:d.updatedAt || 0
+  };
+  const changed = lastSeen !== null && lastSeen !== state.current;
+  lastSeen = state.current;
+  renderAll(changed);
+});
+
+function renderAll(numberChanged){
+  /* --- التلفزيون --- */
+  $("#tvLocation").textContent = state.location;
+  $("#tvDoctor").textContent   = state.doctor;
+  $("#tvPeriod").textContent   = state.period;
+  paintStatus($("#tvStatus"), state.status, true);
+  const closed = state.status === "finished" || state.status === "idle";
+  $("#tvNumberWrap").style.visibility = closed ? "hidden" : "visible";
+  $("#tvNumber").textContent = ar(state.current);
+
+  /* --- الاستقبال --- */
+  $("#rcLocation").textContent = state.location;
+  $("#rcDoctor").textContent   = state.doctor;
+  $("#rcPeriod").textContent   = state.period || "—";
+  $("#rcNumber").textContent   = closed ? "—" : ar(state.current);
+  $("#rcTime").textContent     = timeStr(state.updatedAt);
+  paintStatus($("#rcStatus"), state.status, false);
+
+  /* --- المريض --- */
+  $("#ptLocation").textContent = state.location;
+  $("#ptDoctor").textContent   = state.doctor;
+  $("#ptNumber").textContent   = closed ? "—" : ar(state.current);
+  paintStatus($("#ptStatus"), state.status, false);
+
+  /* --- التمريض --- */
+  $("#nurseMeta").textContent = state.doctor !== "—"
+    ? "الجلسة الحالية: " + state.doctor + " • " + state.period + " • آخر تحديث " + timeStr(state.updatedAt)
+    : "لم تبدأ أي جلسة بعد";
+  document.querySelectorAll(".statusBtn").forEach(b=>{
+    const on = b.dataset.status === state.status;
+    b.classList.toggle("ring-2", on);
+    b.classList.toggle("ring-sky-500", on);
+    b.classList.toggle("bg-sky-50", on);
+  });
+  syncWheel(state.current);
+
+  /* --- التنبيه عند تغير الرقم --- */
+  if(numberChanged && !closed && !$("#view-tv").classList.contains("hidden-view")){
+    const card = $("#tvCard");
+    card.classList.remove("pulsing"); void card.offsetWidth; card.classList.add("pulsing");
+    chime();
+  }
+}
+
+/* ==========================================================
+   ⑤  بكرة الأرقام (Interactive Wheel)
+   ========================================================== */
+const wheel = $("#wheel");
+const ITEM_H = 80;
+let wheelReady = false, suppressWrite = false, writeTimer = null, settleTimer = null;
+
+(function buildWheel(){
+  const pad = (240 - ITEM_H) / 2;
+  let html = '<div style="height:' + pad + 'px"></div>';
+  for(let i = 0; i <= MAX_NUMBER; i++) html += '<div class="wheel-item" data-n="' + i + '">' + ar(i) + '</div>';
+  html += '<div style="height:' + pad + 'px"></div>';
+  wheel.innerHTML = html;
+  wheelReady = true;
+})();
+
+function wheelValue(){ return Math.round(wheel.scrollTop / ITEM_H); }
+
+function highlight(){
+  const v = wheelValue();
+  wheel.querySelectorAll(".wheel-item").forEach(el=>{
+    el.classList.toggle("active", Number(el.dataset.n) === v);
+  });
+}
+
+function syncWheel(n){
+  if(!wheelReady) return;
+  if(wheelValue() === n){ highlight(); return; }
+  suppressWrite = true;
+  wheel.scrollTo({ top:n * ITEM_H, behavior:"auto" });
+  highlight();
+  setTimeout(()=>{ suppressWrite = false; }, 120);
+}
+
+wheel.addEventListener("scroll", ()=>{
+  highlight();
+  clearTimeout(settleTimer);
+  settleTimer = setTimeout(()=>{
+    if(suppressWrite) return;
+    const v = wheelValue();
+    if(v !== state.current) pushNumber(v);
+  }, 220);
+}, { passive:true });
+
+/* السحب بالماوس على الكمبيوتر */
+let dragging = false, startY = 0, startTop = 0;
+wheel.addEventListener("mousedown", e=>{
+  dragging = true; startY = e.clientY; startTop = wheel.scrollTop;
+  wheel.classList.add("dragging");
+});
+window.addEventListener("mousemove", e=>{
+  if(!dragging) return;
+  wheel.scrollTop = startTop + (startY - e.clientY);
+});
+window.addEventListener("mouseup", ()=>{
+  if(!dragging) return;
+  dragging = false;
+  wheel.classList.remove("dragging");
+  wheel.scrollTo({ top: wheelValue() * ITEM_H, behavior:"smooth" });
+});
+
+/* الكتابة في قاعدة البيانات مع Debounce */
+function pushNumber(v){
+  v = Math.max(0, Math.min(MAX_NUMBER, v));
+  clearTimeout(writeTimer);
+  writeTimer = setTimeout(()=>{
+    clinicRef.update({ current:v, updatedAt: firebase.database.ServerValue.TIMESTAMP })
+      .catch(()=> flashSync("تعذّر الحفظ", false));
+    flashSync("تم الإرسال", true);
+  }, 120);
+}
+
+function flashSync(text, ok){
+  const b = $("#syncBadge");
+  b.textContent = text;
+  b.className = "text-xs px-2.5 py-1 rounded-full " + (ok ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700");
+  setTimeout(()=>{ b.textContent = "متصل"; b.className = "text-xs px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700"; }, 1200);
+}
+
+$("#plusBtn").addEventListener("click", ()=> stepNumber(1));
+$("#minusBtn").addEventListener("click", ()=> stepNumber(-1));
+function stepNumber(d){
+  const v = Math.max(0, Math.min(MAX_NUMBER, state.current + d));
+  suppressWrite = true;
+  wheel.scrollTo({ top:v * ITEM_H, behavior:"smooth" });
+  setTimeout(()=>{ suppressWrite = false; }, 400);
+  pushNumber(v);
+  if(navigator.vibrate) navigator.vibrate(12);
+}
+
+/* ==========================================================
+   ⑥  أزرار التمريض
+   ========================================================== */
+$("#startSessionBtn").addEventListener("click", ()=>{
+  const doctor   = $("#fDoctor").value.trim();
+  const period   = $("#fPeriod").value;
+  const location = $("#fLocation").value.trim();
+  if(!doctor)   return alert("اكتب اسم الطبيب المباشر");
+  if(!location) return alert("اكتب مكان العيادة");
+  if(!confirm("سيبدأ عداد الأدوار من رقم ١ من جديد. متابعة؟")) return;
+
+  clinicRef.set({
+    specialty:"عيادة طب وجراحة الفم والأسنان",
+    doctor, period, location,
+    current:1,
+    status:"active",
+    sessionStart: firebase.database.ServerValue.TIMESTAMP,
+    updatedAt:    firebase.database.ServerValue.TIMESTAMP
+  });
+
+  /* حفظ اسم الطبيب للاقتراحات لاحقاً */
+  firebase.database().ref("doctors/" + CLINIC_ID).child(btoa(unescape(encodeURIComponent(doctor))).replace(/=/g,"")).set(doctor);
+});
+
+document.querySelectorAll(".statusBtn").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    const s = btn.dataset.status;
+    if(s === "finished" && !confirm("سيتم إغلاق العيادة وإخفاء الأرقام من كل الشاشات. متابعة؟")) return;
+    clinicRef.update({ status:s, updatedAt: firebase.database.ServerValue.TIMESTAMP });
+  });
+});
+
+firebase.database().ref("doctors/" + CLINIC_ID).on("value", s=>{
+  const list = $("#doctorsList");
+  list.innerHTML = "";
+  s.forEach(c=>{ const o = document.createElement("option"); o.value = c.val(); list.appendChild(o); });
+});
+
+/* ==========================================================
+   ⑦  تسجيل الدخول والخروج
+   ========================================================== */
+$("#loginBtn").addEventListener("click", doLogin);
+$("#loginPass").addEventListener("keydown", e=>{ if(e.key === "Enter") doLogin(); });
+
+const LOGIN_ERRORS = {
+  "auth/invalid-email":         "صيغة البريد الإلكتروني غير صحيحة",
+  "auth/user-not-found":        "لا يوجد حساب بهذا البريد — تأكد إنك عملته في Authentication",
+  "auth/wrong-password":        "كلمة المرور غير صحيحة",
+  "auth/invalid-credential":    "البريد أو كلمة المرور غير صحيحة",
+  "auth/invalid-login-credentials": "البريد أو كلمة المرور غير صحيحة",
+  "auth/too-many-requests":     "محاولات كثيرة، حاول بعد قليل",
+  "auth/network-request-failed":"تأكد من اتصال الإنترنت",
+  "auth/operation-not-allowed": "تسجيل الدخول بالبريد وكلمة المرور غير مفعّل في Firebase",
+  "auth/user-disabled":         "هذا الحساب معطّل"
+};
+
+function doLogin(){
+  const em = $("#loginEmail").value.trim(), pw = $("#loginPass").value;
+  $("#loginMsg").textContent = "";
+  auth.signInWithEmailAndPassword(em, pw)
+    .catch(err=>{
+      $("#loginMsg").textContent = (LOGIN_ERRORS[err.code] || "خطأ: " + err.code) + " ";
+      console.error("Firebase auth error:", err.code, err.message);
+    });
+}
+
+$("#logoutBtn").addEventListener("click", ()=>{
+  if(confirm("تسجيل الخروج وتسليم الوردية؟")) auth.signOut();
+});
+
+auth.onAuthStateChanged(()=> route());
+
+/* ==========================================================
+   ⑧  ساعة التلفزيون + ملء الشاشة
+   ========================================================== */
+let clockStarted = false;
+function startClock(){
+  if(clockStarted) return;
+  clockStarted = true;
+  const tick = ()=>{
+    const now = new Date();
+    $("#tvClock").textContent = now.toLocaleTimeString("ar-EG",{hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:true});
+    $("#tvDate").textContent  = now.toLocaleDateString("ar-EG",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+  };
+  tick(); setInterval(tick, 1000);
+}
+
+$("#fsBtn").addEventListener("click", ()=>{
+  chime();  /* تفعيل الصوت بأول لمسة من المستخدم */
+  if(!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{});
+  else document.exitFullscreen();
+});
+
+/* ==========================================================
+   ⑨  كود QR للمريض
+   ========================================================== */
+let qrDone = false;
+function drawQR(){
+  if(qrDone || typeof QRCode === "undefined") return;
+  const url = location.origin + location.pathname + "#/patient";
+  $("#qrLink").textContent = url;
+  new QRCode($("#qrBox"), { text:url, width:170, height:170, colorDark:"#0f4c6c", colorLight:"#ffffff" });
+  qrDone = true;
+}
+
+route();
+</script>
+</body>
+</html>
