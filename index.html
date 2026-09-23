@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#0f4c6c">
-<title>نظام متابعة الأدوار - عيادة الأسنان</title>
+<title>نظام متابعة أدوار العيادات</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -30,7 +30,7 @@
   }
 
   :root{
-    --navy:#0f4c6c;
+    --navy:#f3514c;
     --teal:#0284c7;
     --snow:#f0f4f8;
     --green:#16a34a;
@@ -51,25 +51,33 @@
   /* ===== بكرة الأرقام ===== */
   #wheel{
     height:240px;
-    overflow-y:scroll;
+    width:100%;
+    max-width:100%;
+    box-sizing:border-box;
+    overflow-y:auto;
+    overflow-x:hidden;
     scroll-snap-type:y mandatory;
+    overscroll-behavior:contain;
+    touch-action:pan-y;
     -ms-overflow-style:none;
     scrollbar-width:none;
     -webkit-overflow-scrolling:touch;
     cursor:grab;
+    user-select:none;
+    -webkit-user-select:none;
     mask-image:linear-gradient(to bottom,transparent,#000 22%,#000 78%,transparent);
     -webkit-mask-image:linear-gradient(to bottom,transparent,#000 22%,#000 78%,transparent);
   }
   #wheel::-webkit-scrollbar{ display:none; }
   #wheel.dragging{ cursor:grabbing; scroll-snap-type:none; }
   .wheel-item{
-    height:80px; display:flex; align-items:center; justify-content:center;
-    scroll-snap-align:center;
+    width:100%; height:80px; display:flex; align-items:center; justify-content:center;
+    scroll-snap-align:center; scroll-snap-stop:always;
     font-size:44px; font-weight:700; color:#94a3b8;
-    transition:color .18s ease, transform .18s ease, opacity .18s ease;
+    transition:color .18s ease, opacity .18s ease, font-size .18s ease;
     opacity:.55;
   }
-  .wheel-item.active{ color:var(--navy); transform:scale(1.35); opacity:1; }
+  .wheel-item.active{ color:var(--navy); font-size:54px; opacity:1; }
   .wheel-frame{
     position:absolute; top:50%; left:0; right:0; height:80px; margin-top:-40px;
     border-top:2px solid rgba(2,132,199,.35);
@@ -78,27 +86,114 @@
     pointer-events:none; border-radius:14px;
   }
 
-  /* ===== شاشة التلفزيون ===== */
-  .tv-number{
-    font-size:clamp(9rem,26vw,24rem);
-    line-height:.9; font-weight:700;
-    letter-spacing:-.02em;
-    color:var(--navy);
+  /* ===== شاشة العرض الموحدة لـ 12 عيادة ===== */
+  #view-tv{
+    min-height:100vh;
+    background:
+      linear-gradient(135deg,rgba(255,255,255,.96),rgba(241,245,249,.96)),
+      radial-gradient(circle at 12% 15%,rgba(243,81,76,.08),transparent 28%);
   }
-  @keyframes callPulse{
-    0%{ transform:scale(1); }
-    18%{ transform:scale(1.14); }
-    40%{ transform:scale(.99); }
-    60%{ transform:scale(1.05); }
-    100%{ transform:scale(1); }
+  .tv-topbar{
+    min-height:96px; display:grid; grid-template-columns:1fr 1.45fr 1fr;
+    align-items:center; gap:24px; padding:14px 34px;
+    background:#fff; border-bottom:1px solid #e2e8f0;
+    box-shadow:0 5px 18px rgba(15,23,42,.06);
   }
-  @keyframes cardFlash{
-    0%{ box-shadow:0 0 0 0 rgba(2,132,199,.55); background:#fff; }
-    35%{ box-shadow:0 0 0 34px rgba(2,132,199,0); background:#e0f2fe; }
-    100%{ box-shadow:0 0 0 0 rgba(2,132,199,0); background:#fff; }
+  .tv-brand{ display:flex; align-items:center; justify-content:flex-end; gap:12px; }
+  .tv-brand img{ height:62px; max-width:230px; object-fit:contain; }
+  .tv-brand-fallback{ font-size:18px; font-weight:700; color:#334155; }
+  .tv-slogan{ text-align:center; color:#334155; font-size:clamp(24px,2.1vw,40px); font-weight:700; }
+  .tv-slogan span{ color:var(--navy); }
+  .tv-datetime{ display:flex; align-items:center; gap:18px; color:#334155; }
+  .tv-clock-box{ padding-left:18px; border-left:2px solid #e2e8f0; }
+  .tv-clock-value{ font-size:clamp(24px,2.2vw,38px); line-height:1; font-weight:700; color:#1e293b; }
+  .tv-date-value{ margin-top:5px; font-size:clamp(12px,1vw,17px); color:#64748b; }
+
+  .tv-dashboard{ flex:1; padding:16px 26px 12px; display:flex; flex-direction:column; gap:13px; }
+  .floor-section{ display:flex; flex-direction:column; gap:10px; }
+  .floor-section.third-floor{ flex:2; }
+  .floor-section.ground-floor{ flex:1; }
+  .floor-heading{ display:flex; align-items:center; gap:15px; min-height:38px; }
+  .floor-heading::before,.floor-heading::after{ content:""; height:1px; background:#cbd5e1; flex:1; }
+  .floor-title{
+    min-width:290px; padding:7px 28px; border-radius:999px;
+    color:#fff; text-align:center; font-size:clamp(18px,1.45vw,27px); font-weight:700;
+    background:linear-gradient(135deg,#7f1d3d,#a73a58);
+    box-shadow:0 5px 14px rgba(127,29,61,.2);
   }
-  .pulsing .tv-number{ animation:callPulse 1s ease-out; }
-  .pulsing{ animation:cardFlash 1.6s ease-out; }
+  .ground-floor .floor-title{ background:linear-gradient(135deg,#374151,#64748b); box-shadow:0 5px 14px rgba(51,65,85,.18); }
+  .clinic-grid{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; direction:ltr; }
+
+  .queue-card{
+    min-width:0; min-height:154px; display:grid; grid-template-columns:minmax(0,1fr) 104px;
+    overflow:hidden; border:1px solid #e2e8f0; border-radius:17px; background:#fff;
+    box-shadow:0 6px 18px rgba(15,23,42,.07);
+    transition:box-shadow .2s ease,transform .2s ease,border-color .2s ease;
+    direction:rtl;
+  }
+  .queue-main{ min-width:0; display:flex; flex-direction:column; }
+  .queue-card-title{
+    min-height:53px; padding:8px 13px; display:flex; align-items:center; justify-content:space-between; gap:8px;
+    color:#fff; background:linear-gradient(135deg,#8d2345,#b53a5d);
+  }
+  .queue-clinic-name{
+    min-width:0; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
+    font-size:clamp(15px,1.18vw,22px); line-height:1.18; font-weight:700;
+  }
+  .room-badge{
+    flex:0 0 auto; padding:3px 8px; border-radius:8px; background:rgba(255,255,255,.17);
+    font-size:clamp(10px,.72vw,13px); font-weight:700; white-space:nowrap;
+  }
+  .queue-card-body{ flex:1; padding:9px 13px 8px; display:flex; flex-direction:column; justify-content:center; }
+  .queue-doctor{
+    min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+    color:#0f172a; font-size:clamp(16px,1.22vw,23px); font-weight:700;
+  }
+  .queue-status{ margin-top:5px; display:flex; align-items:center; gap:6px; color:#64748b; font-size:clamp(10px,.72vw,13px); }
+  .queue-status-dot{ width:9px; height:9px; border-radius:50%; background:#94a3b8; }
+  .queue-number-box{
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    background:linear-gradient(180deg,#fff7f7,#fff1f2); border-right:1px solid #fecdd3;
+  }
+  .queue-number-label{ color:#475569; font-size:clamp(11px,.78vw,14px); font-weight:700; }
+  .queue-number{ margin-top:3px; color:#dc2626; font-size:clamp(37px,3.2vw,60px); line-height:.95; font-weight:700; }
+  .queue-card[data-status="active"] .queue-status-dot{ background:#16a34a; animation:blip 1.6s infinite; }
+  .queue-card[data-status="break"] .queue-status-dot{ background:#d97706; }
+  .queue-card[data-status="finished"] .queue-status-dot{ background:#dc2626; }
+  .queue-card[data-status="finished"]{ border-color:#fecaca; background:#fffafa; }
+  .queue-card[data-status="finished"] .queue-card-title{
+    background:linear-gradient(135deg,#991b1b,#dc2626);
+  }
+  .queue-card[data-status="finished"] .queue-number-box{
+    background:linear-gradient(180deg,#fff1f2,#fee2e2); border-right-color:#fecaca;
+  }
+  .queue-card[data-status="finished"] .queue-number-label{ color:#991b1b; }
+  .queue-card[data-status="finished"] .queue-number{
+    color:#b91c1c; font-size:clamp(17px,1.55vw,27px); line-height:1.15; text-align:center; padding:0 5px;
+  }
+  .queue-card[data-status="finished"] .queue-missed-summary{ display:none; }
+  .queue-card[data-status="idle"] .queue-card-title{ background:linear-gradient(135deg,#64748b,#94a3b8); }
+
+  @keyframes dashboardCall{
+    0%{ transform:scale(1); box-shadow:0 0 0 0 rgba(220,38,38,.5); }
+    25%{ transform:scale(1.025); box-shadow:0 0 0 8px rgba(220,38,38,.18); }
+    100%{ transform:scale(1); box-shadow:0 0 0 20px rgba(220,38,38,0); }
+  }
+  .queue-card.calling{ animation:dashboardCall 1.45s ease-out; border-color:#f87171; }
+
+  .tv-footer{
+    min-height:48px; display:flex; align-items:center; justify-content:center; gap:14px;
+    padding:8px 24px; color:#475569; background:#fff; border-top:1px solid #e2e8f0;
+    font-size:clamp(14px,1vw,18px); font-weight:700;
+  }
+  .tv-footer-heart{ color:#ef4444; font-size:25px; }
+
+  @media (max-width:1100px){
+    .tv-topbar{ grid-template-columns:1fr 1.2fr 1fr; padding-inline:20px; }
+    .tv-dashboard{ padding-inline:16px; }
+    .queue-card{ grid-template-columns:minmax(0,1fr) 86px; min-height:142px; }
+    .queue-card-title,.queue-card-body{ padding-inline:9px; }
+  }
 
   .dot{ width:14px;height:14px;border-radius:50%;display:inline-block; }
   @keyframes blip{ 0%,100%{opacity:1} 50%{opacity:.35} }
@@ -108,23 +203,256 @@
     *{ animation:none !important; transition:none !important; }
   }
   .hidden-view{ display:none !important; }
+
+  /* ===== القائمة المنسدلة القابلة للبحث ===== */
+  .clinic-combobox{ position:relative; }
+  .clinic-menu{
+    position:absolute; top:calc(100% + 8px); right:0; left:0; z-index:60;
+    max-height:290px; overflow-y:auto;
+    background:#fff; border:1px solid #e2e8f0; border-radius:16px;
+    box-shadow:0 18px 45px rgba(15,23,42,.18);
+    padding:6px;
+  }
+  .clinic-option{
+    width:100%; display:flex; align-items:flex-start; gap:10px;
+    padding:10px 12px; border-radius:11px; text-align:right;
+    color:#334155; transition:background .15s ease,color .15s ease;
+  }
+  .clinic-option:hover,.clinic-option.keyboard-active{ background:#e0f2fe; color:#075985; }
+  .clinic-option.selected{ background:#fef2f2; color:var(--navy); font-weight:700; }
+  .clinic-index{
+    min-width:25px; height:25px; display:inline-flex; align-items:center; justify-content:center;
+    border-radius:8px; background:#f1f5f9; color:#64748b; font-size:12px; font-weight:700;
+  }
+  .clinic-empty{ padding:18px 12px; text-align:center; color:#64748b; font-size:14px; }
+
+  /* ===== قائمة الطبيب القابلة للبحث ===== */
+  .doctor-combobox{ position:relative; }
+  .doctor-menu{
+    position:absolute; top:calc(100% + 8px); right:0; left:0; z-index:60;
+    max-height:250px; overflow-y:auto;
+    background:#fff; border:1px solid #e2e8f0; border-radius:16px;
+    box-shadow:0 18px 45px rgba(15,23,42,.18);
+    padding:6px;
+  }
+  .doctor-option{
+    width:100%; display:flex; align-items:center; gap:10px;
+    padding:10px 12px; border-radius:11px; text-align:right;
+    color:#334155; transition:background .15s ease,color .15s ease;
+  }
+  .doctor-option:hover,.doctor-option.keyboard-active{ background:#e0f2fe; color:#075985; }
+  .doctor-option.selected{ background:#fef2f2; color:var(--navy); font-weight:700; }
+  .doctor-empty{ padding:18px 12px; text-align:center; color:#64748b; font-size:14px; }
+
+  /* ===== قائمة التمريض القابلة للبحث ===== */
+  .nurse-combobox{ position:relative; }
+  .nurse-menu{
+    position:absolute; top:calc(100% + 8px); right:0; left:0; z-index:60;
+    max-height:250px; overflow-y:auto;
+    background:#fff; border:1px solid #e2e8f0; border-radius:16px;
+    box-shadow:0 18px 45px rgba(15,23,42,.18);
+    padding:6px;
+  }
+  .nurse-option{
+    width:100%; display:flex; align-items:center; gap:10px;
+    padding:10px 12px; border-radius:11px; text-align:right;
+    color:#334155; transition:background .15s ease,color .15s ease;
+  }
+  .nurse-option:hover,.nurse-option.keyboard-active{ background:#e0f2fe; color:#075985; }
+  .nurse-option.selected{ background:#fef2f2; color:var(--navy); font-weight:700; }
+  .nurse-empty{ padding:18px 12px; text-align:center; color:#64748b; font-size:14px; }
+
+  /* ===== زر لم يحضر بجوار بكرة الأرقام ===== */
+  .wheel-control-row{
+    display:grid; grid-template-columns:minmax(0,1fr) 118px; gap:12px; align-items:center;
+  }
+  .wheel-no-show-btn{
+    min-height:80px; padding:10px 8px; border-radius:16px; border:1px solid #fdba74;
+    background:#fff7ed; color:#9a3412; font-size:16px; font-weight:700;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px;
+    transition:transform .15s ease,opacity .15s ease,background .15s ease;
+  }
+  .wheel-no-show-btn:active:not(:disabled){ transform:scale(.97); }
+  .wheel-no-show-btn:disabled{ opacity:.48; cursor:not-allowed; }
+  .wheel-no-show-btn .selected-turn{ font-size:24px; line-height:1; }
+
+  /* ===== إيقاف تحكم الأدوار أثناء الاستراحة أو بعد انتهاء العيادة ===== */
+  .nurse-queue-lock{
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    margin-bottom:12px; padding:11px 14px; border-radius:12px;
+    font-size:14px; font-weight:700; text-align:center;
+  }
+  .nurse-queue-lock[data-lock-status="break"]{
+    background:#fef3c7; color:#92400e; border:1px solid #fde68a;
+  }
+  .nurse-queue-lock[data-lock-status="finished"]{
+    background:#fee2e2; color:#991b1b; border:1px solid #fecaca;
+  }
+  .nurse-queue-locked{
+    opacity:.48;
+    pointer-events:none;
+    filter:grayscale(.15);
+  }
+
+  @media (max-width:430px){
+    .wheel-control-row{ grid-template-columns:minmax(0,1fr) 102px; gap:8px; }
+    .wheel-no-show-btn{ font-size:14px; padding-inline:6px; }
+  }
+
+  /* ===== الأدوار الفائتة وإعادة الاستدعاء ===== */
+  .missed-turns-wrap{ border:1px solid #fed7aa; background:linear-gradient(180deg,#fff,#fffaf5); }
+  .missed-turns-list{ display:flex; flex-wrap:wrap; gap:9px; }
+  .missed-turn-chip{
+    min-width:50px; height:46px; padding:0 13px; border-radius:14px; border:1px solid #fdba74;
+    background:#fff7ed; color:#9a3412; font-size:19px; font-weight:700;
+    display:inline-flex; align-items:center; justify-content:center; gap:6px;
+    transition:transform .15s ease,box-shadow .15s ease,opacity .15s ease;
+  }
+  .missed-turn-chip:active{ transform:scale(.96); }
+  .missed-turn-chip[data-turn-status="recalling"]{ background:#e0f2fe; color:#075985; border-color:#7dd3fc; box-shadow:0 0 0 2px rgba(2,132,199,.10); }
+  .missed-turn-chip[data-turn-status="done"]{ background:#dcfce7; color:#166534; border-color:#86efac; opacity:.75; text-decoration:line-through; }
+  .recall-panel{ border:1px solid #bae6fd; background:linear-gradient(180deg,#f0f9ff,#fff); }
+  .recall-number{ font-size:42px; line-height:1; font-weight:700; color:#0369a1; }
+  .queue-card[data-recall="true"] .queue-number-box{ background:linear-gradient(180deg,#eff6ff,#e0f2fe); border-right-color:#7dd3fc; }
+  .queue-card[data-recall="true"] .queue-number{ color:#0369a1; }
+  .queue-card[data-recall="true"] .queue-number-label{ color:#0369a1; }
+
+  /* ===== ملخص الأدوار الفائتة الظاهر للمرضى ===== */
+  .queue-missed-summary{
+    margin-top:7px; padding:6px 8px; border:1px solid #fed7aa; border-radius:10px;
+    background:#fff7ed; color:#9a3412;
+  }
+  .queue-missed-summary-head{ display:flex; align-items:center; justify-content:space-between; gap:7px; font-size:11px; font-weight:700; }
+  .queue-missed-count{
+    min-width:24px; height:22px; padding:0 6px; border-radius:999px; background:#ffedd5;
+    display:inline-flex; align-items:center; justify-content:center; font-size:12px;
+  }
+  .queue-missed-public-list{ margin-top:5px; display:flex; align-items:center; gap:4px; flex-wrap:wrap; min-height:21px; }
+  .queue-missed-empty{ font-size:10px; color:#9a3412; opacity:.68; }
+  .queue-public-chip{
+    min-width:28px; height:21px; padding:0 5px; border-radius:7px; border:1px solid #fdba74;
+    background:#fff; color:#9a3412; display:inline-flex; align-items:center; justify-content:center; gap:2px;
+    font-size:10px; line-height:1; font-weight:700; white-space:nowrap;
+  }
+  .queue-public-chip[data-turn-status="recalling"]{ background:#e0f2fe; color:#075985; border-color:#7dd3fc; }
+  .queue-public-chip[data-turn-status="done"]{ background:#dcfce7; color:#166534; border-color:#86efac; }
+  .queue-public-more{ font-size:10px; color:#9a3412; font-weight:700; }
+
+  .patient-missed-card{
+    border:1px solid #fed7aa; background:linear-gradient(180deg,#fff7ed,#fff);
+  }
+  .patient-missed-list{ display:flex; flex-wrap:wrap; gap:8px; justify-content:center; }
+  .patient-missed-chip{
+    min-width:62px; min-height:38px; padding:7px 10px; border-radius:11px; border:1px solid #fdba74;
+    background:#fff; color:#9a3412; font-size:15px; font-weight:700;
+    display:inline-flex; align-items:center; justify-content:center; gap:5px;
+  }
+  .patient-missed-chip[data-turn-status="recalling"]{ background:#e0f2fe; color:#075985; border-color:#7dd3fc; }
+  .patient-missed-chip[data-turn-status="done"]{ background:#dcfce7; color:#166534; border-color:#86efac; }
+
+
+  /* ===== شاشة الاستقبال — متابعة 12 عيادة ===== */
+  #view-reception{ background:#f1f5f9; }
+  .reception-shell{ max-width:1500px; margin:0 auto; }
+  .reception-toolbar{
+    display:flex; flex-wrap:wrap; align-items:center; gap:10px;
+    padding:12px; border:1px solid #e2e8f0; border-radius:16px; background:#fff;
+    box-shadow:0 3px 12px rgba(15,23,42,.04);
+  }
+  .reception-search{
+    flex:1 1 260px; min-width:220px; height:42px; padding:0 14px;
+    border:1px solid #e2e8f0; border-radius:12px; background:#f8fafc;
+    color:#0f172a; outline:none;
+  }
+  .reception-search:focus{ border-color:#7dd3fc; box-shadow:0 0 0 3px rgba(14,165,233,.10); }
+  .reception-filter-group{ display:flex; flex-wrap:wrap; gap:7px; }
+  .reception-filter-btn{
+    height:38px; padding:0 13px; border-radius:10px; background:#f1f5f9;
+    color:#475569; font-size:13px; font-weight:700; border:1px solid transparent;
+  }
+  .reception-filter-btn.active{ background:#fff1f2; color:#be123c; border-color:#fecdd3; }
+  .reception-summary{ display:flex; flex-wrap:wrap; gap:8px; margin:12px 0; }
+  .reception-summary-chip{
+    display:inline-flex; align-items:center; gap:6px; padding:7px 10px; border-radius:999px;
+    background:#fff; border:1px solid #e2e8f0; color:#475569; font-size:12px; font-weight:700;
+  }
+  .reception-grid{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
+  .reception-clinic-card{
+    width:100%; text-align:right; border:1px solid #e2e8f0; border-radius:16px; background:#fff;
+    overflow:hidden; box-shadow:0 4px 14px rgba(15,23,42,.05); transition:.16s ease;
+  }
+  .reception-clinic-card:hover{ transform:translateY(-1px); box-shadow:0 7px 20px rgba(15,23,42,.09); }
+  .reception-clinic-card.selected{ border-color:#fb7185; box-shadow:0 0 0 2px rgba(244,63,94,.10),0 7px 20px rgba(15,23,42,.08); }
+  .reception-card-head{
+    padding:9px 11px; display:flex; align-items:flex-start; justify-content:space-between; gap:8px;
+    background:#f8fafc; border-bottom:1px solid #eef2f7;
+  }
+  .reception-card-name{ min-width:0; color:#0f172a; font-size:15px; line-height:1.3; font-weight:700; }
+  .reception-room-badge{ flex:0 0 auto; padding:3px 7px; border-radius:7px; background:#e2e8f0; color:#475569; font-size:10px; font-weight:700; }
+  .reception-card-body{ padding:11px; }
+  .reception-doctor{ color:#0f172a; font-size:15px; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .reception-nurse{ margin-top:3px; color:#64748b; font-size:11px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .reception-card-row{ margin-top:10px; display:grid; grid-template-columns:92px minmax(0,1fr); gap:9px; align-items:center; }
+  .reception-current{
+    min-height:72px; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    border-radius:12px; background:#f8fafc; border:1px solid #e2e8f0;
+  }
+  .reception-current-label{ color:#64748b; font-size:10px; font-weight:700; }
+  .reception-current-number{ margin-top:2px; color:#dc2626; font-size:35px; line-height:1; font-weight:700; }
+  .reception-card-meta{ min-width:0; display:flex; flex-direction:column; align-items:flex-start; gap:6px; }
+  .reception-status-pill{ display:inline-flex; align-items:center; gap:5px; padding:4px 8px; border-radius:999px; font-size:10px; font-weight:700; }
+  .reception-small-meta{ color:#64748b; font-size:10px; line-height:1.4; }
+  .reception-clinic-card[data-status="active"] .reception-status-pill{ background:#dcfce7; color:#166534; }
+  .reception-clinic-card[data-status="break"] .reception-status-pill{ background:#fef3c7; color:#92400e; }
+  .reception-clinic-card[data-status="finished"] .reception-status-pill{ background:#fee2e2; color:#991b1b; }
+  .reception-clinic-card[data-status="idle"] .reception-status-pill{ background:#f1f5f9; color:#64748b; }
+  .reception-clinic-card[data-recall="true"] .reception-status-pill{ background:#e0f2fe; color:#075985; }
+  .reception-clinic-card[data-recall="true"] .reception-current{ background:#eff6ff; border-color:#bae6fd; }
+  .reception-clinic-card[data-recall="true"] .reception-current-number{ color:#0369a1; }
+  .reception-detail{
+    position:sticky; top:16px; border:1px solid #e2e8f0; border-radius:18px; background:#fff;
+    box-shadow:0 5px 18px rgba(15,23,42,.06); overflow:hidden;
+  }
+  .reception-detail-head{ padding:12px 14px; color:#fff; background:linear-gradient(135deg,#ef4444,#f3514c); }
+  .reception-detail-body{ padding:14px; }
+  .reception-detail-number{
+    min-height:112px; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    margin:12px 0; border-radius:16px; background:#f8fafc; border:1px solid #e2e8f0;
+  }
+  .reception-detail-number strong{ margin-top:4px; color:#0284c7; font-size:58px; line-height:1; }
+  .reception-detail-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .reception-detail-item{ padding:9px 10px; border-radius:11px; background:#f8fafc; }
+  .reception-detail-item span{ display:block; color:#94a3b8; font-size:10px; }
+  .reception-detail-item strong{ display:block; margin-top:2px; color:#334155; font-size:12px; }
+  .reception-qr-wrap{ margin-top:12px; padding-top:12px; border-top:1px solid #e2e8f0; text-align:center; }
+  #qrBox canvas,#qrBox img{ margin:auto; max-width:150px; height:auto !important; }
+  .reception-actions{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; }
+  .reception-action-btn{ padding:10px 8px; border-radius:10px; font-size:11px; font-weight:700; text-align:center; }
+  .reception-empty{ grid-column:1/-1; padding:40px 20px; text-align:center; color:#94a3b8; background:#fff; border:1px dashed #cbd5e1; border-radius:16px; }
+  @media (max-width:1100px){ .reception-grid{ grid-template-columns:repeat(2,minmax(0,1fr)); } }
+  @media (max-width:760px){
+    .reception-grid{ grid-template-columns:1fr; }
+    .reception-detail{ position:static; }
+    .reception-card-row{ grid-template-columns:84px minmax(0,1fr); }
+  }
+
 </style>
 </head>
 <body>
 
 <!-- ============================================================
-     1) شاشة تسجيل الدخول (حساب العيادة الثابت)
+     1) شاشة تسجيل الدخول (حساب مستقل لكل حجرة)
 ============================================================ -->
 <section id="view-login" class="hidden-view min-h-screen flex items-center justify-center p-5">
   <div class="w-full max-w-sm bg-white rounded-3xl shadow-xl shadow-slate-300/40 p-7">
     <div class="text-center mb-6">
       <img src="logo.png" alt="" class="h-16 mx-auto mb-3" onerror="this.style.display='none'">
-      <h1 class="text-2xl font-bold">دخول العيادة</h1>
-      <p class="text-slate-500 text-sm mt-1">عيادة طب وجراحة الفم والأسنان</p>
+      <h1 id="loginRoomTitle" class="text-2xl font-bold">تسجيل دخول التمريض</h1>
+      <p class="text-slate-500 text-sm mt-1">كل حساب مرتبط بحجرة واحدة فقط</p>
     </div>
-    <label class="block text-sm mb-1 text-slate-600">البريد الإلكتروني للعيادة</label>
-    <input id="loginEmail" type="email" inputmode="email" autocomplete="username"
-      class="w-full mb-4 px-4 py-3 rounded-xl bg-slate-100 outline-none focus:ring-2 focus:ring-sky-500" placeholder="dental@clinic.com">
+    <label class="block text-sm mb-1 text-slate-600">اسم المستخدم</label>
+    <input id="loginEmail" type="text" inputmode="numeric" autocomplete="username" dir="ltr"
+      class="w-full mb-4 px-4 py-3 rounded-xl bg-slate-100 outline-none focus:ring-2 focus:ring-sky-500 text-left" placeholder="">
     <label class="block text-sm mb-1 text-slate-600">كلمة المرور</label>
     <input id="loginPass" type="password" autocomplete="current-password"
       class="w-full mb-5 px-4 py-3 rounded-xl bg-slate-100 outline-none focus:ring-2 focus:ring-sky-500" placeholder="••••••••">
@@ -136,41 +464,116 @@
 </section>
 
 <!-- ============================================================
-     2) واجهة التمريض
+     2) إعداد بيانات العيادة الحالية
+============================================================ -->
+<section id="view-setup" class="hidden-view min-h-screen flex items-center justify-center p-5">
+  <div class="w-full max-w-lg bg-white rounded-3xl shadow-xl shadow-slate-300/40">
+    <div class="text-white px-6 py-5 rounded-t-3xl" style="background:var(--navy)">
+            <h1 class="text-2xl font-bold">بيانات الفترة الحالية</h1>
+    </div>
+
+    <div class="p-6">
+      <div class="mb-4 px-4 py-3 rounded-xl bg-sky-50 border border-sky-100 flex items-center justify-between gap-3">
+        <div>
+          <p class="text-xs text-slate-500">هذا الحساب يتحكم في</p>
+          <p id="setupRoomPlace" class="font-bold text-slate-800">—</p>
+        </div>
+        <span id="setupRoomValue" class="shrink-0 px-3 py-1.5 rounded-lg bg-white text-sky-800 font-bold num">—</span>
+      </div>
+
+      <label class="block text-sm mb-1.5 text-slate-600">اسم التخصص / العيادة الظاهر على الشاشة</label>
+      <div id="clinicCombobox" class="clinic-combobox mb-4">
+        <div class="relative">
+          <input id="setupClinicSearch" type="text" autocomplete="off" role="combobox"
+            aria-expanded="false" aria-controls="clinicOptions" aria-autocomplete="list"
+            class="w-full px-4 py-3 pl-12 rounded-xl bg-slate-100 outline-none focus:ring-2 focus:ring-sky-500"
+            placeholder="ابحث عن العيادة أو اختر من القائمة">
+          <input id="setupClinic" type="hidden" value="">
+          <button id="clinicToggle" type="button" aria-label="فتح قائمة العيادات"
+            class="absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-lg text-slate-500 hover:bg-white flex items-center justify-center">
+            <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m6 9 6 6 6-6"/>
+            </svg>
+          </button>
+        </div>
+        <div id="clinicOptions" role="listbox" class="clinic-menu hidden-view"></div>
+      </div>
+
+      <label class="block text-sm mb-1.5 text-slate-600">اسم الطبيب</label>
+      <div id="doctorCombobox" class="doctor-combobox mb-4">
+        <div class="relative">
+          <input id="setupDoctorSearch" type="text" autocomplete="off" role="combobox"
+            aria-expanded="false" aria-controls="doctorOptions" aria-autocomplete="list"
+            class="w-full px-4 py-3 pl-12 rounded-xl bg-slate-100 outline-none focus:ring-2 focus:ring-sky-500"
+            placeholder="ابحث عن الطبيب أو اختر من القائمة" disabled>
+          <input id="setupDoctor" type="hidden" value="">
+          <button id="doctorToggle" type="button" aria-label="فتح قائمة الأطباء"
+            class="absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-lg text-slate-500 hover:bg-white flex items-center justify-center disabled:opacity-40"
+            disabled>
+            <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m6 9 6 6 6-6"/>
+            </svg>
+          </button>
+        </div>
+        <div id="doctorOptions" role="listbox" class="doctor-menu hidden-view"></div>
+      </div>
+
+      <label class="block text-sm mb-1.5 text-slate-600">اسم التمريض المسؤول</label>
+      <div id="nurseCombobox" class="nurse-combobox mb-5">
+        <div class="relative">
+          <input id="setupNurseSearch" type="text" autocomplete="off" role="combobox"
+            aria-expanded="false" aria-controls="nurseOptions" aria-autocomplete="list"
+            class="w-full px-4 py-3 pl-12 rounded-xl bg-slate-100 outline-none focus:ring-2 focus:ring-sky-500"
+            placeholder="ابحث عن التمريض أو اختر من القائمة">
+          <input id="setupNurse" type="hidden" value="">
+          <button id="nurseToggle" type="button" aria-label="فتح قائمة التمريض"
+            class="absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-lg text-slate-500 hover:bg-white flex items-center justify-center">
+            <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m6 9 6 6 6-6"/>
+            </svg>
+          </button>
+        </div>
+        <div id="nurseOptions" role="listbox" class="nurse-menu hidden-view"></div>
+      </div>
+
+      <p id="setupMsg" class="text-red-600 text-sm mb-3 min-h-[20px]"></p>
+
+      <button id="saveSetupBtn" class="w-full py-3.5 rounded-xl text-white font-bold text-lg" style="background:var(--teal)">
+        حفظ والدخول إلى لوحة الأدوار
+      </button>
+      <button id="setupLogoutBtn" class="w-full mt-3 py-2.5 rounded-xl bg-slate-100 text-slate-600 text-sm font-bold">
+        تسجيل الخروج
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     3) واجهة التمريض
 ============================================================ -->
 <section id="view-nurse" class="hidden-view min-h-screen pb-10">
   <header class="text-white px-5 py-4 flex items-center justify-between" style="background:var(--navy)">
     <div>
-      <h1 class="font-bold text-lg leading-tight">لوحة التمريض</h1>
-      <p class="text-sky-200 text-xs" id="nurseClinicName">عيادة الأسنان</p>
+      <h1 id="nurseRoomTitle" class="font-bold text-lg leading-tight">لوحة التمريض</h1>
+      <p class="text-white/75 text-xs" id="nurseClinicName">—</p>
     </div>
     <button id="logoutBtn" class="text-xs bg-white/15 px-3 py-2 rounded-lg">تسليم الوردية</button>
   </header>
 
-  <!-- بدء جلسة -->
   <div class="p-4">
     <div class="bg-white rounded-2xl shadow-sm p-4 mb-4">
-      <h2 class="font-bold mb-3">بدء جلسة طبيب</h2>
-      <label class="block text-sm text-slate-600 mb-1">الطبيب المباشر</label>
-      <input id="fDoctor" list="doctorsList" class="w-full mb-3 px-3 py-2.5 rounded-xl bg-slate-100 outline-none focus:ring-2 focus:ring-sky-500" placeholder="د. ...">
-      <datalist id="doctorsList"></datalist>
-
-      <div class="grid grid-cols-2 gap-3 mb-3">
+      <div class="flex items-start justify-between gap-3 mb-4">
         <div>
-          <label class="block text-sm text-slate-600 mb-1">الفترة</label>
-          <select id="fPeriod" class="w-full px-3 py-2.5 rounded-xl bg-slate-100 outline-none focus:ring-2 focus:ring-sky-500">
-            <option>الفترة الأولى</option>
-            <option>الفترة الثانية</option>
-          </select>
+          <p class="text-xs text-slate-500">بيانات الفترة الحالية</p>
+          <h2 id="panelClinic" class="font-bold text-lg mt-1">—</h2>
+          <p id="panelDoctor" class="text-sky-700 font-bold">—</p>
+          <p class="text-sm text-slate-500 mt-1">التمريض: <span id="panelNurse">—</span></p>
         </div>
-        <div>
-          <label class="block text-sm text-slate-600 mb-1">مكان العيادة</label>
-          <input id="fLocation" class="w-full px-3 py-2.5 rounded-xl bg-slate-100 outline-none focus:ring-2 focus:ring-sky-500" placeholder="الدور الأرضي - عيادة 001">
-        </div>
+        <button id="editSetupBtn" class="shrink-0 text-xs px-3 py-2 rounded-lg bg-slate-100 text-slate-600 font-bold">تعديل بيانات العيادة</button>
       </div>
 
       <button id="startSessionBtn" class="w-full py-3 rounded-xl text-white font-bold" style="background:var(--teal)">
-        بدء جلسة الطبيب — يبدأ العد من ١
+        بدء جلسة جديدة — يبدأ العد من ١
       </button>
     </div>
 
@@ -181,15 +584,57 @@
         <span id="syncBadge" class="text-xs px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700">متصل</span>
       </div>
 
-      <div class="relative">
-        <div class="wheel-frame"></div>
-        <div id="wheel"></div>
+      <div id="nurseQueueLock" class="nurse-queue-lock hidden-view" data-lock-status=""></div>
+
+      <div id="nurseQueueControls">
+      <div class="wheel-control-row">
+        <div class="relative">
+          <div class="wheel-frame"></div>
+          <div id="wheel"></div>
+        </div>
+        <button id="markNoShowBtn" type="button" class="wheel-no-show-btn" title="إضافة الرقم المحدد إلى الأدوار الفائتة">
+          <span>لم يحضر</span>
+          <strong id="markNoShowNumber" class="selected-turn num">—</strong>
+        </button>
       </div>
 
       <div class="grid grid-cols-2 gap-3 mt-4">
         <button id="minusBtn" class="py-4 rounded-xl bg-slate-100 text-3xl font-bold active:bg-slate-200">−١</button>
         <button id="plusBtn" class="py-4 rounded-xl text-3xl font-bold text-white active:opacity-80" style="background:var(--navy)">+١</button>
       </div>
+      </div>
+    </div>
+
+    <!-- الأدوار الفائتة -->
+    <div id="missedTurnsCard" class="missed-turns-wrap rounded-2xl shadow-sm p-4 mb-4">
+      <div class="flex items-center justify-between gap-3 mb-3">
+        <div>
+          <h2 class="font-bold">الأدوار الفائتة</h2>
+          <p class="text-xs text-slate-500 mt-1">تظهر هنا الأرقام التي سجّلها التمريض «لم يحضر» — اضغط على الرقم لإعادة استدعائه</p>
+        </div>
+        <span id="missedTurnsCount" class="shrink-0 min-w-8 h-8 px-2 rounded-full bg-orange-100 text-orange-700 font-bold flex items-center justify-center num">٠</span>
+      </div>
+      <div id="missedTurnsEmpty" class="text-sm text-slate-400 text-center py-3">لا توجد أدوار فائتة</div>
+      <div id="missedTurnsList" class="missed-turns-list"></div>
+    </div>
+
+    <!-- وضع إعادة الاستدعاء -->
+    <div id="recallPanel" class="recall-panel hidden-view rounded-2xl shadow-sm p-4 mb-4">
+      <div class="flex items-center justify-between gap-3 mb-3">
+        <div>
+          <p class="text-xs text-sky-700 font-bold">إعادة استدعاء رقم فائت</p>
+          <p class="text-sm text-slate-500 mt-1">الدور الأساسي ما زال محفوظًا ولن يتغير</p>
+        </div>
+        <div class="text-center">
+          <div id="recallNumber" class="recall-number num">—</div>
+          <div class="text-[11px] text-slate-500 mt-1">معروض الآن</div>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <button id="completeRecallBtn" class="py-3 rounded-xl bg-emerald-600 text-white font-bold">✓ تم الكشف</button>
+        <button id="noShowRecallBtn" class="py-3 rounded-xl bg-orange-100 text-orange-800 font-bold">لم يحضر</button>
+      </div>
+      <button id="returnPreviousBtn" class="w-full mt-2 py-3 rounded-xl bg-slate-100 text-slate-700 font-bold">↩ الرجوع لآخر رقم معروض</button>
     </div>
 
     <!-- الحالة -->
@@ -212,108 +657,165 @@
 </section>
 
 <!-- ============================================================
-     3) شاشة التلفزيون
+     4) شاشة التلفزيون
 ============================================================ -->
 <section id="view-tv" class="hidden-view min-h-screen flex flex-col">
-  <header class="text-white px-8 py-4 flex items-center justify-between" style="background:var(--navy)">
-    <div class="flex items-center gap-4">
-      <img src="logo.png" alt="" class="h-14" onerror="this.style.display='none'">
+  <header class="tv-topbar">
+    <div class="tv-brand">
+          <img src="logo.png" alt="مجمع الإصلاح الطبي" onerror="this.style.display='none'">
+    </div>
+  
+    <h1 class="tv-slogan">عياداتنا <span>...</span> لصحة أفضل</h1>
+
+    
+    <div class="tv-datetime">
+      <div class="tv-clock-box">
+        <p id="tvClock" class="tv-clock-value num">--:--</p>
+        <p class="text-xs text-slate-500 mt-1">الوقت الآن</p>
+      </div>
       <div>
-        <p class="text-xl font-bold">رعايتكم أولويتنا</p>
-        <p class="text-sky-200 text-sm">لصحة أفضل</p>
+        <p id="tvDay" class="text-xl font-bold" style="color:var(--navy)">—</p>
+        <p id="tvDate" class="tv-date-value"></p>
       </div>
     </div>
-    <div class="text-left">
-      <p id="tvClock" class="text-3xl font-bold num">--:--:--</p>
-      <p id="tvDate" class="text-sky-200 text-sm"></p>
-    </div>
-  </header>
 
-  <main class="flex-1 flex items-center justify-center p-6">
-    <div id="tvCard" class="bg-white rounded-[2.5rem] shadow-xl shadow-slate-300/50 w-full max-w-5xl overflow-hidden">
-      <div class="text-white text-center py-3 text-2xl font-bold" style="background:var(--teal)">
-        <span id="tvLocation">—</span>
+    </header>
+
+  <main class="tv-dashboard">
+    <section class="floor-section third-floor">
+      <div class="floor-heading">
+        <h2 class="floor-title">عيادات الدور الثالث</h2>
       </div>
+      <div id="thirdFloorGrid" class="clinic-grid"></div>
+    </section>
 
-      <div class="px-8 py-6 text-center">
-        <div class="flex items-center justify-center gap-3 mb-1">
-          <!-- أيقونة سن -->
-          <svg viewBox="0 0 24 24" class="w-9 h-9" fill="none" stroke="var(--navy)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 3.2c-1.6 0-2.3.8-4 .8-2.4 0-4 1.7-4 4.4 0 2.6.8 4 1.5 6.4.5 1.9.6 4.2 1.5 5.4.7.9 1.9.6 2.2-.6.4-1.5.6-3.6 1.4-4.5.3-.3.5-.4.9-.4s.6.1.9.4c.8.9 1 3 1.4 4.5.3 1.2 1.5 1.5 2.2.6.9-1.2 1-3.5 1.5-5.4.7-2.4 1.5-3.8 1.5-6.4 0-2.7-1.6-4.4-4-4.4-1.7 0-2.4-.8-4-.8Z"/>
-          </svg>
-          <h2 class="text-3xl font-bold">عيادة طب وجراحة الفم والأسنان</h2>
-        </div>
-        <p id="tvDoctor" class="text-4xl font-bold mt-3" style="color:var(--teal)">—</p>
-        <p id="tvPeriod" class="text-slate-500 text-lg mt-1"></p>
-
-        <div id="tvNumberWrap" class="my-4">
-          <p class="text-slate-500 text-2xl">رقم الدور الحالي</p>
-          <p id="tvNumber" class="tv-number num">—</p>
-        </div>
-
-        <div id="tvStatus" class="inline-flex items-center gap-3 px-8 py-3 rounded-full text-2xl font-bold bg-slate-100">
-          <span class="dot bg-slate-400"></span><span>في انتظار بدء العيادة</span>
-        </div>
+    <section class="floor-section ground-floor">
+      <div class="floor-heading">
+        <h2 class="floor-title">عيادات الدور الأرضي</h2>
       </div>
-    </div>
+      <div id="groundFloorGrid" class="clinic-grid"></div>
+    </section>
   </main>
 
-  <footer class="text-white text-center py-3 text-lg" style="background:var(--navy)">
-    صحتكم هي رسالتنا .. معاً لمجتمع أكثر صحة
+  <footer class="tv-footer">
+    <span>صحتكم هي رسالتنا</span>
+    <span class="tv-footer-heart">♥</span>
+    <span>معًا لمجتمع أكثر صحة</span>
   </footer>
 
   <button id="fsBtn" class="fixed bottom-4 left-4 bg-white/80 text-slate-600 text-xs px-3 py-2 rounded-lg shadow">ملء الشاشة</button>
 </section>
 
 <!-- ============================================================
-     4) شاشة الاستقبال
+     5) شاشة الاستقبال
 ============================================================ -->
 <section id="view-reception" class="hidden-view min-h-screen p-4">
-  <div class="max-w-md mx-auto">
-    <h1 class="font-bold text-xl mb-3 text-center">متابعة الأدوار — الاستقبال</h1>
-
-    <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
-      <div class="text-white px-4 py-2.5 flex justify-between items-center" style="background:var(--navy)">
-        <span class="font-bold">عيادة الأسنان</span>
-        <span id="rcLocation" class="text-sky-200 text-sm">—</span>
+  <div class="reception-shell">
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+      <div>
+        <h1 class="font-bold text-2xl text-slate-800">متابعة الأدوار — الاستقبال</h1>
+        <p class="text-sm text-slate-500 mt-1">متابعة مباشرة لجميع عيادات المجمع من مكان واحد</p>
       </div>
-      <div class="p-4">
-        <p class="text-slate-500 text-sm">الطبيب المباشر</p>
-        <p id="rcDoctor" class="text-xl font-bold mb-3">—</p>
-
-        <div class="flex items-center gap-4">
-          <div class="flex-1 text-center rounded-2xl py-4" style="background:var(--snow)">
-            <p class="text-slate-500 text-sm">الرقم بالداخل</p>
-            <p id="rcNumber" class="text-6xl font-bold num" style="color:var(--teal)">—</p>
-          </div>
-          <div class="flex-1 text-sm space-y-2">
-            <div id="rcStatus" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 font-bold">
-              <span class="dot bg-slate-400"></span><span>—</span>
-            </div>
-            <p class="text-slate-500">الفترة: <span id="rcPeriod" class="text-slate-700">—</span></p>
-            <p class="text-slate-500">آخر نداء: <span id="rcTime" class="text-slate-700 num">—</span></p>
-          </div>
-        </div>
+      <div class="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-emerald-50 text-emerald-700 text-sm font-bold">
+        <span class="dot bg-emerald-500"></span>
+        تحديث مباشر
       </div>
     </div>
 
-    <div class="bg-white rounded-2xl shadow-sm p-4 mt-4 text-center">
-      <p class="font-bold mb-2">كود المريض (QR)</p>
-      <p class="text-xs text-slate-500 mb-3">اطبعه وضعه على مكتب الاستقبال ليتابع المريض دوره من موبايله</p>
-      <div id="qrBox" class="flex justify-center"></div>
-      <p id="qrLink" class="text-[10px] text-slate-400 mt-2 break-all"></p>
+    <div class="reception-toolbar">
+      <input id="receptionSearch" class="reception-search" type="search" autocomplete="off"
+        placeholder="ابحث برقم الغرفة أو اسم العيادة أو الطبيب أو التمريض">
+      <div id="receptionFilters" class="reception-filter-group">
+        <button type="button" class="reception-filter-btn active" data-rc-filter="all">الكل</button>
+        <button type="button" class="reception-filter-btn" data-rc-filter="active">تعمل الآن</button>
+        <button type="button" class="reception-filter-btn" data-rc-filter="third">الدور الثالث</button>
+        <button type="button" class="reception-filter-btn" data-rc-filter="ground">الدور الأرضي</button>
+        <button type="button" class="reception-filter-btn" data-rc-filter="finished">انتهت</button>
+      </div>
+    </div>
+
+    <div id="receptionSummary" class="reception-summary"></div>
+
+    <div class="grid xl:grid-cols-[minmax(0,1fr)_360px] gap-4 items-start">
+      <div id="receptionClinicGrid" class="reception-grid"></div>
+
+      <aside id="receptionDetail" class="reception-detail">
+        <div class="reception-detail-head">
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <p id="rcLocation" class="text-white/80 text-xs">—</p>
+              <h2 id="rcClinicName" class="text-lg font-bold mt-1">اختر عيادة</h2>
+            </div>
+            <span id="rcRoomBadge" class="px-2.5 py-1 rounded-lg bg-white/15 text-xs font-bold num">—</span>
+          </div>
+        </div>
+        <div class="reception-detail-body">
+          <p class="text-xs text-slate-500">الطبيب</p>
+          <p id="rcDoctor" class="text-lg font-bold text-slate-800">—</p>
+
+          <p class="text-xs text-slate-500 mt-3">التمريض المسؤول</p>
+          <p id="rcNurse" class="font-bold text-sky-800">—</p>
+
+          <div class="reception-detail-number">
+            <span id="rcNumberLabel" class="text-sm text-slate-500">الرقم بالداخل</span>
+            <strong id="rcNumber" class="num">—</strong>
+          </div>
+
+          <div id="rcStatus" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 font-bold text-sm">
+            <span class="dot bg-slate-400"></span><span>—</span>
+          </div>
+
+          <div class="reception-detail-grid mt-3">
+            <div class="reception-detail-item">
+              <span>الأدوار الفائتة</span>
+              <strong id="rcMissedCount" class="num">٠</strong>
+            </div>
+            <div class="reception-detail-item">
+              <span>آخر نداء</span>
+              <strong id="rcTime" class="num">—</strong>
+            </div>
+          </div>
+
+          <div class="reception-qr-wrap">
+            <p class="font-bold text-sm text-slate-800">كود المريض (QR)</p>
+            <p class="text-[11px] text-slate-500 mt-1 mb-2">خاص بالعيادة المختارة لمتابعة الدور من الموبايل</p>
+            <div id="qrBox" class="flex justify-center"></div>
+            <p id="qrLink" class="text-[9px] text-slate-400 mt-2 break-all"></p>
+            <div class="reception-actions">
+              <a id="rcOpenPatient" href="#" target="_blank" class="reception-action-btn bg-sky-600 text-white">فتح صفحة المريض</a>
+              <button id="rcCopyPatient" type="button" class="reception-action-btn bg-slate-100 text-slate-700">نسخ الرابط</button>
+            </div>
+          </div>
+        </div>
+      </aside>
     </div>
   </div>
 </section>
 
 <!-- ============================================================
-     5) صفحة المريض
+     6) صفحة المريض
 ============================================================ -->
 <section id="view-patient" class="hidden-view min-h-screen flex flex-col">
-  <header class="text-white px-5 py-4 text-center" style="background:var(--navy)">
-    <img src="logo.png" alt="" class="h-12 mx-auto mb-2" onerror="this.style.display='none'">
-    <p class="font-bold">متابعة دورك مباشرة</p>
-  </header>
+  <header class="tv-topbar">
+    <div class="tv-brand">
+      <img src="logo.png" alt="مجمع الإصلاح الطبي" onerror="this.style.display='none'">
+    </div>
+  
+    <h1 class="tv-slogan">عياداتنا <span>...</span> لصحة أفضل</h1>
+
+    
+    <div class="tv-datetime">
+      <div class="tv-clock-box">
+        <p id="ptClock" class="tv-clock-value num">--:--</p>
+        <p class="text-xs text-slate-500 mt-1">الوقت الآن</p>
+      </div>
+      <div>
+        <p id="ptDay" class="text-xl font-bold" style="color:var(--navy)">—</p>
+        <p id="ptDate" class="tv-date-value"></p>
+      </div>
+    </div>
+
+    </header>
 
   <main class="flex-1 p-4">
     <div class="bg-white rounded-3xl shadow-sm overflow-hidden max-w-md mx-auto">
@@ -321,7 +823,7 @@
         <span id="ptLocation">—</span>
       </div>
       <div class="p-5 text-center">
-        <h1 class="text-xl font-bold">عيادة طب وجراحة الفم والأسنان</h1>
+        <h1 id="ptClinicName" class="text-xl font-bold">—</h1>
         <p id="ptDoctor" class="text-2xl font-bold mt-2" style="color:var(--teal)">—</p>
 
         <div class="my-5 rounded-2xl py-5" style="background:var(--snow)">
@@ -335,12 +837,45 @@
       </div>
     </div>
 
-    <div class="max-w-md mx-auto mt-4 rounded-2xl p-4 text-center font-bold" style="background:#fef3c7;color:#92400e">
-      يرجى التواجد أمام العيادة قبل موعد دورك بحالتين لضمان عدم تخطي الرقم
+    <div id="ptMissedCard" class="patient-missed-card max-w-md mx-auto mt-4 rounded-2xl p-4 shadow-sm">
+      <div class="flex items-center justify-between gap-3 mb-2">
+        <div>
+          <h2 class="font-bold text-slate-800">الأدوار الفائتة</h2>
+          <p class="text-xs text-slate-500 mt-1">الأرقام التي لم تكن موجودة عند النداء</p>
+        </div>
+        <div class="text-center shrink-0">
+          <span id="ptMissedCount" class="min-w-10 h-10 px-2 rounded-full bg-orange-100 text-orange-700 font-bold flex items-center justify-center num">٠</span>
+          <span class="block text-[10px] text-slate-500 mt-1">متبقي</span>
+        </div>
+      </div>
+      <div id="ptMissedEmpty" class="text-sm text-slate-400 text-center py-3">لا توجد أدوار فائتة حاليًا</div>
+      <div id="ptMissedTurnsList" class="patient-missed-list"></div>
+    </div>
+
+    <div class="w-full max-w-2xl mx-auto mt-4 rounded-2xl p-4 md:p-5 text-right" style="background:#fef3c7;color:#92400e">
+      <h3 class="font-bold text-base md:text-lg mb-3">تعليمات تنظيم الدور بالمجمع</h3>
+      <ul class="space-y-2 text-sm md:text-base leading-7 font-medium">
+        <li class="flex items-start gap-2">
+          <span class="font-bold shrink-0">•</span>
+          <span>يرجى التواجد أمام العيادة قبل دورك بحالتين، لضمان عدم فوات رقمك.</span>
+        </li>
+        <li class="flex items-start gap-2">
+          <span class="font-bold shrink-0">•</span>
+          <span>في حال فوات الدور، يتم الانتظار لدور حالتين بعد الحضور إلى المجمع.</span>
+        </li>
+        <li class="flex items-start gap-2">
+          <span class="font-bold shrink-0">•</span>
+          <span>يتم النداء على أرقام الأدوار من خلال النظام، ولا يتم تسليم إيصال الحجز للتمريض.</span>
+        </li>
+      </ul>
     </div>
   </main>
 
-  <footer class="text-center text-slate-400 text-xs py-4">صحتكم هي رسالتنا .. معاً لمجتمع أكثر صحة</footer>
+  <footer class="tv-footer">
+    <span>صحتكم هي رسالتنا</span>
+    <span class="tv-footer-heart">♥</span>
+    <span>معًا لمجتمع أكثر صحة</span>
+  </footer>
 </section>
 
 <script>
@@ -357,19 +892,104 @@ const firebaseConfig = {
   appId:             "1:1055876482195:web:99bb8eca3f828a1acd3966"
 };
 
-/* معرّف العيادة داخل قاعدة البيانات — غيّره عند إضافة عيادات أخرى */
-const CLINIC_ID = "dental";
+/*
+  رقم الغرفة هو الـ ID الثابت لكل عيادة داخل النظام وFirebase.
+  أما التخصص والطبيب المعروضان فيتغيران حسب الفترة.
+  افتح لوحة كل غرفة بهذا الشكل: index.html?room=311#/nurse
+  شاشة التلفزيون الموحدة: index.html#/tv
+*/
+const ROOM_OPTIONS = [
+  { id:"301", floor:"third", floorName:"الدور الثالث", place:"حجرة الجراحة" },
+  { id:"303", floor:"third", floorName:"الدور الثالث", place:"حجرة الجلدية" },
+  { id:"307", floor:"third", floorName:"الدور الثالث", place:"حجرة الأطفال" },
+  { id:"308", floor:"third", floorName:"الدور الثالث", place:"حجرة العظام" },
+  { id:"309", floor:"third", floorName:"الدور الثالث", place:"حجرة الأنف والأذن" },
+  { id:"310", floor:"third", floorName:"الدور الثالث", place:"حجرة النساء" },
+  { id:"311", floor:"third", floorName:"الدور الثالث", place:"حجرة الأسنان" },
+  { id:"312", floor:"third", floorName:"الدور الثالث", place:"حجرة الرمد" },
+  { id:"104", floor:"ground", floorName:"الدور الأرضي", place:"حجرة التغذية العلاجية" },
+  { id:"105", floor:"ground", floorName:"الدور الأرضي", place:"حجرة السونار" },
+  { id:"320", floor:"ground", floorName:"الدور الأرضي", place:"العيادة العامة" },
+  { id:"109", floor:"ground", floorName:"الدور الأرضي", place:"حجرة القلب" }
+];
+
+/*
+  حساب مستقل لكل حجرة.
+  اسم المستخدم الذي يكتبه التمريض هو رقم الحجرة، مثل 301 أو 104.
+  البريد هو الحساب المقابل الذي يجب إنشاؤه في Firebase Authentication.
+  غيّر قيمة email فقط هنا إذا كانت حسابات Firebase الحالية تستخدم عناوين مختلفة.
+*/
+const ROOM_ACCOUNTS = [
+  { roomId:"301", username:"301", email:"room301@islah-queue.com" },
+  { roomId:"303", username:"303", email:"room303@islah-queue.com" },
+  { roomId:"307", username:"307", email:"room307@islah-queue.com" },
+  { roomId:"308", username:"308", email:"room308@islah-queue.com" },
+  { roomId:"309", username:"309", email:"room309@islah-queue.com" },
+  { roomId:"310", username:"310", email:"room310@islah-queue.com" },
+  { roomId:"311", username:"311", email:"room311@islah-queue.com" },
+  { roomId:"312", username:"312", email:"room312@islah-queue.com" },
+  { roomId:"104", username:"104", email:"room104@islah-queue.com" },
+  { roomId:"105", username:"105", email:"room105@islah-queue.com" },
+  { roomId:"320", username:"320", email:"room320@islah-queue.com" },
+  { roomId:"109", username:"109", email:"room109@islah-queue.com" }
+];
+
+const requestedRoom = new URLSearchParams(location.search).get("room");
+const DISPLAY_SLOT_ID = ROOM_OPTIONS.some(room=>room.id === requestedRoom) ? requestedRoom : "311";
+const CURRENT_ROOM = ROOM_OPTIONS.find(room=>room.id === DISPLAY_SLOT_ID);
+
+/*
+  أضف أسماء العيادات والأطباء هنا.
+  كل عيادة تظهر في القائمة المنسدلة، وأطباؤها يظهرون بعد اختيارها.
+*/
+const CLINIC_OPTIONS = [
+  { id:"general",                    name:"العيادة العامة: باطنة | أطفال",           doctors:["د. عمرو شعيب"] },
+  { id:"gastro",                     name:"الباطنة والكبد والجهاز الهضمي",            doctors:["د. عمرو شعيب"] },
+  { id:"nephrology",                 name:"الباطنة وأمراض الكلى",                    doctors:["د. عمرو شعيب"] },
+  { id:"endocrine-diabetes",         name:"الباطنة والغدد الصماء والسكر",             doctors:["د. عمرو شعيب"] },
+  { id:"psychiatry",                 name:"الطب النفسي للأطفال والكبار",              doctors:["د. عمرو شعيب"] },
+  { id:"speech",                     name:"التخاطب",                                  doctors:["د. عمرو شعيب"] },
+  { id:"rheumatology-immunology",    name:"الروماتيزم والمناعة",                     doctors:["د. عمرو شعيب"] },
+  { id:"urology",                    name:"المسالك البولية للأطفال والكبار",          doctors:["د. عمرو شعيب"] },
+  { id:"cardiology-echo",            name:"القلب والأوعية الدموية والإيكو",           doctors:["د. عمرو شعيب"] },
+  { id:"pediatrics-neonatology",     name:"الأطفال وحديثي الولادة",                  doctors:["د. عمرو شعيب"] },
+  { id:"dermatology",                name:"الجلدية",                                  doctors:["د. عمرو شعيب"] },
+  { id:"obgyn",                      name:"النساء والتوليد",                          doctors:["د. عمرو شعيب"] },
+  { id:"4d-ultrasound",              name:"السونار (4D)",                             doctors:["د. عمرو شعيب"] },
+  { id:"ent",                        name:"الأنف والأذن والحنجرة",                    doctors:["د. عمرو شعيب"] },
+  { id:"orthopedics",                name:"العظام",                                   doctors:["د. عمرو شعيب"] },
+  { id:"hematology",                 name:"أمراض الدم",                               doctors:["د. عمرو شعيب"] },
+  { id:"chest",                      name:"الأمراض الصدرية",                          doctors:["د. عمرو شعيب"] },
+  { id:"general-surgery",            name:"الجراحة العامة",                           doctors:["د. عمرو شعيب"] },
+  { id:"pediatric-surgery",          name:"جراحة الأطفال",                           doctors:["د. عمرو شعيب"] },
+  { id:"vascular-surgery",           name:"جراحة الأوعية الدموية",                    doctors:["د. عمرو شعيب"] },
+  { id:"gastro-surgery-endoscopy",   name:"جراحة الجهاز الهضمي والمناظير",            doctors:["د. عمرو شعيب"] },
+  { id:"pediatric-dentistry",        name:"طب أسنان الأطفال",                         doctors:["د. عمرو شعيب"] },
+  { id:"dental",                     name:"جراحة الفم والأسنان",                      doctors:["د. عمرو شعيب"] },
+  { id:"clinical-nutrition",         name:"التغذية العلاجية",                         doctors:["د. عمرو شعيب"] },
+  { id:"neurology",                  name:"المخ والأعصاب",                            doctors:["د. عمرو شعيب"] },
+  { id:"behavior-modification",      name:"جلسات تعديل السلوك",                      doctors:["د. عمرو شعيب"] },
+  { id:"pediatric-cardiac-surgery",  name:"جراحة قلب الأطفال",                       doctors:["د. عمرو شعيب"] }
+];
+
 const MAX_NUMBER = 300;
 
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
-const clinicRef = firebase.database().ref("clinics/" + CLINIC_ID);
+const clinicRef = firebase.database().ref("clinics/" + DISPLAY_SLOT_ID);
+const allClinicsRef = firebase.database().ref("clinics");
 
 /* ==========================================================
    ②  أدوات مساعدة
    ========================================================== */
 const $ = (s) => document.querySelector(s);
 const ar = (n) => Number(n).toLocaleString("ar-EG");
+
+document.title = "نظام الأدوار — عيادة " + DISPLAY_SLOT_ID;
+
+$("#setupRoomPlace").textContent = CURRENT_ROOM.place + " — " + CURRENT_ROOM.floorName;
+$("#setupRoomValue").textContent = "غرفة " + DISPLAY_SLOT_ID;
+$("#nurseRoomTitle").textContent = "لوحة التمريض — عيادة " + DISPLAY_SLOT_ID;
 
 const STATUS = {
   active:   { label:"جاري الكشف",      dot:"bg-emerald-500", bg:"bg-emerald-100", text:"text-emerald-700" },
@@ -411,9 +1031,321 @@ function chime(){
 }
 
 /* ==========================================================
+   شاشة التلفزيون الموحدة — 12 عيادة
+   ========================================================== */
+const DASHBOARD_STATUS = {
+  active:   "تعمل الآن",
+  break:    "استراحة مؤقتة",
+  finished: "انتهت العيادة",
+  idle:     "في انتظار التشغيل"
+};
+
+const dashboardLastNumbers = {};
+
+function createQueueCard(room){
+  const card = document.createElement("article");
+  card.id = "tvRoom" + room.id;
+  card.className = "queue-card";
+  card.dataset.status = "idle";
+  card.innerHTML =
+    '<div class="queue-main">' +
+      '<div class="queue-card-title">' +
+        '<h3 class="queue-clinic-name">' + room.place + '</h3>' +
+        '<span class="room-badge">غرفة ' + room.id + '</span>' +
+      '</div>' +
+      '<div class="queue-card-body">' +
+        '<p class="queue-doctor">—</p>' +
+        '<p class="queue-status"><span class="queue-status-dot"></span><span class="queue-status-label">في انتظار التشغيل</span></p>' +
+        '<div class="queue-missed-summary">' +
+          '<div class="queue-missed-summary-head"><span>الأدوار الفائتة</span><span class="queue-missed-count num">٠</span></div>' +
+          '<div class="queue-missed-public-list"><span class="queue-missed-empty">لا توجد أدوار فائتة</span></div>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+    '<div class="queue-number-box">' +
+      '<span class="queue-number-label">كشف رقم</span>' +
+      '<strong class="queue-number num">—</strong>' +
+    '</div>';
+  return card;
+}
+
+function buildTvDashboard(){
+  const third = $("#thirdFloorGrid");
+  const ground = $("#groundFloorGrid");
+  third.innerHTML = "";
+  ground.innerHTML = "";
+  ROOM_OPTIONS.forEach(room=>{
+    const card = createQueueCard(room);
+    (room.floor === "third" ? third : ground).appendChild(card);
+  });
+}
+
+function updateQueueCard(room, data){
+  const card = $("#tvRoom" + room.id);
+  if(!card) return false;
+
+  const status = DASHBOARD_STATUS[data.status] ? data.status : "idle";
+  const current = typeof data.current === "number" ? data.current : 0;
+  const displayCurrent = typeof data.displayCurrent === "number" ? data.displayCurrent : current;
+  const recallMode = Boolean(data.recallMode && typeof data.recallNumber === "number");
+  const closed = status === "finished" || status === "idle";
+  const clinicName = data.clinicName || data.specialty || room.place;
+  const doctor = data.doctor && data.doctor !== "—" ? data.doctor : "لا يوجد طبيب مسجل";
+
+  card.dataset.status = status;
+  card.dataset.recall = recallMode ? "true" : "false";
+  card.querySelector(".queue-clinic-name").textContent = clinicName;
+  card.querySelector(".queue-doctor").textContent = doctor;
+  const finished = status === "finished";
+  card.querySelector(".queue-status-label").textContent = finished
+    ? "انتهت العيادة"
+    : recallMode ? "إعادة استدعاء رقم فائت" : DASHBOARD_STATUS[status];
+  card.querySelector(".queue-number-label").textContent = finished
+    ? "حالة العيادة"
+    : recallMode ? "إعادة نداء" : "كشف رقم";
+  card.querySelector(".queue-number").textContent = finished ? "انتهت العيادة" : closed ? "—" : ar(displayCurrent);
+
+  /* ملخص الأدوار الفائتة داخل كارت العيادة على شاشة العرض */
+  const publicMissed = Object.entries(data.missedTurns || {})
+    .map(([key,value])=>({ number:Number(key), ...(value || {}) }))
+    .filter(item=>Number.isFinite(item.number) && item.number > 0);
+  const publicPending = publicMissed.filter(item=>item.status !== "done").sort((a,b)=>a.number-b.number);
+  const publicDone = publicMissed.filter(item=>item.status === "done")
+    .sort((a,b)=>(b.completedAt || 0) - (a.completedAt || 0));
+  const pendingLimit = Math.min(publicPending.length, 4);
+  const visiblePublicTurns = publicPending.slice(0, pendingLimit)
+    .concat(publicDone.slice(0, Math.max(0, 5 - pendingLimit)));
+  const missedCountEl = card.querySelector(".queue-missed-count");
+  const missedListEl = card.querySelector(".queue-missed-public-list");
+  missedCountEl.textContent = ar(publicPending.length);
+  missedListEl.innerHTML = "";
+  if(!publicMissed.length){
+    missedListEl.innerHTML = '<span class="queue-missed-empty">لا توجد أدوار فائتة</span>';
+  }else{
+    visiblePublicTurns.forEach(item=>{
+      const chip = document.createElement("span");
+      chip.className = "queue-public-chip";
+      chip.dataset.turnStatus = item.status || "missed";
+      chip.textContent = item.status === "done"
+        ? "✓ " + ar(item.number)
+        : item.status === "recalling"
+          ? "↻ " + ar(item.number)
+          : ar(item.number);
+      chip.title = item.status === "done" ? "انتهى" : item.status === "recalling" ? "يتم استدعاؤه الآن" : "دور فائت";
+      missedListEl.appendChild(chip);
+    });
+    if(publicPending.length > 4){
+      const more = document.createElement("span");
+      more.className = "queue-public-more";
+      more.textContent = "+" + ar(publicPending.length - 4);
+      missedListEl.appendChild(more);
+    }
+  }
+
+  const previous = dashboardLastNumbers[room.id];
+  const numberChanged = previous !== undefined && previous !== displayCurrent && status === "active";
+  dashboardLastNumbers[room.id] = displayCurrent;
+
+  if(numberChanged){
+    card.classList.remove("calling");
+    void card.offsetWidth;
+    card.classList.add("calling");
+  }
+  return numberChanged;
+}
+
+buildTvDashboard();
+
+/* ===== بيانات وعرض شاشة الاستقبال فقط ===== */
+let receptionClinicsData = {};
+let receptionSelectedRoom = DISPLAY_SLOT_ID;
+let receptionFilter = "all";
+
+function receptionDataForRoom(room){
+  return receptionClinicsData[room.id] || (room.id === "311" ? receptionClinicsData.dental : null) || {};
+}
+
+function receptionPendingMissed(data){
+  return Object.entries(data.missedTurns || {})
+    .map(([key,value])=>({ number:Number(key), ...(value || {}) }))
+    .filter(item=>Number.isFinite(item.number) && item.number > 0 && item.status !== "done");
+}
+
+function receptionStatusInfo(data){
+  if(data.status === "finished") return { key:"finished", label:"انتهت العيادة", dot:"bg-red-500" };
+  if(data.recallMode && typeof data.recallNumber === "number") return { key:"active", label:"إعادة استدعاء رقم فائت", dot:"bg-sky-500" };
+  if(data.status === "active") return { key:"active", label:"جاري الكشف", dot:"bg-emerald-500" };
+  if(data.status === "break") return { key:"break", label:"استراحة مؤقتة", dot:"bg-amber-500" };
+  return { key:"idle", label:"في انتظار التشغيل", dot:"bg-slate-400" };
+}
+
+function receptionPatientUrl(roomId){
+  const url = new URL(location.href);
+  url.searchParams.set("room", roomId);
+  url.hash = "#/patient";
+  return url.toString();
+}
+
+function drawQR(roomId = receptionSelectedRoom){
+  const box = $("#qrBox");
+  if(!box || typeof QRCode === "undefined") return;
+  const url = receptionPatientUrl(roomId);
+  box.innerHTML = "";
+  $("#qrLink").textContent = url;
+  $("#rcOpenPatient").href = url;
+  new QRCode(box, { text:url, width:150, height:150, colorDark:"#0f4c6c", colorLight:"#ffffff" });
+}
+
+function renderReceptionDetail(){
+  const room = ROOM_OPTIONS.find(item=>item.id === receptionSelectedRoom) || ROOM_OPTIONS[0];
+  if(!room) return;
+  receptionSelectedRoom = room.id;
+  const data = receptionDataForRoom(room);
+  const status = receptionStatusInfo(data);
+  const current = typeof data.current === "number" ? data.current : 0;
+  const displayCurrent = typeof data.displayCurrent === "number" ? data.displayCurrent : current;
+  const closed = data.status === "finished" || data.status === "idle";
+  const missed = receptionPendingMissed(data);
+
+  $("#rcClinicName").textContent = data.clinicName || data.specialty || room.place;
+  $("#rcLocation").textContent = room.floorName + " — " + room.place;
+  $("#rcRoomBadge").textContent = "غرفة " + room.id;
+  $("#rcDoctor").textContent = data.doctor && data.doctor !== "—" ? data.doctor : "لا يوجد طبيب مسجل";
+  $("#rcNurse").textContent = data.nurse && data.nurse !== "—" ? data.nurse : "—";
+  $("#rcNumberLabel").textContent = data.status === "finished" ? "حالة العيادة" : data.recallMode ? "إعادة نداء" : "الرقم بالداخل";
+  $("#rcNumber").textContent = data.status === "finished" ? "انتهت" : closed ? "—" : ar(displayCurrent);
+  $("#rcNumber").style.fontSize = data.status === "finished" ? "32px" : "58px";
+  $("#rcMissedCount").textContent = ar(missed.length);
+  $("#rcTime").textContent = timeStr(data.updatedAt);
+
+  const statusEl = $("#rcStatus");
+  statusEl.className = "inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 font-bold text-sm";
+  if(status.key === "active") statusEl.classList.add("bg-emerald-100","text-emerald-700");
+  else if(status.key === "break") statusEl.classList.add("bg-amber-100","text-amber-700");
+  else if(status.key === "finished") statusEl.classList.add("bg-red-100","text-red-700");
+  else statusEl.classList.add("text-slate-600");
+  if(data.recallMode && data.status !== "finished"){
+    statusEl.className = "inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-sky-100 text-sky-700 font-bold text-sm";
+  }
+  statusEl.innerHTML = '<span class="dot ' + status.dot + '"></span><span>' + status.label + '</span>';
+
+  drawQR(room.id);
+}
+
+function renderReceptionDashboard(){
+  const grid = $("#receptionClinicGrid");
+  if(!grid) return;
+  const rawQuery = $("#receptionSearch")?.value || "";
+  const query = typeof normalizeArabicSearch === "function" ? normalizeArabicSearch(rawQuery) : rawQuery.toLowerCase().trim();
+
+  const rows = ROOM_OPTIONS.filter(room=>{
+    const data = receptionDataForRoom(room);
+    const status = receptionStatusInfo(data);
+    if(receptionFilter === "third" && room.floor !== "third") return false;
+    if(receptionFilter === "ground" && room.floor !== "ground") return false;
+    if(receptionFilter === "active" && status.key !== "active") return false;
+    if(receptionFilter === "finished" && data.status !== "finished") return false;
+    if(!query) return true;
+    const haystack = [room.id, room.place, room.floorName, data.clinicName, data.specialty, data.doctor, data.nurse]
+      .filter(Boolean).join(" ");
+    const normalized = typeof normalizeArabicSearch === "function" ? normalizeArabicSearch(haystack) : haystack.toLowerCase();
+    return normalized.includes(query);
+  });
+
+  const activeCount = ROOM_OPTIONS.filter(room=>{
+    const d = receptionDataForRoom(room);
+    return d.status === "active";
+  }).length;
+  const missedTotal = ROOM_OPTIONS.reduce((sum,room)=>sum + receptionPendingMissed(receptionDataForRoom(room)).length,0);
+  const finishedCount = ROOM_OPTIONS.filter(room=>receptionDataForRoom(room).status === "finished").length;
+  $("#receptionSummary").innerHTML =
+    '<span class="reception-summary-chip">العيادات <b class="num">' + ar(ROOM_OPTIONS.length) + '</b></span>' +
+    '<span class="reception-summary-chip">تعمل الآن <b class="num text-emerald-700">' + ar(activeCount) + '</b></span>' +
+    '<span class="reception-summary-chip">أدوار فائتة <b class="num text-orange-700">' + ar(missedTotal) + '</b></span>' +
+    '<span class="reception-summary-chip">انتهت <b class="num text-red-700">' + ar(finishedCount) + '</b></span>';
+
+  grid.innerHTML = "";
+  if(!rows.length){
+    grid.innerHTML = '<div class="reception-empty">لا توجد عيادات مطابقة للبحث أو الفلتر الحالي</div>';
+    renderReceptionDetail();
+    return;
+  }
+
+  rows.forEach(room=>{
+    const data = receptionDataForRoom(room);
+    const status = receptionStatusInfo(data);
+    const current = typeof data.current === "number" ? data.current : 0;
+    const displayCurrent = typeof data.displayCurrent === "number" ? data.displayCurrent : current;
+    const closed = data.status === "finished" || data.status === "idle";
+    const pendingMissed = receptionPendingMissed(data).length;
+    const clinicName = data.clinicName || data.specialty || room.place;
+    const doctor = data.doctor && data.doctor !== "—" ? data.doctor : "لا يوجد طبيب مسجل";
+    const nurse = data.nurse && data.nurse !== "—" ? data.nurse : "لا يوجد تمريض مسجل";
+
+    const card = document.createElement("button");
+    card.type = "button";
+    card.className = "reception-clinic-card" + (room.id === receptionSelectedRoom ? " selected" : "");
+    card.dataset.status = status.key;
+    card.dataset.recall = data.recallMode ? "true" : "false";
+    card.innerHTML =
+      '<div class="reception-card-head">' +
+        '<div class="reception-card-name">' + clinicName + '</div>' +
+        '<span class="reception-room-badge num">' + room.id + '</span>' +
+      '</div>' +
+      '<div class="reception-card-body">' +
+        '<div class="reception-doctor">' + doctor + '</div>' +
+        '<div class="reception-nurse">التمريض: ' + nurse + '</div>' +
+        '<div class="reception-card-row">' +
+          '<div class="reception-current">' +
+            '<span class="reception-current-label">' + (data.recallMode ? 'إعادة نداء' : 'كشف رقم') + '</span>' +
+            '<strong class="reception-current-number num">' + (data.status === "finished" ? 'انتهت' : closed ? '—' : ar(displayCurrent)) + '</strong>' +
+          '</div>' +
+          '<div class="reception-card-meta">' +
+            '<span class="reception-status-pill"><span class="dot ' + status.dot + '" style="width:7px;height:7px"></span>' + status.label + '</span>' +
+            '<span class="reception-small-meta">' + room.floorName + '</span>' +
+            '<span class="reception-small-meta">فائتة: <b class="num">' + ar(pendingMissed) + '</b> • آخر نداء: <b class="num">' + timeStr(data.updatedAt) + '</b></span>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    card.addEventListener("click", ()=>{
+      receptionSelectedRoom = room.id;
+      renderReceptionDashboard();
+      renderReceptionDetail();
+    });
+    grid.appendChild(card);
+  });
+
+  renderReceptionDetail();
+}
+
+allClinicsRef.on("value", snapshot=>{
+  const clinics = snapshot.val() || {};
+  receptionClinicsData = clinics;
+  let shouldChime = false;
+
+  ROOM_OPTIONS.forEach(room=>{
+    /* توافق مؤقت مع نسخة تجربة الأسنان القديمة داخل clinics/dental */
+    const roomData = clinics[room.id] || (room.id === "311" ? clinics.dental : null) || {};
+    if(updateQueueCard(room, roomData)) shouldChime = true;
+  });
+
+  renderReceptionDashboard();
+  if(shouldChime && !$("#view-tv").classList.contains("hidden-view")) chime();
+});
+
+/* ==========================================================
    ③  التوجيه بين الشاشات
    ========================================================== */
-const VIEWS = ["login","nurse","tv","reception","patient"];
+const VIEWS = ["login","setup","nurse","tv","reception","patient"];
+const SETUP_KEY = "islahQueueSetup:" + DISPLAY_SLOT_ID;
+let setupData = null;
+
+try{
+  setupData = JSON.parse(sessionStorage.getItem(SETUP_KEY) || "null");
+}catch(e){
+  setupData = null;
+}
+
 function show(v){
   VIEWS.forEach(x => $("#view-" + x).classList.add("hidden-view"));
   $("#view-" + v).classList.remove("hidden-view");
@@ -421,25 +1353,534 @@ function show(v){
 function route(){
   const h = (location.hash || "#/nurse").replace("#/","");
   if(h === "tv")        { show("tv"); startClock(); }
-  else if(h === "reception"){ show("reception"); drawQR(); }
-  else if(h === "patient")  { show("patient"); }
-  else { show(auth.currentUser ? "nurse" : "login"); }
+  else if(h === "reception"){ show("reception"); renderReceptionDashboard(); }
+  else if(h === "patient")  { show("patient"); startClock(); }
+  else if(!auth.currentUser)  { show("login"); }
+  else if(h === "setup" || !setupData){ show("setup"); prefillSetup(); }
+  else { show("nurse"); }
 }
 window.addEventListener("hashchange", route);
 
 /* ==========================================================
-   ④  الحالة المشتركة + الاستماع اللحظي
+   ④  صفحة إعداد اسم العيادة والطبيب والتمريض
+   رقم الحجرة والدور ثابتان حسب حساب الدخول ولا يمكن تغييرهما من الصفحة.
    ========================================================== */
-let state = { doctor:"", period:"", location:"", current:0, status:"idle", updatedAt:0 };
+
+function buildClinicOptions(){
+  renderClinicOptions("");
+  closeClinicMenu();
+}
+
+let filteredClinics = [...CLINIC_OPTIONS];
+let activeClinicOption = -1;
+
+function normalizeArabicSearch(value){
+  return String(value || "")
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[\u064B-\u065F\u0670\u06D6-\u06ED]/g, "")
+    .replace(/[أإآ]/g, "ا")
+    .replace(/ؤ/g, "و")
+    .replace(/ئ/g, "ي")
+    .replace(/ى/g, "ي")
+    .replace(/ة/g, "ه")
+    .replace(/[|()]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function renderClinicOptions(query){
+  const menu = $("#clinicOptions");
+  const selectedId = $("#setupClinic").value;
+  const normalizedQuery = normalizeArabicSearch(query);
+
+  filteredClinics = CLINIC_OPTIONS.filter(clinic=>
+    normalizeArabicSearch(clinic.name).includes(normalizedQuery)
+  );
+  activeClinicOption = -1;
+  menu.innerHTML = "";
+
+  if(!filteredClinics.length){
+    const empty = document.createElement("p");
+    empty.className = "clinic-empty";
+    empty.textContent = "لا توجد عيادة مطابقة للبحث";
+    menu.appendChild(empty);
+    return;
+  }
+
+  filteredClinics.forEach(clinic=>{
+    const originalIndex = CLINIC_OPTIONS.findIndex(item=>item.id === clinic.id);
+    const option = document.createElement("button");
+    option.type = "button";
+    option.className = "clinic-option" + (clinic.id === selectedId ? " selected" : "");
+    option.dataset.clinicId = clinic.id;
+    option.setAttribute("role", "option");
+    option.setAttribute("aria-selected", clinic.id === selectedId ? "true" : "false");
+
+    const index = document.createElement("span");
+    index.className = "clinic-index";
+    index.textContent = ar(originalIndex + 1);
+
+    const label = document.createElement("span");
+    label.textContent = clinic.name;
+
+    option.append(index, label);
+    option.addEventListener("click", ()=> selectClinic(clinic.id));
+    menu.appendChild(option);
+  });
+}
+
+function openClinicMenu(showAll = false){
+  renderClinicOptions(showAll ? "" : $("#setupClinicSearch").value);
+  $("#clinicOptions").classList.remove("hidden-view");
+  $("#setupClinicSearch").setAttribute("aria-expanded", "true");
+}
+
+function closeClinicMenu(){
+  $("#clinicOptions").classList.add("hidden-view");
+  $("#setupClinicSearch").setAttribute("aria-expanded", "false");
+  activeClinicOption = -1;
+}
+
+function selectClinic(clinicId){
+  const clinic = CLINIC_OPTIONS.find(item=>item.id === clinicId);
+  if(!clinic) return;
+  $("#setupClinic").value = clinic.id;
+  $("#setupClinicSearch").value = clinic.name;
+  fillDoctorOptions(clinic.id, "");
+  fillNurseOptions("");
+  $("#setupMsg").textContent = "";
+  closeClinicMenu();
+}
+
+let filteredDoctors = [];
+let activeDoctorOption = -1;
+
+function renderDoctorOptions(query){
+  const menu = $("#doctorOptions");
+  const clinicId = $("#setupClinic").value;
+  const clinic = CLINIC_OPTIONS.find(item=>item.id === clinicId);
+  const selectedDoctor = $("#setupDoctor").value;
+  const normalizedQuery = normalizeArabicSearch(query);
+
+  menu.innerHTML = "";
+  activeDoctorOption = -1;
+
+  if(!clinic){
+    const empty = document.createElement("p");
+    empty.className = "doctor-empty";
+    empty.textContent = "اختر العيادة أولًا";
+    menu.appendChild(empty);
+    return;
+  }
+
+  filteredDoctors = clinic.doctors.filter(doctor=>
+    normalizeArabicSearch(doctor).includes(normalizedQuery)
+  );
+
+  if(!filteredDoctors.length){
+    const empty = document.createElement("p");
+    empty.className = "doctor-empty";
+    empty.textContent = "لا يوجد طبيب مطابق للبحث";
+    menu.appendChild(empty);
+    return;
+  }
+
+  filteredDoctors.forEach(doctor=>{
+    const option = document.createElement("button");
+    option.type = "button";
+    option.className = "doctor-option" + (doctor === selectedDoctor ? " selected" : "");
+    option.dataset.doctor = doctor;
+    option.setAttribute("role", "option");
+    option.setAttribute("aria-selected", doctor === selectedDoctor ? "true" : "false");
+    option.textContent = doctor;
+    option.addEventListener("click", ()=> selectDoctor(doctor));
+    menu.appendChild(option);
+  });
+}
+
+function openDoctorMenu(showAll = false){
+  if($("#setupDoctorSearch").disabled) return;
+  renderDoctorOptions(showAll ? "" : $("#setupDoctorSearch").value);
+  $("#doctorOptions").classList.remove("hidden-view");
+  $("#setupDoctorSearch").setAttribute("aria-expanded", "true");
+}
+
+function closeDoctorMenu(){
+  $("#doctorOptions").classList.add("hidden-view");
+  $("#setupDoctorSearch").setAttribute("aria-expanded", "false");
+  activeDoctorOption = -1;
+}
+
+function selectDoctor(doctor){
+  const clinic = CLINIC_OPTIONS.find(item=>item.id === $("#setupClinic").value);
+  if(!clinic || !clinic.doctors.includes(doctor)) return;
+  $("#setupDoctor").value = doctor;
+  $("#setupDoctorSearch").value = doctor;
+  $("#setupMsg").textContent = "";
+  closeDoctorMenu();
+}
+
+function fillDoctorOptions(clinicId, selectedDoctor){
+  const clinic = CLINIC_OPTIONS.find(item=>item.id === clinicId);
+  const search = $("#setupDoctorSearch");
+  const toggle = $("#doctorToggle");
+  $("#setupDoctor").value = "";
+  search.value = "";
+  closeDoctorMenu();
+
+  if(!clinic){
+    search.disabled = true;
+    toggle.disabled = true;
+    search.placeholder = "اختر العيادة أولًا";
+    return;
+  }
+
+  if(!clinic.doctors.length){
+    search.disabled = true;
+    toggle.disabled = true;
+    search.placeholder = "لم تتم إضافة أطباء لهذه العيادة بعد";
+    return;
+  }
+
+  search.disabled = false;
+  toggle.disabled = false;
+  search.placeholder = "ابحث عن الطبيب أو اختر من القائمة";
+
+  if(selectedDoctor && clinic.doctors.includes(selectedDoctor)){
+    $("#setupDoctor").value = selectedDoctor;
+    search.value = selectedDoctor;
+  }
+}
+
+const NURSE_OPTIONS = ["ميس بسمة"];
+let filteredNurses = [...NURSE_OPTIONS];
+let activeNurseOption = -1;
+
+function renderNurseOptions(query){
+  const menu = $("#nurseOptions");
+  const selectedNurse = $("#setupNurse").value;
+  const normalizedQuery = normalizeArabicSearch(query);
+
+  filteredNurses = NURSE_OPTIONS.filter(nurse=>
+    normalizeArabicSearch(nurse).includes(normalizedQuery)
+  );
+
+  activeNurseOption = -1;
+  menu.innerHTML = "";
+
+  if(!filteredNurses.length){
+    const empty = document.createElement("p");
+    empty.className = "nurse-empty";
+    empty.textContent = "لا يوجد اسم تمريض مطابق للبحث";
+    menu.appendChild(empty);
+    return;
+  }
+
+  filteredNurses.forEach(nurse=>{
+    const option = document.createElement("button");
+    option.type = "button";
+    option.className = "nurse-option" + (nurse === selectedNurse ? " selected" : "");
+    option.dataset.nurse = nurse;
+    option.setAttribute("role", "option");
+    option.setAttribute("aria-selected", nurse === selectedNurse ? "true" : "false");
+    option.textContent = nurse;
+    option.addEventListener("click", ()=> selectNurse(nurse));
+    menu.appendChild(option);
+  });
+}
+
+function openNurseMenu(showAll = false){
+  renderNurseOptions(showAll ? "" : $("#setupNurseSearch").value);
+  $("#nurseOptions").classList.remove("hidden-view");
+  $("#setupNurseSearch").setAttribute("aria-expanded", "true");
+}
+
+function closeNurseMenu(){
+  $("#nurseOptions").classList.add("hidden-view");
+  $("#setupNurseSearch").setAttribute("aria-expanded", "false");
+  activeNurseOption = -1;
+}
+
+function selectNurse(nurse, closeMenu = true){
+  if(!NURSE_OPTIONS.includes(nurse)) return;
+  $("#setupNurse").value = nurse;
+  $("#setupNurseSearch").value = nurse;
+  $("#setupMsg").textContent = "";
+  if(closeMenu) closeNurseMenu();
+}
+
+function fillNurseOptions(selectedNurse){
+  $("#setupNurse").value = "";
+  $("#setupNurseSearch").value = "";
+  closeNurseMenu();
+
+  if(selectedNurse && NURSE_OPTIONS.includes(selectedNurse)){
+    $("#setupNurse").value = selectedNurse;
+    $("#setupNurseSearch").value = selectedNurse;
+  }
+}
+
+function prefillSetup(){
+  const stateClinic = CLINIC_OPTIONS.find(item=>item.name === state.clinicName) ||
+    (String(state.clinicName).includes("الفم والأسنان") ? CLINIC_OPTIONS.find(item=>item.id === "dental") : null);
+  const savedClinicId = setupData?.clinicId || stateClinic?.id || "";
+  const savedClinic = CLINIC_OPTIONS.find(item=>item.id === savedClinicId);
+  $("#setupClinic").value = savedClinicId;
+  $("#setupClinicSearch").value = savedClinic?.name || "";
+  fillDoctorOptions(savedClinicId, setupData?.doctor || (state.doctor !== "—" ? state.doctor : ""));
+  fillNurseOptions(setupData?.nurse || (state.nurse !== "—" ? state.nurse : ""));
+  $("#setupMsg").textContent = "";
+}
+
+$("#setupClinicSearch").addEventListener("focus", e=>{
+  const hasSelection = Boolean($("#setupClinic").value);
+  if(hasSelection) e.target.select();
+  openClinicMenu(hasSelection);
+});
+
+$("#setupClinicSearch").addEventListener("input", e=>{
+  const selected = CLINIC_OPTIONS.find(item=>item.id === $("#setupClinic").value);
+  if(!selected || e.target.value !== selected.name){
+    $("#setupClinic").value = "";
+    fillDoctorOptions("", "");
+  }
+  openClinicMenu();
+  $("#setupMsg").textContent = "";
+});
+
+$("#clinicToggle").addEventListener("click", ()=>{
+  if($("#clinicOptions").classList.contains("hidden-view")){
+    $("#setupClinicSearch").focus();
+    openClinicMenu(Boolean($("#setupClinic").value));
+  }else{
+    closeClinicMenu();
+  }
+});
+
+$("#setupClinicSearch").addEventListener("keydown", e=>{
+  if(e.key === "Escape"){
+    closeClinicMenu();
+    return;
+  }
+  if(e.key === "Tab"){
+    closeClinicMenu();
+    return;
+  }
+  if(!["ArrowDown","ArrowUp","Enter"].includes(e.key)) return;
+
+  e.preventDefault();
+  if($("#clinicOptions").classList.contains("hidden-view")) openClinicMenu();
+
+  const options = [...$("#clinicOptions").querySelectorAll(".clinic-option")];
+  if(!options.length) return;
+
+  if(e.key === "Enter"){
+    if(activeClinicOption >= 0) options[activeClinicOption].click();
+    else if(options.length === 1) options[0].click();
+    return;
+  }
+
+  options.forEach(option=>option.classList.remove("keyboard-active"));
+  const direction = e.key === "ArrowDown" ? 1 : -1;
+  activeClinicOption = (activeClinicOption + direction + options.length) % options.length;
+  options[activeClinicOption].classList.add("keyboard-active");
+  options[activeClinicOption].scrollIntoView({block:"nearest"});
+});
+
+$("#setupDoctorSearch").addEventListener("focus", e=>{
+  const hasSelection = Boolean($("#setupDoctor").value);
+  if(hasSelection) e.target.select();
+  openDoctorMenu(hasSelection);
+});
+
+$("#setupDoctorSearch").addEventListener("input", e=>{
+  const selectedDoctor = $("#setupDoctor").value;
+  if(!selectedDoctor || e.target.value !== selectedDoctor){
+    $("#setupDoctor").value = "";
+  }
+  openDoctorMenu();
+  $("#setupMsg").textContent = "";
+});
+
+$("#doctorToggle").addEventListener("click", ()=>{
+  if($("#doctorOptions").classList.contains("hidden-view")){
+    $("#setupDoctorSearch").focus();
+    openDoctorMenu(Boolean($("#setupDoctor").value));
+  }else{
+    closeDoctorMenu();
+  }
+});
+
+$("#setupDoctorSearch").addEventListener("keydown", e=>{
+  if(e.key === "Escape"){
+    closeDoctorMenu();
+    return;
+  }
+  if(e.key === "Tab"){
+    closeDoctorMenu();
+    return;
+  }
+  if(!["ArrowDown","ArrowUp","Enter"].includes(e.key)) return;
+
+  e.preventDefault();
+  if($("#doctorOptions").classList.contains("hidden-view")) openDoctorMenu();
+
+  const options = [...$("#doctorOptions").querySelectorAll(".doctor-option")];
+  if(!options.length) return;
+
+  if(e.key === "Enter"){
+    if(activeDoctorOption >= 0) options[activeDoctorOption].click();
+    else if(options.length === 1) options[0].click();
+    return;
+  }
+
+  options.forEach(option=>option.classList.remove("keyboard-active"));
+  const direction = e.key === "ArrowDown" ? 1 : -1;
+  activeDoctorOption = (activeDoctorOption + direction + options.length) % options.length;
+  options[activeDoctorOption].classList.add("keyboard-active");
+  options[activeDoctorOption].scrollIntoView({block:"nearest"});
+});
+
+$("#setupNurseSearch").addEventListener("focus", e=>{
+  const hasSelection = Boolean($("#setupNurse").value);
+  if(hasSelection) e.target.select();
+  openNurseMenu(hasSelection);
+});
+
+$("#setupNurseSearch").addEventListener("input", e=>{
+  const selectedNurse = $("#setupNurse").value;
+  if(!selectedNurse || e.target.value !== selectedNurse){
+    $("#setupNurse").value = "";
+  }
+  openNurseMenu();
+  $("#setupMsg").textContent = "";
+});
+
+$("#nurseToggle").addEventListener("click", ()=>{
+  if($("#nurseOptions").classList.contains("hidden-view")){
+    $("#setupNurseSearch").focus();
+    openNurseMenu(Boolean($("#setupNurse").value));
+  }else{
+    closeNurseMenu();
+  }
+});
+
+$("#setupNurseSearch").addEventListener("keydown", e=>{
+  if(e.key === "Escape"){
+    closeNurseMenu();
+    return;
+  }
+  if(e.key === "Tab"){
+    closeNurseMenu();
+    return;
+  }
+  if(!["ArrowDown","ArrowUp","Enter"].includes(e.key)) return;
+
+  e.preventDefault();
+  if($("#nurseOptions").classList.contains("hidden-view")) openNurseMenu();
+
+  const options = [...$("#nurseOptions").querySelectorAll(".nurse-option")];
+  if(!options.length) return;
+
+  if(e.key === "Enter"){
+    if(activeNurseOption >= 0) options[activeNurseOption].click();
+    else if(options.length === 1) options[0].click();
+    return;
+  }
+
+  options.forEach(option=>option.classList.remove("keyboard-active"));
+  const direction = e.key === "ArrowDown" ? 1 : -1;
+  activeNurseOption = (activeNurseOption + direction + options.length) % options.length;
+  options[activeNurseOption].classList.add("keyboard-active");
+  options[activeNurseOption].scrollIntoView({block:"nearest"});
+});
+
+document.addEventListener("click", e=>{
+  if(!$("#clinicCombobox").contains(e.target)) closeClinicMenu();
+  if(!$("#doctorCombobox").contains(e.target)) closeDoctorMenu();
+  if(!$("#nurseCombobox").contains(e.target)) closeNurseMenu();
+});
+
+$("#saveSetupBtn").addEventListener("click", async ()=>{
+  if(!canControlCurrentRoom()){
+    $("#setupMsg").textContent = "هذا الحساب غير مصرح له بالتحكم في هذه الحجرة";
+    return;
+  }
+  const clinicId = $("#setupClinic").value;
+  const doctor = $("#setupDoctor").value;
+  const nurse = $("#setupNurse").value.trim();
+  const clinic = CLINIC_OPTIONS.find(item=>item.id === clinicId);
+  const msg = $("#setupMsg");
+
+  if(!clinic) return void (msg.textContent = "اختر اسم العيادة");
+  if(!doctor) return void (msg.textContent = "اختر اسم الطبيب");
+  if(!nurse)  return void (msg.textContent = "اكتب اسم التمريض المسؤول");
+
+  const button = $("#saveSetupBtn");
+  button.disabled = true;
+  button.textContent = "جاري الحفظ...";
+  msg.textContent = "";
+
+  setupData = { clinicId, clinicName:clinic.name, doctor, nurse };
+
+  try{
+    await clinicRef.update({
+      clinicName:clinic.name,
+      specialty:clinic.name,
+      doctor,
+      nurse,
+      roomNumber:DISPLAY_SLOT_ID,
+      floor:CURRENT_ROOM.floorName,
+      location:"عيادة رقم " + DISPLAY_SLOT_ID + " — " + CURRENT_ROOM.floorName,
+      updatedAt:firebase.database.ServerValue.TIMESTAMP
+    });
+    sessionStorage.setItem(SETUP_KEY, JSON.stringify(setupData));
+    location.hash = "#/nurse";
+    route();
+  }catch(e){
+    msg.textContent = "تعذّر حفظ البيانات. تأكد من اتصال الإنترنت وحاول مرة أخرى";
+  }finally{
+    button.disabled = false;
+    button.textContent = "حفظ والدخول إلى لوحة الأدوار";
+  }
+});
+
+$("#editSetupBtn").addEventListener("click", ()=>{
+  location.hash = "#/setup";
+});
+
+$("#setupLogoutBtn").addEventListener("click", ()=>{
+  if(confirm("تسجيل الخروج؟")) auth.signOut();
+});
+
+buildClinicOptions();
+
+/* ==========================================================
+   ⑤  الحالة المشتركة + الاستماع اللحظي
+   ========================================================== */
+let state = {
+  clinicName:"", doctor:"", nurse:"", period:"", location:"",
+  current:0, maxReached:0, displayCurrent:0, previousDisplay:null, recallMode:false, recallNumber:null,
+  missedTurns:{}, status:"idle", updatedAt:0
+};
 let lastSeen = null;
 
 clinicRef.on("value", (snap) => {
   const d = snap.val() || {};
   state = {
+    clinicName:d.clinicName || d.specialty || "—",
     doctor:   d.doctor   || "—",
+    nurse:    d.nurse    || "—",
     period:   d.period   || "",
-    location: d.location || "—",
+    location: d.location || "عيادة رقم " + DISPLAY_SLOT_ID + " — " + CURRENT_ROOM.floorName,
     current:  typeof d.current === "number" ? d.current : 0,
+    maxReached: typeof d.maxReached === "number" ? d.maxReached : (typeof d.current === "number" ? d.current : 0),
+    displayCurrent: typeof d.displayCurrent === "number" ? d.displayCurrent : (typeof d.current === "number" ? d.current : 0),
+    previousDisplay: typeof d.previousDisplay === "number" ? d.previousDisplay : null,
+    recallMode: Boolean(d.recallMode),
+    recallNumber: typeof d.recallNumber === "number" ? d.recallNumber : null,
+    missedTurns: d.missedTurns || {},
     status:   d.status   || "idle",
     updatedAt:d.updatedAt || 0
   };
@@ -448,33 +1889,62 @@ clinicRef.on("value", (snap) => {
   renderAll(changed);
 });
 
-function renderAll(numberChanged){
-  /* --- التلفزيون --- */
-  $("#tvLocation").textContent = state.location;
-  $("#tvDoctor").textContent   = state.doctor;
-  $("#tvPeriod").textContent   = state.period;
-  paintStatus($("#tvStatus"), state.status, true);
-  const closed = state.status === "finished" || state.status === "idle";
-  $("#tvNumberWrap").style.visibility = closed ? "hidden" : "visible";
-  $("#tvNumber").textContent = ar(state.current);
+function isNurseQueueLocked(){
+  return state.status === "break" || state.status === "finished";
+}
 
-  /* --- الاستقبال --- */
-  $("#rcLocation").textContent = state.location;
-  $("#rcDoctor").textContent   = state.doctor;
-  $("#rcPeriod").textContent   = state.period || "—";
-  $("#rcNumber").textContent   = closed ? "—" : ar(state.current);
-  $("#rcTime").textContent     = timeStr(state.updatedAt);
-  paintStatus($("#rcStatus"), state.status, false);
+function updateNurseQueueLock(){
+  const locked = isNurseQueueLocked();
+  const notice = $("#nurseQueueLock");
+  const controls = $("#nurseQueueControls");
+
+  if(notice){
+    notice.classList.toggle("hidden-view", !locked);
+    notice.dataset.lockStatus = locked ? state.status : "";
+    notice.textContent = state.status === "break"
+      ? "العيادة في استراحة — تم إيقاف التحكم بالأدوار مؤقتًا. اضغط «تعمل» لاستكمال الأدوار."
+      : state.status === "finished"
+        ? "انتهت العيادة — تم إيقاف التحكم بالأدوار."
+        : "";
+  }
+
+  if(controls) controls.classList.toggle("nurse-queue-locked", locked);
+
+  const blocked = locked || state.recallMode;
+  wheel.style.pointerEvents = blocked ? "none" : "auto";
+  wheel.style.opacity = blocked ? ".55" : "1";
+
+  $("#plusBtn").disabled = blocked;
+  $("#minusBtn").disabled = blocked;
+  $("#plusBtn").classList.toggle("opacity-50", blocked);
+  $("#minusBtn").classList.toggle("opacity-50", blocked);
+
+  updateNoShowButton(wheelValue());
+}
+
+function renderAll(numberChanged){
+  const closed = state.status === "finished" || state.status === "idle";
 
   /* --- المريض --- */
+  $("#ptClinicName").textContent = state.clinicName;
   $("#ptLocation").textContent = state.location;
   $("#ptDoctor").textContent   = state.doctor;
-  $("#ptNumber").textContent   = closed ? "—" : ar(state.current);
+  $("#ptNumber").textContent   = state.status === "finished" ? "انتهت" : closed ? "—" : ar(state.displayCurrent);
+  $("#ptNumber").classList.toggle("text-8xl", state.status !== "finished");
+  $("#ptNumber").classList.toggle("text-4xl", state.status === "finished");
   paintStatus($("#ptStatus"), state.status, false);
+  if(state.recallMode && state.status !== "finished"){
+    $("#ptStatus").className = "inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-lg font-bold bg-sky-100 text-sky-700";
+    $("#ptStatus").innerHTML = '<span class="dot bg-sky-500"></span><span>إعادة استدعاء رقم فائت</span>';
+  }
 
   /* --- التمريض --- */
+  $("#nurseClinicName").textContent = state.clinicName;
+  $("#panelClinic").textContent = state.clinicName;
+  $("#panelDoctor").textContent = state.doctor;
+  $("#panelNurse").textContent = state.nurse;
   $("#nurseMeta").textContent = state.doctor !== "—"
-    ? "الجلسة الحالية: " + state.doctor + " • " + state.period + " • آخر تحديث " + timeStr(state.updatedAt)
+    ? "الجلسة الحالية: " + state.doctor + (state.period ? " • " + state.period : "") + " • آخر تحديث " + timeStr(state.updatedAt)
     : "لم تبدأ أي جلسة بعد";
   document.querySelectorAll(".statusBtn").forEach(b=>{
     const on = b.dataset.status === state.status;
@@ -483,14 +1953,149 @@ function renderAll(numberChanged){
     b.classList.toggle("bg-sky-50", on);
   });
   syncWheel(state.current);
+  renderMissedTurns();
+  renderPatientMissedTurns();
+  renderRecallPanel();
+  updateNurseQueueLock();
 
-  /* --- التنبيه عند تغير الرقم --- */
-  if(numberChanged && !closed && !$("#view-tv").classList.contains("hidden-view")){
-    const card = $("#tvCard");
-    card.classList.remove("pulsing"); void card.offsetWidth; card.classList.add("pulsing");
-    chime();
+  const ptMissedCard = $("#ptMissedCard");
+  if(ptMissedCard) ptMissedCard.classList.toggle("hidden-view", closed);
+
+}
+
+function renderPatientMissedTurns(){
+  const list = $("#ptMissedTurnsList");
+  const empty = $("#ptMissedEmpty");
+  const count = $("#ptMissedCount");
+  if(!list || !empty || !count) return;
+
+  const turns = normalizedMissedTurns();
+  const pending = turns.filter(item=>item.status !== "done");
+  count.textContent = ar(pending.length);
+  list.innerHTML = "";
+  empty.classList.toggle("hidden-view", turns.length > 0);
+
+  turns.forEach(item=>{
+    const chip = document.createElement("span");
+    chip.className = "patient-missed-chip";
+    chip.dataset.turnStatus = item.status || "missed";
+    chip.textContent = item.status === "done"
+      ? "✓ " + ar(item.number) + " انتهى"
+      : item.status === "recalling"
+        ? "↻ " + ar(item.number) + " الآن"
+        : ar(item.number);
+    list.appendChild(chip);
+  });
+}
+
+/* ==========================================================
+   الأدوار الفائتة + إعادة الاستدعاء
+   ========================================================== */
+function normalizedMissedTurns(){
+  return Object.entries(state.missedTurns || {})
+    .map(([key,value])=>({ number:Number(key), ...(value || {}) }))
+    .filter(item=>Number.isFinite(item.number) && item.number > 0)
+    .sort((a,b)=>a.number-b.number);
+}
+
+function renderMissedTurns(){
+  const list = $("#missedTurnsList");
+  const empty = $("#missedTurnsEmpty");
+  if(!list || !empty) return;
+
+  const turns = normalizedMissedTurns();
+  const pending = turns.filter(item=>item.status !== "done");
+  $("#missedTurnsCount").textContent = ar(pending.length);
+  list.innerHTML = "";
+  empty.classList.toggle("hidden-view", turns.length > 0);
+
+  turns.forEach(item=>{
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "missed-turn-chip";
+    btn.dataset.turnStatus = item.status || "missed";
+    btn.title = item.status === "done" ? "تم الانتهاء من هذا الدور" : (item.status === "recalling" ? "يتم استدعاؤه الآن" : "إعادة استدعاء الدور");
+    btn.innerHTML = (item.status === "done" ? "✓ " : item.status === "recalling" ? "↻ " : "") + ar(item.number);
+    btn.disabled = isNurseQueueLocked() || item.status === "done" || (state.recallMode && state.recallNumber !== item.number);
+    btn.addEventListener("click", ()=> recallMissedTurn(item.number));
+    list.appendChild(btn);
+  });
+  updateNoShowButton(wheelValue());
+}
+
+function renderRecallPanel(){
+  const panel = $("#recallPanel");
+  if(!panel) return;
+  const active = state.recallMode && typeof state.recallNumber === "number";
+  panel.classList.toggle("hidden-view", !active);
+  $("#recallNumber").textContent = active ? ar(state.recallNumber) : "—";
+  const controlsBlocked = active || isNurseQueueLocked();
+  wheel.style.pointerEvents = controlsBlocked ? "none" : "auto";
+  wheel.style.opacity = controlsBlocked ? ".55" : "1";
+  $("#plusBtn").disabled = controlsBlocked;
+  $("#minusBtn").disabled = controlsBlocked;
+  $("#plusBtn").classList.toggle("opacity-50", controlsBlocked);
+  $("#minusBtn").classList.toggle("opacity-50", controlsBlocked);
+  $("#completeRecallBtn").disabled = isNurseQueueLocked();
+  $("#noShowRecallBtn").disabled = isNurseQueueLocked();
+  $("#returnPreviousBtn").disabled = isNurseQueueLocked();
+  $("#completeRecallBtn").classList.toggle("opacity-50", isNurseQueueLocked());
+  $("#noShowRecallBtn").classList.toggle("opacity-50", isNurseQueueLocked());
+  $("#returnPreviousBtn").classList.toggle("opacity-50", isNurseQueueLocked());
+  updateNoShowButton(wheelValue());
+  if(active){
+    const target = typeof state.previousDisplay === "number" ? state.previousDisplay : state.current;
+    $("#returnPreviousBtn").textContent = "↩ الرجوع إلى " + ar(target);
   }
 }
+
+async function recallMissedTurn(number){
+  if(!canControlCurrentRoom()) return void alert("هذا الحساب غير مصرح له بالتحكم في هذه الحجرة");
+  if(isNurseQueueLocked()) return void flashSync(state.status === "break" ? "العيادة في استراحة" : "العيادة منتهية", false);
+  const item = (state.missedTurns || {})[String(number)];
+  if(!item || item.status === "done") return;
+  if(state.recallMode && state.recallNumber !== number) return void alert("أنهِ الاستدعاء الحالي أو ارجع للدور السابق أولًا");
+
+  const previousDisplay = typeof state.displayCurrent === "number" ? state.displayCurrent : state.current;
+  const updates = {
+    displayCurrent:number,
+    previousDisplay,
+    recallMode:true,
+    recallNumber:number,
+    updatedAt:firebase.database.ServerValue.TIMESTAMP
+  };
+  updates["missedTurns/" + number + "/status"] = "recalling";
+  updates["missedTurns/" + number + "/recalledAt"] = firebase.database.ServerValue.TIMESTAMP;
+  await clinicRef.update(updates).catch(()=>flashSync("تعذّر إعادة الاستدعاء", false));
+}
+
+async function leaveRecall(mode){
+  if(!canControlCurrentRoom()) return void alert("هذا الحساب غير مصرح له بالتحكم في هذه الحجرة");
+  if(isNurseQueueLocked()) return void flashSync(state.status === "break" ? "العيادة في استراحة" : "العيادة منتهية", false);
+  if(!state.recallMode || typeof state.recallNumber !== "number") return;
+
+  const number = state.recallNumber;
+  const backTo = typeof state.previousDisplay === "number" ? state.previousDisplay : state.current;
+  const updates = {
+    displayCurrent:backTo,
+    previousDisplay:null,
+    recallMode:false,
+    recallNumber:null,
+    updatedAt:firebase.database.ServerValue.TIMESTAMP
+  };
+
+  if(mode === "done") {
+    updates["missedTurns/" + number + "/status"] = "done";
+    updates["missedTurns/" + number + "/completedAt"] = firebase.database.ServerValue.TIMESTAMP;
+  } else {
+    updates["missedTurns/" + number + "/status"] = "missed";
+  }
+  await clinicRef.update(updates).catch(()=>flashSync("تعذّر حفظ الحالة", false));
+}
+
+$("#completeRecallBtn").addEventListener("click", ()=> leaveRecall("done"));
+$("#noShowRecallBtn").addEventListener("click", ()=> leaveRecall("missed"));
+$("#returnPreviousBtn").addEventListener("click", ()=> leaveRecall("missed"));
 
 /* ==========================================================
    ⑤  بكرة الأرقام (Interactive Wheel)
@@ -515,6 +2120,25 @@ function highlight(){
   wheel.querySelectorAll(".wheel-item").forEach(el=>{
     el.classList.toggle("active", Number(el.dataset.n) === v);
   });
+  updateNoShowButton(v);
+}
+
+function updateNoShowButton(number = wheelValue()){
+  const btn = $("#markNoShowBtn");
+  const num = $("#markNoShowNumber");
+  if(!btn || !num) return;
+
+  number = Number(number);
+  num.textContent = Number.isFinite(number) ? ar(number) : "—";
+  const item = (state.missedTurns || {})[String(number)];
+  const unavailable = isNurseQueueLocked() || state.recallMode || !number || item?.status === "missed" || item?.status === "recalling" || item?.status === "done";
+  btn.disabled = Boolean(unavailable);
+
+  const label = btn.querySelector("span");
+  if(state.recallMode) label.textContent = "إعادة استدعاء";
+  else if(item?.status === "done") label.textContent = "تم الكشف";
+  else if(item?.status === "missed" || item?.status === "recalling") label.textContent = "مسجل فائت";
+  else label.textContent = "لم يحضر";
 }
 
 function syncWheel(n){
@@ -539,13 +2163,16 @@ wheel.addEventListener("scroll", ()=>{
 /* السحب بالماوس على الكمبيوتر */
 let dragging = false, startY = 0, startTop = 0;
 wheel.addEventListener("mousedown", e=>{
+  if(isNurseQueueLocked()) return;
+  e.preventDefault();
   dragging = true; startY = e.clientY; startTop = wheel.scrollTop;
   wheel.classList.add("dragging");
 });
 window.addEventListener("mousemove", e=>{
   if(!dragging) return;
+  e.preventDefault();
   wheel.scrollTop = startTop + (startY - e.clientY);
-});
+}, { passive:false });
 window.addEventListener("mouseup", ()=>{
   if(!dragging) return;
   dragging = false;
@@ -555,14 +2182,69 @@ window.addEventListener("mouseup", ()=>{
 
 /* الكتابة في قاعدة البيانات مع Debounce */
 function pushNumber(v){
+  if(!canControlCurrentRoom()) return void flashSync("الحساب غير مصرح لهذه الحجرة", false);
+  if(isNurseQueueLocked()) return void flashSync(state.status === "break" ? "العيادة في استراحة" : "العيادة منتهية", false);
+  if(state.recallMode) return void flashSync("أنهِ إعادة الاستدعاء أولًا", false);
   v = Math.max(0, Math.min(MAX_NUMBER, v));
   clearTimeout(writeTimer);
   writeTimer = setTimeout(()=>{
-    clinicRef.update({ current:v, updatedAt: firebase.database.ServerValue.TIMESTAMP })
+    const updates = {
+      current:v,
+      maxReached:Math.max(state.maxReached || 0, v),
+      displayCurrent:v,
+      previousDisplay:null,
+      recallMode:false,
+      recallNumber:null,
+      updatedAt:firebase.database.ServerValue.TIMESTAMP
+    };
+
+    /* تغيير الدور بالبكرة لا يسجل أي رقم كفائت تلقائيًا.
+       التسجيل كـ «لم يحضر» يتم فقط من الزر الموجود بجوار الرقم. */
+    clinicRef.update(updates)
       .catch(()=> flashSync("تعذّر الحفظ", false));
     flashSync("تم الإرسال", true);
   }, 120);
 }
+
+async function markSelectedTurnAsMissed(){
+  if(!canControlCurrentRoom()) return void flashSync("الحساب غير مصرح لهذه الحجرة", false);
+  if(isNurseQueueLocked()) return void flashSync(state.status === "break" ? "العيادة في استراحة" : "العيادة منتهية", false);
+  if(state.recallMode) return void flashSync("أنهِ إعادة الاستدعاء أولًا", false);
+
+  const number = Math.max(0, Math.min(MAX_NUMBER, wheelValue()));
+  if(number <= 0) return void flashSync("اختر رقم دور أولًا", false);
+
+  const existing = (state.missedTurns || {})[String(number)];
+  if(existing?.status === "done") return void flashSync("هذا الدور منتهٍ بالفعل", false);
+  if(existing?.status === "missed" || existing?.status === "recalling") return void flashSync("الرقم موجود بالفعل في الفائتة", false);
+
+  /* أوقف أي حفظ مؤجل ناتج عن حركة البكرة حتى لا يسبق عملية «لم يحضر». */
+  clearTimeout(writeTimer);
+
+  const updates = {
+    current:number,
+    maxReached:Math.max(state.maxReached || 0, number),
+    displayCurrent:number,
+    previousDisplay:null,
+    recallMode:false,
+    recallNumber:null,
+    updatedAt:firebase.database.ServerValue.TIMESTAMP
+  };
+  updates["missedTurns/" + number] = {
+    status:"missed",
+    missedAt:firebase.database.ServerValue.TIMESTAMP
+  };
+
+  try{
+    await clinicRef.update(updates);
+    flashSync("تم تسجيل " + ar(number) + " لم يحضر", true);
+    if(navigator.vibrate) navigator.vibrate([18,45,18]);
+  }catch(e){
+    flashSync("تعذّر تسجيل الدور الفائت", false);
+  }
+}
+
+$("#markNoShowBtn").addEventListener("click", markSelectedTurnAsMissed);
 
 function flashSync(text, ok){
   const b = $("#syncBadge");
@@ -574,6 +2256,8 @@ function flashSync(text, ok){
 $("#plusBtn").addEventListener("click", ()=> stepNumber(1));
 $("#minusBtn").addEventListener("click", ()=> stepNumber(-1));
 function stepNumber(d){
+  if(isNurseQueueLocked()) return void flashSync(state.status === "break" ? "العيادة في استراحة" : "العيادة منتهية", false);
+  if(state.recallMode) return void flashSync("أنهِ إعادة الاستدعاء أولًا", false);
   const v = Math.max(0, Math.min(MAX_NUMBER, state.current + d));
   suppressWrite = true;
   wheel.scrollTo({ top:v * ITEM_H, behavior:"smooth" });
@@ -583,45 +2267,60 @@ function stepNumber(d){
 }
 
 /* ==========================================================
-   ⑥  أزرار التمريض
+   ⑦  أزرار التمريض
    ========================================================== */
 $("#startSessionBtn").addEventListener("click", ()=>{
-  const doctor   = $("#fDoctor").value.trim();
-  const period   = $("#fPeriod").value;
-  const location = $("#fLocation").value.trim();
-  if(!doctor)   return alert("اكتب اسم الطبيب المباشر");
-  if(!location) return alert("اكتب مكان العيادة");
+  if(!canControlCurrentRoom()) return void alert("هذا الحساب غير مصرح له بالتحكم في هذه الحجرة");
+  if(!setupData) return void (location.hash = "#/setup");
   if(!confirm("سيبدأ عداد الأدوار من رقم ١ من جديد. متابعة؟")) return;
 
-  clinicRef.set({
-    specialty:"عيادة طب وجراحة الفم والأسنان",
-    doctor, period, location,
+  clinicRef.update({
+    clinicName:setupData.clinicName,
+    specialty:setupData.clinicName,
+    doctor:setupData.doctor,
+    nurse:setupData.nurse,
+    period:"",
+    roomNumber:DISPLAY_SLOT_ID,
+    floor:CURRENT_ROOM.floorName,
+    location:"عيادة رقم " + DISPLAY_SLOT_ID + " — " + CURRENT_ROOM.floorName,
     current:1,
+    maxReached:1,
+    displayCurrent:1,
+    previousDisplay:null,
+    recallMode:false,
+    recallNumber:null,
+    missedTurns:null,
     status:"active",
     sessionStart: firebase.database.ServerValue.TIMESTAMP,
     updatedAt:    firebase.database.ServerValue.TIMESTAMP
   });
-
-  /* حفظ اسم الطبيب للاقتراحات لاحقاً */
-  firebase.database().ref("doctors/" + CLINIC_ID).child(btoa(unescape(encodeURIComponent(doctor))).replace(/=/g,"")).set(doctor);
 });
 
 document.querySelectorAll(".statusBtn").forEach(btn=>{
   btn.addEventListener("click", ()=>{
+    if(!canControlCurrentRoom()) return void alert("هذا الحساب غير مصرح له بالتحكم في هذه الحجرة");
     const s = btn.dataset.status;
-    if(s === "finished" && !confirm("سيتم إغلاق العيادة وإخفاء الأرقام من كل الشاشات. متابعة؟")) return;
+
+    if(s === "finished"){
+      if(!confirm("سيتم إنهاء العيادة وتصفير جميع الأدوار الفائتة وإخفائها من شاشة المرضى. متابعة؟")) return;
+      clinicRef.update({
+        status:"finished",
+        missedTurns:null,
+        recallMode:false,
+        recallNumber:null,
+        previousDisplay:null,
+        displayCurrent:state.current,
+        updatedAt:firebase.database.ServerValue.TIMESTAMP
+      }).catch(()=> flashSync("تعذّر إنهاء العيادة", false));
+      return;
+    }
+
     clinicRef.update({ status:s, updatedAt: firebase.database.ServerValue.TIMESTAMP });
   });
 });
 
-firebase.database().ref("doctors/" + CLINIC_ID).on("value", s=>{
-  const list = $("#doctorsList");
-  list.innerHTML = "";
-  s.forEach(c=>{ const o = document.createElement("option"); o.value = c.val(); list.appendChild(o); });
-});
-
 /* ==========================================================
-   ⑦  تسجيل الدخول والخروج
+   ⑧  تسجيل الدخول والخروج
    ========================================================== */
 $("#loginBtn").addEventListener("click", doLogin);
 $("#loginPass").addEventListener("keydown", e=>{ if(e.key === "Enter") doLogin(); });
@@ -638,13 +2337,75 @@ const LOGIN_ERRORS = {
   "auth/user-disabled":         "هذا الحساب معطّل"
 };
 
+function loginEmailFromUsername(value){
+  const entered = String(value || "").trim().toLowerCase();
+  if(!entered) return "";
+  if(entered.includes("@")) return entered;
+
+  const compact = entered.replace(/\s+/g, "");
+  const roomId = compact.replace(/^(?:room|clinic)/, "");
+  return ROOM_ACCOUNTS.find(item=>item.username === roomId)?.email || "";
+}
+
+function authorizedRoomForUser(user){
+  const email = String(user?.email || "").trim().toLowerCase();
+  if(!email) return "";
+
+  const exactAccount = ROOM_ACCOUNTS.find(item=>item.email.toLowerCase() === email);
+  if(exactAccount) return exactAccount.roomId;
+
+  /* يسمح باستخدام نفس اسم الحساب مع نطاق بريد مختلف إذا كان الجزء الأول 301 أو room301 */
+  const emailUsername = email.split("@")[0].replace(/^(?:room|clinic)/, "");
+  return ROOM_ACCOUNTS.find(item=>item.username === emailUsername)?.roomId || "";
+}
+
+function canControlCurrentRoom(){
+  return authorizedRoomForUser(auth.currentUser) === DISPLAY_SLOT_ID;
+}
+
+function openAuthorizedRoom(roomId, hash = "#/setup"){
+  const nextUrl = new URL(location.href);
+  nextUrl.searchParams.set("room", roomId);
+  nextUrl.hash = hash;
+
+  if(roomId !== DISPLAY_SLOT_ID){
+    location.replace(nextUrl.toString());
+    return;
+  }
+  location.hash = hash;
+  route();
+}
+
 function doLogin(){
-  const em = $("#loginEmail").value.trim(), pw = $("#loginPass").value;
-  $("#loginMsg").textContent = "";
+  const em = loginEmailFromUsername($("#loginEmail").value);
+  const pw = $("#loginPass").value;
+  const msg = $("#loginMsg");
+  const button = $("#loginBtn");
+
+  msg.textContent = "";
+  if(!em) return void (msg.textContent = "اسم المستخدم غير صحيح. اكتب رقم الحجرة مثل 301");
+  if(!pw) return void (msg.textContent = "اكتب كلمة المرور");
+
+  button.disabled = true;
+  button.textContent = "جاري الدخول...";
+  location.hash = "#/setup";
+
   auth.signInWithEmailAndPassword(em, pw)
+    .then(credential=>{
+      const roomId = authorizedRoomForUser(credential.user);
+      if(!roomId){
+        msg.textContent = "هذا الحساب غير مربوط بأي حجرة";
+        return auth.signOut();
+      }
+      openAuthorizedRoom(roomId, "#/setup");
+    })
     .catch(err=>{
-      $("#loginMsg").textContent = (LOGIN_ERRORS[err.code] || "خطأ: " + err.code) + " ";
+      msg.textContent = (LOGIN_ERRORS[err.code] || "تعذّر تسجيل الدخول") + " ";
       console.error("Firebase auth error:", err.code, err.message);
+    })
+    .finally(()=>{
+      button.disabled = false;
+      button.textContent = "تسجيل الدخول";
     });
 }
 
@@ -652,10 +2413,32 @@ $("#logoutBtn").addEventListener("click", ()=>{
   if(confirm("تسجيل الخروج وتسليم الوردية؟")) auth.signOut();
 });
 
-auth.onAuthStateChanged(()=> route());
+auth.onAuthStateChanged(user=>{
+  if(!user){
+    sessionStorage.removeItem(SETUP_KEY);
+    setupData = null;
+    const currentView = (location.hash || "#/nurse").replace("#/","");
+    if(!["tv","reception","patient"].includes(currentView)) location.hash = "#/nurse";
+  }else{
+    const currentView = (location.hash || "#/nurse").replace("#/","");
+    if(!["tv","reception","patient"].includes(currentView)){
+      const authorizedRoom = authorizedRoomForUser(user);
+      if(!authorizedRoom){
+        $("#loginMsg").textContent = "هذا الحساب غير مربوط بأي حجرة";
+        auth.signOut();
+        return;
+      }
+      if(authorizedRoom !== DISPLAY_SLOT_ID){
+        openAuthorizedRoom(authorizedRoom, "#/setup");
+        return;
+      }
+    }
+  }
+  route();
+});
 
 /* ==========================================================
-   ⑧  ساعة التلفزيون + ملء الشاشة
+   ⑨  ساعة التلفزيون + ملء الشاشة
    ========================================================== */
 let clockStarted = false;
 function startClock(){
@@ -663,8 +2446,22 @@ function startClock(){
   clockStarted = true;
   const tick = ()=>{
     const now = new Date();
-    $("#tvClock").textContent = now.toLocaleTimeString("ar-EG",{hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:true});
-    $("#tvDate").textContent  = now.toLocaleDateString("ar-EG",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+    const timeText = now.toLocaleTimeString("ar-EG",{hour:"2-digit",minute:"2-digit",hour12:true});
+    const dayText = now.toLocaleDateString("ar-EG",{weekday:"long"});
+    const dateText = now.toLocaleDateString("ar-EG",{day:"numeric",month:"long",year:"numeric"});
+
+    ["#tvClock","#ptClock"].forEach(selector=>{
+      const el = $(selector);
+      if(el) el.textContent = timeText;
+    });
+    ["#tvDay","#ptDay"].forEach(selector=>{
+      const el = $(selector);
+      if(el) el.textContent = dayText;
+    });
+    ["#tvDate","#ptDate"].forEach(selector=>{
+      const el = $(selector);
+      if(el) el.textContent = dateText;
+    });
   };
   tick(); setInterval(tick, 1000);
 }
@@ -676,16 +2473,29 @@ $("#fsBtn").addEventListener("click", ()=>{
 });
 
 /* ==========================================================
-   ⑨  كود QR للمريض
+   ⑩  أدوات شاشة الاستقبال
    ========================================================== */
-let qrDone = false;
-function drawQR(){
-  if(qrDone || typeof QRCode === "undefined") return;
-  const url = location.origin + location.pathname + "#/patient";
-  $("#qrLink").textContent = url;
-  new QRCode($("#qrBox"), { text:url, width:170, height:170, colorDark:"#0f4c6c", colorLight:"#ffffff" });
-  qrDone = true;
-}
+$("#receptionSearch")?.addEventListener("input", renderReceptionDashboard);
+$("#receptionFilters")?.addEventListener("click", e=>{
+  const btn = e.target.closest("[data-rc-filter]");
+  if(!btn) return;
+  receptionFilter = btn.dataset.rcFilter;
+  document.querySelectorAll(".reception-filter-btn").forEach(item=>item.classList.toggle("active", item === btn));
+  renderReceptionDashboard();
+});
+
+$("#rcCopyPatient")?.addEventListener("click", async ()=>{
+  const url = receptionPatientUrl(receptionSelectedRoom);
+  try{
+    await navigator.clipboard.writeText(url);
+    const btn = $("#rcCopyPatient");
+    const old = btn.textContent;
+    btn.textContent = "تم النسخ ✓";
+    setTimeout(()=>btn.textContent = old, 1200);
+  }catch(e){
+    prompt("انسخ رابط المريض:", url);
+  }
+});
 
 route();
 </script>
