@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#0f4c6c">
-<title>نظام متابعة أدوار العيادات</title>
+<title>نظام متابعة الأدوار</title>
+<link rel="icon" type="image/png" href="favicon.png">
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -1056,7 +1057,7 @@ const allClinicsRef = firebase.database().ref("clinics");
 const $ = (s) => document.querySelector(s);
 const ar = (n) => Number(n).toLocaleString("ar-EG");
 
-document.title = "نظام الأدوار — عيادة " + DISPLAY_SLOT_ID;
+document.title = "نظام متابعة الأدوار";
 
 $("#setupRoomPlace").textContent = CURRENT_ROOM.place + " — " + CURRENT_ROOM.floorName;
 $("#setupRoomValue").textContent = "غرفة " + DISPLAY_SLOT_ID;
