@@ -2128,7 +2128,9 @@ async function recallMissedTurn(number){
   if(!item || item.status === "done") return;
   if(state.recallMode && state.recallNumber !== number) return void alert("أنهِ الاستدعاء الحالي أو ارجع للدور السابق أولًا");
 
-  const previousDisplay = typeof state.displayCurrent === "number" ? state.displayCurrent : state.current;
+  const previousDisplay = state.recallMode
+    ? (typeof state.previousDisplay === "number" ? state.previousDisplay : state.current)
+    : (typeof state.displayCurrent === "number" ? state.displayCurrent : state.current);
   const updates = {
     displayCurrent:number,
     previousDisplay,
