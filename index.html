@@ -195,6 +195,58 @@
     .queue-card-title,.queue-card-body{ padding-inline:9px; }
   }
 
+  /* ===== شاشة العرض: توافق الموبايل مع الحفاظ على شكل الشاشات الكبيرة ===== */
+  @media (max-width:900px){
+    #view-tv{ min-height:100svh; overflow-x:hidden; }
+    #view-tv .tv-dashboard{ padding:12px; gap:12px; }
+    #view-tv .clinic-grid{ grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+    #view-tv .floor-title{ min-width:0; padding:7px 20px; font-size:18px; }
+    #view-tv .queue-card{ min-height:138px; grid-template-columns:minmax(0,1fr) 82px; }
+    #view-tv .queue-number{ font-size:42px; }
+  }
+
+  @media (max-width:600px){
+    #view-tv .tv-topbar{
+      min-height:auto;
+      grid-template-columns:1fr;
+      gap:8px;
+      padding:10px 12px;
+      text-align:center;
+    }
+    #view-tv .tv-brand{ justify-content:center; }
+    #view-tv .tv-brand img{ height:46px; max-width:190px; }
+    #view-tv .tv-slogan{ font-size:18px; line-height:1.25; }
+    #view-tv .tv-datetime{ justify-content:center; gap:12px; }
+    #view-tv .tv-clock-box{ padding-left:12px; }
+    #view-tv .tv-clock-value{ font-size:24px; }
+    #view-tv .tv-date-value{ font-size:11px; }
+
+    #view-tv .tv-dashboard{ padding:10px 8px; gap:10px; }
+    #view-tv .floor-section{ gap:8px; }
+    #view-tv .floor-heading{ min-height:32px; gap:8px; }
+    #view-tv .floor-title{ width:auto; min-width:0; padding:6px 16px; font-size:16px; }
+    #view-tv .clinic-grid{ grid-template-columns:1fr; gap:9px; }
+
+    #view-tv .queue-card{ min-height:126px; grid-template-columns:minmax(0,1fr) 88px; border-radius:14px; }
+    #view-tv .queue-card-title{ min-height:46px; padding:7px 10px; }
+    #view-tv .queue-card-body{ padding:8px 10px; }
+    #view-tv .queue-clinic-name{ font-size:16px; }
+    #view-tv .queue-doctor{ font-size:17px; }
+    #view-tv .queue-number{ font-size:44px; }
+    #view-tv .queue-number-label{ font-size:11px; }
+    #view-tv .queue-status{ font-size:11px; }
+
+    #view-tv .tv-footer{
+      min-height:42px;
+      padding:7px 10px;
+      gap:8px;
+      flex-wrap:wrap;
+      font-size:12px;
+    }
+    #view-tv .tv-footer-heart{ font-size:20px; }
+    #view-tv #fsBtn{ display:none; }
+  }
+
   .dot{ width:14px;height:14px;border-radius:50%;display:inline-block; }
   @keyframes blip{ 0%,100%{opacity:1} 50%{opacity:.35} }
   .live .dot{ animation:blip 1.6s infinite; }
@@ -451,7 +503,7 @@
       <p class="text-slate-500 text-sm mt-1">كل حساب مرتبط بحجرة واحدة فقط</p>
     </div>
     <label class="block text-sm mb-1 text-slate-600">اسم المستخدم</label>
-    <input id="loginEmail" type="text" inputmode="numeric" autocomplete="username" dir="ltr"
+    <input id="loginEmail" type="text" inputmode="text" autocomplete="username" autocapitalize="none" autocorrect="off" dir="ltr"
       class="w-full mb-4 px-4 py-3 rounded-xl bg-slate-100 outline-none focus:ring-2 focus:ring-sky-500 text-left" placeholder="">
     <label class="block text-sm mb-1 text-slate-600">كلمة المرور</label>
     <input id="loginPass" type="password" autocomplete="current-password"
