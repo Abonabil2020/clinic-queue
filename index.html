@@ -7689,15 +7689,22 @@ function doctorDisplayName(value){
   ).trim() || fullName;
 }
 
+function doctorNameWithTitle(value){
+  const name = String(value || "").trim();
+  if(!name || name === "—" || name === "لا يوجد طبيب مسجل") return name;
+  const cleanName = name.replace(/^د(?:\.\s*|\s+)/u, "").trim();
+  return "د. " + (cleanName || name);
+}
+
 function doctorDisplayFromData(data){
   const fullName = String(data?.doctor || "").trim();
   if(!fullName || fullName === "—") return "لا يوجد طبيب مسجل";
 
   const mappedName = doctorDisplayName(fullName);
-  if(mappedName && mappedName !== fullName) return mappedName;
+  if(mappedName && mappedName !== fullName) return doctorNameWithTitle(mappedName);
 
   const savedDisplayName = String(data?.doctorDisplayName || "").trim();
-  return savedDisplayName || fullName;
+  return doctorNameWithTitle(savedDisplayName || fullName);
 }
 
 function renderClinicOptions(query){
@@ -7793,7 +7800,7 @@ function renderDoctorOptions(query){
 
   const filteredDoctors = selectableDoctorNames(clinicId).filter(doctor=>
     normalizeArabicSearch(doctor).includes(normalizedQuery) ||
-    normalizeArabicSearch(doctorDisplayName(doctor)).includes(normalizedQuery)
+    normalizeArabicSearch(doctorNameWithTitle(doctorDisplayName(doctor))).includes(normalizedQuery)
   );
 
   if(!filteredDoctors.length){
@@ -7811,7 +7818,7 @@ function renderDoctorOptions(query){
     option.dataset.doctor = doctor;
     option.setAttribute("role", "option");
     option.setAttribute("aria-selected", doctor === selectedDoctor ? "true" : "false");
-    option.textContent = doctorDisplayName(doctor);
+    option.textContent = doctorNameWithTitle(doctorDisplayName(doctor));
     option.addEventListener("click", ()=> selectDoctor(doctor));
     menu.appendChild(option);
   });
@@ -7835,7 +7842,7 @@ function selectDoctor(doctor){
   const clinic = findSpecialtyById(clinicId);
   if(!clinic || !selectableDoctorNames(clinicId).includes(doctor)) return;
   $("#setupDoctor").value = doctor;
-  $("#setupDoctorSearch").value = doctorDisplayName(doctor);
+  $("#setupDoctorSearch").value = doctorNameWithTitle(doctorDisplayName(doctor));
   $("#setupMsg").textContent = "";
   closeDoctorMenu();
 }
@@ -7865,7 +7872,7 @@ function fillDoctorOptions(clinicId, selectedDoctor){
 
   if(selectedDoctor && names.includes(selectedDoctor)){
     $("#setupDoctor").value = selectedDoctor;
-    search.value = doctorDisplayName(selectedDoctor);
+    search.value = doctorNameWithTitle(doctorDisplayName(selectedDoctor));
   }
 }
 
