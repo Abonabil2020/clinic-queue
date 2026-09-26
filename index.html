@@ -5170,6 +5170,126 @@
     #view-admin .admin-audit-time{grid-column:2;grid-row:1}
     #view-admin .admin-audit-actor{grid-column:1;grid-row:1}
   }
+
+  /* ===== هوية مجمع الإصلاح الطبي — علامات مائية نصية فقط ===== */
+
+  /* شاشة العرض: الاسم كبير أسفل الشاشة، بدون صورة اللوجو */
+  #view-tv .tv-footer::before{
+    content:"مجمع الإصلاح الطبي" !important;
+    left:50% !important;
+    top:50% !important;
+    width:100% !important;
+    height:auto !important;
+    transform:translate(-50%,-50%) rotate(-4deg) !important;
+    background:none !important;
+    background-image:none !important;
+    font-family:'RB','Tajawal','Segoe UI',sans-serif !important;
+    font-size:clamp(28px,4.8vw,82px) !important;
+    line-height:1 !important;
+    font-weight:700 !important;
+    color:#8d2345 !important;
+    text-align:center !important;
+    white-space:nowrap !important;
+    opacity:.085 !important;
+    filter:none !important;
+    pointer-events:none !important;
+  }
+
+  @media (max-width:600px){
+    #view-tv .tv-footer::before{
+      font-size:clamp(24px,8vw,46px) !important;
+      opacity:.075 !important;
+    }
+  }
+
+  /* علامات مائية هادئة في الواجهات الرئيسية */
+  .portal-shell,
+  .reception-shell,
+  .admin-shell,
+  .staff-admin-shell,
+  .qr-display-shell,
+  #view-nurse,
+  #view-patient{
+    position:relative;
+    z-index:0;
+  }
+
+  .portal-shell::before,
+  .reception-shell::before,
+  .admin-shell::before,
+  .staff-admin-shell::before,
+  .qr-display-shell::before,
+  #view-nurse::before,
+  #view-patient::before{
+    content:"مجمع الإصلاح الطبي";
+    position:absolute;
+    z-index:-1;
+    font-family:'RB','Tajawal','Segoe UI',sans-serif;
+    font-size:clamp(28px,4vw,64px);
+    line-height:1;
+    font-weight:700;
+    color:#8d2345;
+    opacity:.035;
+    white-space:nowrap;
+    pointer-events:none;
+    user-select:none;
+  }
+
+  .portal-shell::before{
+    left:2%;
+    bottom:3%;
+    transform:rotate(-7deg);
+  }
+
+  #view-nurse::before{
+    right:3%;
+    top:42%;
+    transform:rotate(-7deg);
+  }
+
+  .reception-shell::before{
+    left:2%;
+    bottom:5%;
+    transform:rotate(-6deg);
+  }
+
+  .admin-shell::before{
+    right:3%;
+    top:38%;
+    transform:rotate(-8deg);
+  }
+
+  .staff-admin-shell::before{
+    left:3%;
+    bottom:7%;
+    transform:rotate(-6deg);
+  }
+
+  .qr-display-shell::before{
+    right:3%;
+    bottom:8%;
+    transform:rotate(-7deg);
+  }
+
+  #view-patient::before{
+    left:50%;
+    bottom:10%;
+    transform:translateX(-50%) rotate(-6deg);
+  }
+
+  @media (max-width:700px){
+    .portal-shell::before,
+    .reception-shell::before,
+    .admin-shell::before,
+    .staff-admin-shell::before,
+    .qr-display-shell::before,
+    #view-nurse::before,
+    #view-patient::before{
+      font-size:clamp(24px,8vw,42px);
+      opacity:.028;
+    }
+  }
+
 </style>
 </head>
 <body>
@@ -5188,7 +5308,7 @@
       <rect x="4" y="4" width="16" height="16" rx="3"/>
       <path d="M8 9h8M8 13h3M14 13h2M8 17h8"/>
     </svg>
-    <span>Admin</span>
+    <span>admin</span>
   </a>
   <main class="portal-shell">
     <header class="portal-brand">
