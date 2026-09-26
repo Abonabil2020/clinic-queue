@@ -1639,17 +1639,6 @@
 
   @media (max-width:950px){.staff-admin-grid{grid-template-columns:1fr}}
 
-  /* ===== فصل صلاحيات مسؤول العيادات ومسؤول التمريض ===== */
-  #view-staff-manager[data-manager-role="clinics_manager"] [data-manager-only="nursing"],
-  #view-staff-manager[data-manager-role="nursing_manager"] [data-manager-only="clinics"]{
-    display:none !important;
-  }
-
-  #view-staff-manager[data-manager-role="nursing_manager"] .staff-admin-grid{
-    grid-template-columns:minmax(0,720px);
-    justify-content:center;
-  }
-
 
   /* ===== الصفحة الرئيسية لاختيار نوع الدخول ===== */
   #view-home{
@@ -1662,11 +1651,9 @@
     justify-content:center;
     padding:28px 18px;
     background:
-      linear-gradient(145deg,rgba(248,250,252,.82) 0%,rgba(241,245,249,.78) 52%,rgba(255,255,255,.84) 100%),
-      url("home-bg.jpg");
-    background-size:cover;
-    background-position:center 46%;
-    background-repeat:no-repeat;
+      radial-gradient(circle at 12% 15%,rgba(243,81,76,.13),transparent 27%),
+      radial-gradient(circle at 88% 82%,rgba(2,132,199,.12),transparent 29%),
+      linear-gradient(145deg,#f8fafc 0%,#f1f5f9 52%,#fff 100%);
   }
 
   #view-home::before,
@@ -1773,99 +1760,9 @@
     line-height:1.8;
   }
 
-  .portal-shortcuts{
-    margin-bottom:14px;
-    display:grid;
-    grid-template-columns:repeat(2,minmax(0,1fr));
-    gap:12px;
-  }
-
-  .portal-shortcut{
-    min-width:0;
-    min-height:74px;
-    padding:11px 14px;
-    display:grid;
-    grid-template-columns:44px minmax(0,1fr) 30px;
-    align-items:center;
-    gap:11px;
-    border-radius:18px;
-    background:rgba(255,255,255,.88);
-    border:1px solid rgba(226,232,240,.92);
-    box-shadow:0 8px 22px rgba(15,23,42,.06);
-    backdrop-filter:blur(9px);
-    transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease,background .16s ease;
-  }
-
-  .portal-shortcut:hover{
-    transform:translateY(-2px);
-    background:rgba(255,255,255,.97);
-    box-shadow:0 12px 28px rgba(15,23,42,.10);
-  }
-
-  .portal-shortcut.qr-shortcut{
-    --shortcut-accent:#7c3aed;
-    --shortcut-soft:#f3e8ff;
-    border-color:rgba(196,181,253,.72);
-  }
-
-  .portal-shortcut.tv-shortcut{
-    --shortcut-accent:#0f766e;
-    --shortcut-soft:#ecfdf5;
-    border-color:rgba(153,246,228,.78);
-  }
-
-  .portal-shortcut-icon{
-    width:44px;
-    height:44px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    border-radius:13px;
-    color:var(--shortcut-accent);
-    background:var(--shortcut-soft);
-  }
-
-  .portal-shortcut-icon svg{
-    width:23px;
-    height:23px;
-  }
-
-  .portal-shortcut-text{
-    min-width:0;
-    text-align:right;
-  }
-
-  .portal-shortcut-text strong{
-    display:block;
-    color:#0f172a;
-    font-size:14px;
-    line-height:1.35;
-    font-weight:700;
-  }
-
-  .portal-shortcut-text small{
-    display:block;
-    margin-top:3px;
-    color:#64748b;
-    font-size:10px;
-    line-height:1.35;
-  }
-
-  .portal-shortcut-arrow{
-    width:30px;
-    height:30px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    border-radius:9px;
-    color:var(--shortcut-accent);
-    background:var(--shortcut-soft);
-    font-size:17px;
-  }
-
   .portal-cards{
     display:grid;
-    grid-template-columns:repeat(2,minmax(0,1fr));
+    grid-template-columns:repeat(3,minmax(0,1fr));
     gap:16px;
   }
 
@@ -1919,16 +1816,10 @@
     --portal-text:#0369a1;
   }
 
-  .portal-card.clinics-manager{
+  .portal-card.manager{
     --portal-accent:#0f766e;
     --portal-soft:#ecfdf5;
     --portal-text:#0f766e;
-  }
-
-  .portal-card.nursing-manager{
-    --portal-accent:#7c3aed;
-    --portal-soft:#f5f3ff;
-    --portal-text:#6d28d9;
   }
 
   .portal-icon{
@@ -2094,86 +1985,10 @@
     .admin-head h1{ font-size:19px; }
   }
 
-  /* ===== الهوم على PC: حسابات مدمجة بدون Scroll ===== */
-  @media (min-width:801px){
-    #view-home .portal-cards{
-      gap:12px;
-    }
-
-    #view-home .portal-card{
-      min-height:126px;
-      padding:14px 15px;
-      border-radius:18px;
-      display:grid;
-      grid-template-columns:48px minmax(0,1fr) 32px;
-      grid-template-rows:auto auto;
-      column-gap:12px;
-      row-gap:2px;
-      align-items:center;
-    }
-
-    #view-home .portal-card::before{
-      inset:0 auto 0 0;
-      width:4px;
-      height:auto;
-    }
-
-    #view-home .portal-icon{
-      width:48px;
-      height:48px;
-      border-radius:14px;
-      grid-row:1 / 3;
-    }
-
-    #view-home .portal-icon svg{
-      width:24px;
-      height:24px;
-    }
-
-    #view-home .portal-card h2{
-      margin:0;
-      font-size:17px;
-      line-height:1.3;
-      align-self:end;
-    }
-
-    #view-home .portal-card p{
-      margin-top:2px;
-      font-size:11px;
-      line-height:1.45;
-      align-self:start;
-    }
-
-    #view-home .portal-enter{
-      width:auto;
-      margin:0;
-      padding:0;
-      grid-column:3;
-      grid-row:1 / 3;
-    }
-
-    #view-home .portal-enter > span:first-child{
-      display:none;
-    }
-
-    #view-home .portal-arrow{
-      width:32px;
-      height:32px;
-      border-radius:10px;
-    }
-  }
-
   @media (max-width:800px){
     #view-home{
       align-items:flex-start;
       padding:22px 14px 26px;
-      background:
-        linear-gradient(180deg,rgba(248,250,252,.88) 0%,rgba(241,245,249,.85) 48%,rgba(255,255,255,.89) 100%),
-        url("home-bg-mobile.jpg");
-      background-size:auto 125%;
-      background-position:center 58%;
-      background-repeat:no-repeat;
-      background-color:#eef2f6;
     }
 
     .portal-shell{
@@ -2204,44 +2019,6 @@
       font-size:13px;
       max-width:440px;
       line-height:1.65;
-    }
-
-    .portal-shortcuts{
-      grid-template-columns:1fr 1fr;
-      gap:8px;
-      margin-bottom:11px;
-    }
-
-    .portal-shortcut{
-      min-height:68px;
-      padding:9px 10px;
-      grid-template-columns:38px minmax(0,1fr);
-      gap:9px;
-      border-radius:15px;
-    }
-
-    .portal-shortcut-icon{
-      width:38px;
-      height:38px;
-      border-radius:11px;
-    }
-
-    .portal-shortcut-icon svg{
-      width:20px;
-      height:20px;
-    }
-
-    .portal-shortcut-text strong{
-      font-size:12px;
-      line-height:1.35;
-    }
-
-    .portal-shortcut-text small{
-      display:none;
-    }
-
-    .portal-shortcut-arrow{
-      display:none;
     }
 
     .portal-cards{
@@ -2318,7 +2095,6 @@
 
   @media (max-width:380px){
     #view-home{ padding-inline:10px; }
-    .portal-shortcuts{ grid-template-columns:1fr; }
     .portal-title{ font-size:25px; }
     .portal-card{
       padding:13px;
@@ -5159,8 +4935,6 @@
   #view-admin .admin-audit-role[data-role="nurse"]{background:#ecfdf5;color:#166534}
   #view-admin .admin-audit-role[data-role="reception"]{background:#eff6ff;color:#1d4ed8}
   #view-admin .admin-audit-role[data-role="staff_manager"]{background:#fff7ed;color:#c2410c}
-  #view-admin .admin-audit-role[data-role="clinics_manager"]{background:#ecfdf5;color:#047857}
-  #view-admin .admin-audit-role[data-role="nursing_manager"]{background:#f5f3ff;color:#6d28d9}
   #view-admin .admin-audit-role[data-role="admin"]{background:#f3e8ff;color:#7e22ce}
   #view-admin .admin-audit-time{min-width:76px;text-align:left;color:#64748b;font-size:9px;line-height:1.45;white-space:nowrap}
   #view-admin .admin-audit-empty{padding:24px 12px;text-align:center;color:#94a3b8;font-size:12px}
@@ -5199,39 +4973,6 @@
       <p class="portal-subtitle">اختر نوع الدخول للانتقال إلى الصفحة المخصصة لك داخل النظام</p>
     </header>
 
-    <nav class="portal-shortcuts" aria-label="روابط المتابعة والعرض">
-      <a href="#/qr" class="portal-shortcut qr-shortcut" title="QR متابعة العيادات">
-        <span class="portal-shortcut-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="3" width="6" height="6" rx="1"/>
-            <rect x="15" y="3" width="6" height="6" rx="1"/>
-            <rect x="3" y="15" width="6" height="6" rx="1"/>
-            <path d="M15 15h2v2h-2zM19 15h2v4M15 19h4v2M21 21h.01"/>
-          </svg>
-        </span>
-        <span class="portal-shortcut-text">
-          <strong>QR متابعة العيادات</strong>
-          <small>فتح شاشة أكواد المتابعة</small>
-        </span>
-        <span class="portal-shortcut-arrow" aria-hidden="true">←</span>
-      </a>
-
-      <a href="#/tv" class="portal-shortcut tv-shortcut" title="شاشة عرض متابعة الأدوار">
-        <span class="portal-shortcut-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="5" width="18" height="13" rx="2"/>
-            <path d="M8 21h8M12 18v3"/>
-            <path d="M8 10h8M8 13h5"/>
-          </svg>
-        </span>
-        <span class="portal-shortcut-text">
-          <strong>شاشة عرض متابعة الأدوار</strong>
-          <small>فتح شاشة العرض الرئيسية</small>
-        </span>
-        <span class="portal-shortcut-arrow" aria-hidden="true">←</span>
-      </a>
-    </nav>
-
     <nav class="portal-cards" aria-label="اختيار نوع الدخول">
       <a href="#/nurse" class="portal-card nursing">
         <span class="portal-icon" aria-hidden="true">
@@ -5241,7 +4982,7 @@
             <path d="M18.5 5.5v4M16.5 7.5h4"/>
           </svg>
         </span>
-        <h2>حساب التمريض</h2>
+        <h2>دخول التمريض</h2>
         <p>الدخول بحساب الحجرة لإدارة الدور والحالة الحالية للعيادة.</p>
         <span class="portal-enter"><span>الدخول إلى التمريض</span><span class="portal-arrow">←</span></span>
       </a>
@@ -5255,34 +4996,21 @@
             <path d="M17 20c-1 1-2.5 1.5-4 1.5"/>
           </svg>
         </span>
-        <h2>حساب الاستعلامات</h2>
+        <h2>دخول الاستعلامات</h2>
         <p>متابعة جميع العيادات وحالة الأدوار والحجز من شاشة الاستقبال.</p>
         <span class="portal-enter"><span>الدخول إلى الاستعلامات</span><span class="portal-arrow">←</span></span>
       </a>
 
-      <a href="#/clinics-manager" class="portal-card clinics-manager">
+      <a href="#/staff-manager" class="portal-card manager">
         <span class="portal-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <path d="M12 3 19 6v5c0 4.8-2.9 8.1-7 10-4.1-1.9-7-5.2-7-10V6l7-3Z"/>
             <path d="M9 11h6M12 8v6"/>
           </svg>
         </span>
-        <h2>حساب مسؤول العيادات</h2>
-        <p>إدارة التخصصات والأطباء وربط كل طبيب بتخصصه.</p>
-        <span class="portal-enter"><span>الدخول إلى مسؤول العيادات</span><span class="portal-arrow">←</span></span>
-      </a>
-
-      <a href="#/nursing-manager" class="portal-card nursing-manager">
-        <span class="portal-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M8 4h8v4H8z"/>
-            <path d="M6 8h12v12H6z"/>
-            <path d="M12 11v6M9 14h6"/>
-          </svg>
-        </span>
-        <h2>حساب مسؤول التمريض</h2>
-        <p>إدارة أسماء التمريض المعتمدة واستخدامها بسهولة داخل العيادات.</p>
-        <span class="portal-enter"><span>الدخول إلى مسؤول التمريض</span><span class="portal-arrow">←</span></span>
+        <h2>مسؤول العيادات والتمريض</h2>
+        <p>إدارة التخصصات والأطباء وأسماء التمريض المعتمدة في النظام.</p>
+        <span class="portal-enter"><span>الدخول إلى الإدارة</span><span class="portal-arrow">←</span></span>
       </a>
     </nav>
 
@@ -5381,8 +5109,7 @@
         <button type="button" class="admin-audit-filter active" data-audit-filter="all">الكل</button>
         <button type="button" class="admin-audit-filter" data-audit-filter="nurse">التمريض</button>
         <button type="button" class="admin-audit-filter" data-audit-filter="reception">الاستعلامات</button>
-        <button type="button" class="admin-audit-filter" data-audit-filter="clinics_manager">مسؤول العيادات</button>
-        <button type="button" class="admin-audit-filter" data-audit-filter="nursing_manager">مسؤول التمريض</button>
+        <button type="button" class="admin-audit-filter" data-audit-filter="staff_manager">مسؤول العيادات</button>
         <button type="button" class="admin-audit-filter" data-audit-filter="admin">الأدمن</button>
         <span id="adminAuditCount" class="admin-audit-count num">٠ تحديث</span>
       </div>
@@ -5520,11 +5247,6 @@
         <span id="syncBadge" class="text-xs px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700">متصل</span>
       </div>
 
-      <div class="mb-3 px-3 py-2.5 rounded-xl bg-sky-50 border border-sky-100 flex items-center justify-between gap-3">
-        <span class="text-xs font-bold text-slate-600">المعروض الآن على الشاشات</span>
-        <strong id="nurseDisplayedNumber" class="num text-2xl font-bold text-sky-700">—</strong>
-      </div>
-
       <div id="nurseQueueLock" class="nurse-queue-lock hidden-view" data-lock-status=""></div>
 
       <div id="nurseQueueControls">
@@ -5604,11 +5326,11 @@
 <section id="view-staff-manager-login" class="hidden-view min-h-screen flex items-center justify-center p-5">
   <form id="staffManagerLoginForm" class="w-full max-w-sm bg-white rounded-3xl shadow-xl p-7">
     <img src="logo.png" alt="مجمع الإصلاح الطبي" class="site-login-logo" onerror="this.style.display='none'">
-    <h1 id="staffManagerLoginTitle" class="text-2xl font-bold text-center mb-2">مسؤول العيادات</h1>
-    <p id="staffManagerLoginSubtitle" class="text-sm text-slate-500 text-center mb-5">إدارة التخصصات والأطباء</p>
+    <h1 class="text-2xl font-bold text-center mb-2">مسؤول العيادات والتمريض</h1>
+    <p class="text-sm text-slate-500 text-center mb-5">إدارة التخصصات والأطباء والتمريض</p>
     <label for="staffManagerUsername" class="block text-sm mb-1">اسم المستخدم</label>
     <input id="staffManagerUsername" autocomplete="username" autocapitalize="none" autocorrect="off"
-      dir="ltr" value="clinics_manager"
+      dir="ltr" value="staff_manager"
       class="w-full mb-4 px-4 py-3 rounded-xl bg-slate-100 outline-none focus:ring-2 focus:ring-sky-500" required>
     <label for="staffManagerPassword" class="block text-sm mb-1">كلمة المرور</label>
     <input id="staffManagerPassword" type="password" autocomplete="current-password"
@@ -5630,8 +5352,8 @@
         </div>
         <div class="staff-admin-heading">
           <p class="staff-admin-kicker">لوحة الإدارة</p>
-          <h1 id="staffManagerPageTitle" class="text-xl font-bold">مسؤول العيادات</h1>
-          <p id="staffManagerPageSubtitle" class="staff-admin-subtitle">إدارة التخصصات والأطباء وقوائم الاختيار</p>
+          <h1 class="text-xl font-bold">مسؤول العيادات والتمريض</h1>
+          <p class="staff-admin-subtitle">إدارة التخصصات والأطباء والتمريض وقوائم الاختيار</p>
         </div>
       </div>
       <div class="staff-admin-actions">
@@ -5656,8 +5378,8 @@
     <section class="staff-directory-search" aria-label="البحث في قوائم مسؤول العيادات والتمريض">
       <div class="staff-directory-search-head">
         <div>
-          <div id="staffDirectorySearchTitle" class="staff-directory-search-title">بحث في كل القوائم</div>
-          <div id="staffDirectorySearchDesc" class="staff-directory-search-desc">ابحث باسم تخصص أو طبيب لمعرفة هل هو موجود بالفعل ومكانه.</div>
+          <div class="staff-directory-search-title">بحث في كل القوائم</div>
+          <div class="staff-directory-search-desc">ابحث باسم تخصص أو طبيب أو تمريض لمعرفة هل هو موجود بالفعل ومكانه.</div>
         </div>
       </div>
       <div class="staff-directory-search-wrap">
@@ -5742,9 +5464,9 @@
           </div>
 
           <div class="staff-import-stats">
-            <div class="staff-import-stat" data-manager-only="clinics"><strong id="staffImportSpecialtyCount" class="num">٠</strong><span>تخصص</span></div>
-            <div class="staff-import-stat" data-manager-only="clinics"><strong id="staffImportDoctorCount" class="num">٠</strong><span>طبيب</span></div>
-            <div class="staff-import-stat" data-manager-only="nursing"><strong id="staffImportNurseCount" class="num">٠</strong><span>تمريض</span></div>
+            <div class="staff-import-stat"><strong id="staffImportSpecialtyCount" class="num">٠</strong><span>تخصص</span></div>
+            <div class="staff-import-stat"><strong id="staffImportDoctorCount" class="num">٠</strong><span>طبيب</span></div>
+            <div class="staff-import-stat"><strong id="staffImportNurseCount" class="num">٠</strong><span>تمريض</span></div>
           </div>
 
           <div id="staffImportChanges" class="staff-import-changes" data-state="loading">
@@ -5809,7 +5531,7 @@
         </div>
 
         <div class="staff-admin-grid">
-      <section class="staff-admin-card" data-manager-only="clinics">
+      <section class="staff-admin-card">
         <div class="staff-admin-card-head">
           <h2 class="font-bold text-slate-800">التخصصات</h2>
           <p class="text-xs text-slate-500 mt-1">إضافة، تعديل، إيقاف أو إعادة تفعيل</p>
@@ -5827,7 +5549,7 @@
         </div>
       </section>
 
-      <section class="staff-admin-card" data-manager-only="clinics">
+      <section class="staff-admin-card">
         <div class="staff-admin-card-head">
           <h2 class="font-bold text-slate-800">الأطباء</h2>
           <p class="text-xs text-slate-500 mt-1">كل طبيب مرتبط بتخصص واحد فقط</p>
@@ -5849,7 +5571,7 @@
         </div>
       </section>
 
-      <section class="staff-admin-card" data-manager-only="nursing">
+      <section class="staff-admin-card">
         <div class="staff-admin-card-head">
           <h2 class="font-bold text-slate-800">التمريض</h2>
           <p class="text-xs text-slate-500 mt-1">إضافة، تعديل، إيقاف أو إعادة تفعيل</p>
@@ -7058,9 +6780,7 @@ function renderReceptionDashboard(){
 const AUDIT_ROLE_LABELS = {
   nurse:"التمريض",
   reception:"الاستعلامات",
-  clinics_manager:"مسؤول العيادات",
-  nursing_manager:"مسؤول التمريض",
-  staff_manager:"مسؤول العيادات والتمريض",
+  staff_manager:"مسؤول العيادات",
   admin:"الأدمن"
 };
 let adminAuditItems = [];
@@ -7081,12 +6801,9 @@ function auditActorInfo(context = {}){
   }else if(isReceptionUser(user)){
     role = "reception";
     actorName = "الاستعلامات";
-  }else if(isClinicsManagerUser(user)){
-    role = "clinics_manager";
-    actorName = "مسؤول العيادات";
-  }else if(isNursingManagerUser(user)){
-    role = "nursing_manager";
-    actorName = "مسؤول التمريض";
+  }else if(isStaffManagerUser(user)){
+    role = "staff_manager";
+    actorName = "مسؤول العيادات والتمريض";
   }else{
     roomId = roomId || authorizedRoomForUser(user) || DISPLAY_SLOT_ID;
     actorName = String(context.nurseName || setupData?.nurse || state?.nurse || "").trim();
@@ -7397,65 +7114,14 @@ allClinicsRef.on("value", snapshot=>{
    ③  التوجيه بين الشاشات
    ========================================================== */
 const RECEPTION_EMAIL = "reception@islah.clinic";
-const CLINICS_MANAGER_EMAIL = "clinics_manager@islah.clinic";
-const NURSING_MANAGER_EMAIL = "nursing_manager@islah.clinic";
+const STAFF_MANAGER_EMAIL = "staff_manager@islah.clinic";
 const ADMIN_EMAIL = "admin@islah.clinic";
-
-let staffManagerLoginRole = "clinics_manager";
 
 function isReceptionUser(user = auth.currentUser){
   return String(user?.email || "").toLowerCase() === RECEPTION_EMAIL;
 }
-function isClinicsManagerUser(user = auth.currentUser){
-  return String(user?.email || "").toLowerCase() === CLINICS_MANAGER_EMAIL;
-}
-function isNursingManagerUser(user = auth.currentUser){
-  return String(user?.email || "").toLowerCase() === NURSING_MANAGER_EMAIL;
-}
 function isStaffManagerUser(user = auth.currentUser){
-  return isClinicsManagerUser(user) || isNursingManagerUser(user);
-}
-function currentStaffManagerRole(user = auth.currentUser){
-  if(isClinicsManagerUser(user)) return "clinics_manager";
-  if(isNursingManagerUser(user)) return "nursing_manager";
-  return "";
-}
-function staffManagerCanClinics(user = auth.currentUser){
-  return isClinicsManagerUser(user);
-}
-function staffManagerCanNursing(user = auth.currentUser){
-  return isNursingManagerUser(user);
-}
-function staffManagerLoginConfig(role = staffManagerLoginRole){
-  return role === "nursing_manager"
-    ? {
-        role:"nursing_manager",
-        username:"nursing_manager",
-        email:NURSING_MANAGER_EMAIL,
-        title:"مسؤول التمريض",
-        subtitle:"إدارة أسماء التمريض"
-      }
-    : {
-        role:"clinics_manager",
-        username:"clinics_manager",
-        email:CLINICS_MANAGER_EMAIL,
-        title:"مسؤول العيادات",
-        subtitle:"إدارة التخصصات والأطباء"
-      };
-}
-function prepareStaffManagerLogin(role){
-  staffManagerLoginRole = role === "nursing_manager" ? "nursing_manager" : "clinics_manager";
-  const config = staffManagerLoginConfig(staffManagerLoginRole);
-  const title = $("#staffManagerLoginTitle");
-  const subtitle = $("#staffManagerLoginSubtitle");
-  const username = $("#staffManagerUsername");
-  const password = $("#staffManagerPassword");
-  const message = $("#staffManagerLoginMessage");
-  if(title) title.textContent = config.title;
-  if(subtitle) subtitle.textContent = config.subtitle;
-  if(username) username.value = config.username;
-  if(password) password.value = "";
-  if(message) message.textContent = "";
+  return String(user?.email || "").toLowerCase() === STAFF_MANAGER_EMAIL;
 }
 function isAdminUser(user = auth.currentUser){
   return String(user?.email || "").toLowerCase() === ADMIN_EMAIL;
@@ -7492,21 +7158,13 @@ function route(){
     if(isAdminUser()){ show("admin"); renderAdminDashboard(); }
     else show("admin-login");
   }
-  else if(h === "clinics-manager"){
-    if(isClinicsManagerUser()){ show("staff-manager"); renderStaffManager(); }
-    else { prepareStaffManagerLogin("clinics_manager"); show("staff-manager-login"); }
-  }
-  else if(h === "nursing-manager"){
-    if(isNursingManagerUser()){ show("staff-manager"); renderStaffManager(); }
-    else { prepareStaffManagerLogin("nursing_manager"); show("staff-manager-login"); }
-  }
   else if(h === "staff-manager-login"){
     if(isStaffManagerUser()){ show("staff-manager"); renderStaffManager(); }
-    else { prepareStaffManagerLogin(staffManagerLoginRole); show("staff-manager-login"); }
+    else show("staff-manager-login");
   }
   else if(h === "staff-manager"){
     if(isStaffManagerUser()){ show("staff-manager"); renderStaffManager(); }
-    else { prepareStaffManagerLogin(staffManagerLoginRole); show("staff-manager-login"); }
+    else show("staff-manager-login");
   }
   else if(h === "reception"){
     if(isReceptionUser()){ show("reception"); renderReceptionDashboard(); }
@@ -7689,15 +7347,23 @@ function doctorDisplayName(value){
   ).trim() || fullName;
 }
 
+function doctorNameWithTitle(value){
+  const name = String(value || "").trim();
+  if(!name || name === "—" || name === "لا يوجد طبيب مسجل") return name;
+
+  const cleanName = name.replace(/^د(?:\.\s*|\s+)/u, "").trim();
+  return "د. " + (cleanName || name);
+}
+
 function doctorDisplayFromData(data){
   const fullName = String(data?.doctor || "").trim();
   if(!fullName || fullName === "—") return "لا يوجد طبيب مسجل";
 
   const mappedName = doctorDisplayName(fullName);
-  if(mappedName && mappedName !== fullName) return mappedName;
+  if(mappedName && mappedName !== fullName) return doctorNameWithTitle(mappedName);
 
   const savedDisplayName = String(data?.doctorDisplayName || "").trim();
-  return savedDisplayName || fullName;
+  return doctorNameWithTitle(savedDisplayName || fullName);
 }
 
 function renderClinicOptions(query){
@@ -7793,7 +7459,7 @@ function renderDoctorOptions(query){
 
   const filteredDoctors = selectableDoctorNames(clinicId).filter(doctor=>
     normalizeArabicSearch(doctor).includes(normalizedQuery) ||
-    normalizeArabicSearch(doctorDisplayName(doctor)).includes(normalizedQuery)
+    normalizeArabicSearch(doctorNameWithTitle(doctorDisplayName(doctor))).includes(normalizedQuery)
   );
 
   if(!filteredDoctors.length){
@@ -7811,7 +7477,7 @@ function renderDoctorOptions(query){
     option.dataset.doctor = doctor;
     option.setAttribute("role", "option");
     option.setAttribute("aria-selected", doctor === selectedDoctor ? "true" : "false");
-    option.textContent = doctorDisplayName(doctor);
+    option.textContent = doctorNameWithTitle(doctorDisplayName(doctor));
     option.addEventListener("click", ()=> selectDoctor(doctor));
     menu.appendChild(option);
   });
@@ -7835,7 +7501,7 @@ function selectDoctor(doctor){
   const clinic = findSpecialtyById(clinicId);
   if(!clinic || !selectableDoctorNames(clinicId).includes(doctor)) return;
   $("#setupDoctor").value = doctor;
-  $("#setupDoctorSearch").value = doctorDisplayName(doctor);
+  $("#setupDoctorSearch").value = doctorNameWithTitle(doctorDisplayName(doctor));
   $("#setupMsg").textContent = "";
   closeDoctorMenu();
 }
@@ -7865,7 +7531,7 @@ function fillDoctorOptions(clinicId, selectedDoctor){
 
   if(selectedDoctor && names.includes(selectedDoctor)){
     $("#setupDoctor").value = selectedDoctor;
-    search.value = doctorDisplayName(selectedDoctor);
+    search.value = doctorNameWithTitle(doctorDisplayName(selectedDoctor));
   }
 }
 
@@ -8151,7 +7817,6 @@ $("#saveSetupBtn").addEventListener("click", async ()=>{
       roomNumber:DISPLAY_SLOT_ID,
       floor:CURRENT_ROOM.floorName,
       location:"عيادة رقم " + DISPLAY_SLOT_ID + " — " + CURRENT_ROOM.floorName,
-      status:"active",
       updatedAt:firebase.database.ServerValue.TIMESTAMP
     });
     writeAuditLog({
@@ -8206,102 +7871,6 @@ function staffAdminMessage(text, ok = true){
   if(!el) return;
   el.textContent = text || "";
   el.className = "text-sm mt-2 min-h-[22px] " + (ok ? "text-emerald-700" : "text-red-600");
-}
-
-function applyStaffManagerRoleUI(){
-  const role = currentStaffManagerRole();
-  const view = $("#view-staff-manager");
-  if(!view || !role) return;
-  view.dataset.managerRole = role;
-
-  const isNursing = role === "nursing_manager";
-  const title = $("#staffManagerPageTitle");
-  const subtitle = $("#staffManagerPageSubtitle");
-  const searchTitle = $("#staffDirectorySearchTitle");
-  const searchDesc = $("#staffDirectorySearchDesc");
-  const searchInput = $("#staffGlobalSearch");
-  const seedBtn = $("#staffSeedDirectoryBtn");
-
-  if(title) title.textContent = isNursing ? "مسؤول التمريض" : "مسؤول العيادات";
-  if(subtitle) subtitle.textContent = isNursing
-    ? "إدارة أسماء التمريض وقوائم الاختيار"
-    : "إدارة التخصصات والأطباء وقوائم الاختيار";
-
-  if(searchTitle) searchTitle.textContent = isNursing ? "بحث في أسماء التمريض" : "بحث في التخصصات والأطباء";
-  if(searchDesc) searchDesc.textContent = isNursing
-    ? "ابحث باسم التمريض لمعرفة هل الاسم موجود ومفعل في النظام."
-    : "ابحث باسم التخصص أو الطبيب لمعرفة هل هو موجود ومكانه.";
-  if(searchInput) searchInput.placeholder = isNursing
-    ? "اكتب اسم التمريض..."
-    : "اكتب اسم تخصص أو طبيب...";
-  if(seedBtn) seedBtn.textContent = isNursing
-    ? "تهيئة أسماء التمريض الحالية"
-    : "تهيئة التخصصات الحالية";
-
-  const importTitle = document.querySelector("#view-staff-manager .staff-import-title");
-  const importDesc = document.querySelector("#view-staff-manager .staff-import-desc");
-  if(importTitle) importTitle.textContent = isNursing
-    ? "استيراد أسماء التمريض من Excel"
-    : "استيراد التخصصات والأطباء من Excel";
-  if(importDesc) importDesc.textContent = isNursing
-    ? "ارفع ملف الموارد البشرية نفسه؛ سيستخدم النظام أسماء التمريض فقط ولن يغيّر التخصصات أو الأطباء."
-    : "ارفع ملف الموارد البشرية نفسه؛ سيستخدم النظام التخصصات والأطباء فقط ولن يغيّر أسماء التمريض.";
-
-  const manualDesc = document.querySelector("#view-staff-manager .staff-manual-desc");
-  if(manualDesc) manualDesc.textContent = isNursing
-    ? "أضف أو عدّل أو أوقف اسم تمريض بسهولة، ثم اعتمد التعديلات."
-    : "أضف أو عدّل التخصصات والأطباء واربط كل طبيب بتخصصه، ثم اعتمد التعديلات.";
-
-  const manualSwitcherDesc = document.querySelector('#view-staff-manager .staff-workspace-card[data-target="manual"] small');
-  if(manualSwitcherDesc) manualSwitcherDesc.textContent = isNursing
-    ? "إضافة أو تعديل أسماء التمريض يدويًا"
-    : "إضافة أو تعديل التخصصات والأطباء يدويًا";
-}
-
-function staffImportDataForCurrentManager(data){
-  const normalized = normalizeStaffImportData(data || {});
-  if(staffManagerCanNursing()){
-    return {
-      ...normalized,
-      specialties:[],
-      doctors:[],
-      nurses:[...(normalized.nurses || [])],
-      warnings:[]
-    };
-  }
-  return {
-    ...normalized,
-    specialties:[...(normalized.specialties || [])],
-    doctors:[...(normalized.doctors || [])],
-    nurses:[]
-  };
-}
-
-function scopeStaffImportChanges(changes){
-  if(changes?.loading) return changes;
-  if(staffManagerCanNursing()){
-    const totalChanges = (changes.addedNurses?.length || 0) + (changes.removedNurses?.length || 0);
-    return {
-      ...changes,
-      totalChanges,
-      currentIsEmpty:staffDirectoryState.nurses.length === 0,
-      addedSpecialties:[],removedSpecialties:[],
-      addedDoctors:[],removedDoctors:[],movedDoctors:[],renamedDisplayDoctors:[]
-    };
-  }
-  const totalChanges =
-    (changes.addedSpecialties?.length || 0) +
-    (changes.removedSpecialties?.length || 0) +
-    (changes.addedDoctors?.length || 0) +
-    (changes.removedDoctors?.length || 0) +
-    (changes.movedDoctors?.length || 0) +
-    (changes.renamedDisplayDoctors?.length || 0);
-  return {
-    ...changes,
-    totalChanges,
-    currentIsEmpty:staffDirectoryState.specialties.length === 0 && staffDirectoryState.doctors.length === 0,
-    addedNurses:[],removedNurses:[]
-  };
 }
 
 function resetStaffSpecialtyForm(){
@@ -8570,7 +8139,7 @@ function renderStaffImportChanges(data){
   const details = $("#staffImportChangesDetails");
   if(!box || !badge || !summary || !details) return;
 
-  const changes = scopeStaffImportChanges(compareStaffImportWithCurrent(data));
+  const changes = compareStaffImportWithCurrent(data);
 
   if(changes.loading){
     box.dataset.state = "loading";
@@ -8651,13 +8220,13 @@ function renderStaffImportChanges(data){
 function renderStaffImportPreview(){
   if(!$("#staffImportPreview")) return;
 
-  const data = staffImportDataForCurrentManager(staffImportState || {
+  const data = staffImportState || {
     source:"لم يتم اختيار ملف",
     specialties:[],
     doctors:[],
     nurses:[],
     warnings:[]
-  });
+  };
 
   $("#staffImportSource").innerHTML =
     escapeHtml(data.source || "—") +
@@ -8943,31 +8512,22 @@ function buildImportPayload(data){
 
 async function commitStaffImport(){
   if(!isStaffManagerUser()) return;
-
-  const data = staffImportDataForCurrentManager(staffImportState);
-  const isNursing = staffManagerCanNursing();
-
-  if(isNursing){
-    if(!data.nurses.length){
-      return staffAdminMessage("ملف الاستيراد لا يحتوي على أسماء تمريض صالحة.", false);
-    }
-  }else if(!data.specialties.length || !data.doctors.length){
+  const data = normalizeStaffImportData(staffImportState);
+  if(!data.specialties.length || !data.doctors.length){
     return staffAdminMessage("ملف الاستيراد لا يحتوي على تخصصات وأطباء صالحين.", false);
   }
 
   const mode = $("#staffImportMode").value;
-  const actionText = isNursing
-    ? (mode === "replace"
-        ? "سيتم استبدال قائمة أسماء التمريض الحالية فقط ببيانات الملف، دون تغيير التخصصات أو الأطباء."
-        : "سيتم دمج أسماء التمريض مع القائمة الحالية بدون تكرار، دون تغيير التخصصات أو الأطباء.")
-    : (mode === "replace"
-        ? "سيتم استبدال التخصصات والأطباء الحاليين فقط ببيانات الملف، دون تغيير أسماء التمريض."
-        : "سيتم دمج التخصصات والأطباء مع القوائم الحالية بدون تكرار، دون تغيير أسماء التمريض.");
+  const actionText = mode === "replace"
+    ? "سيتم استبدال قوائم التخصصات والأطباء والتمريض الحالية بالكامل ببيانات الملف."
+    : "سيتم دمج بيانات الملف مع القوائم الحالية بدون إنشاء أسماء مكررة.";
 
-  const confirmText = isNursing
-    ? actionText + "\n\nأسماء التمريض: " + data.nurses.length + "\n\nمتابعة؟"
-    : actionText + "\n\nالتخصصات: " + data.specialties.length +
-      "\nالأطباء: " + data.doctors.length + "\n\nمتابعة؟";
+  const confirmText =
+    actionText + "\n\n" +
+    "التخصصات: " + data.specialties.length +
+    "\nالأطباء: " + data.doctors.length +
+    "\nالتمريض: " + data.nurses.length +
+    "\n\nمتابعة؟";
 
   if(!confirm(confirmText)) return;
 
@@ -8979,100 +8539,79 @@ async function commitStaffImport(){
   try{
     if(mode === "replace"){
       const timestamp = firebase.database.ServerValue.TIMESTAMP;
+      const specialtyIds = new Map();
+      const specialtiesObj = {};
+      const doctorsObj = {};
+      const nursesObj = {};
 
-      if(isNursing){
-        const nursesObj = {};
-        data.nurses.forEach(name=>{
-          const id = firebase.database().ref().push().key;
-          nursesObj[id] = {
-            name,
-            active:true,
-            createdAt:timestamp,
-            updatedAt:timestamp
-          };
-        });
-
-        await staffDirectoryRef.update({nurses:nursesObj});
-        writeAuditLog({
-          action:"nursing_import_replace",
-          summary:"استبدال قائمة التمريض: " + data.nurses.length + " اسم تمريض"
-        });
-        staffAdminMessage("تم استبدال قائمة التمريض بنجاح: " + data.nurses.length + " اسم.");
-      }else{
-        const specialtyIds = new Map();
-        const specialtiesObj = {};
-        const doctorsObj = {};
-
-        data.specialties.forEach(name=>{
-          const id = firebase.database().ref().push().key;
-          specialtyIds.set(staffImportKey(name),id);
-          specialtiesObj[id] = {
-            name,
-            active:true,
-            createdAt:timestamp,
-            updatedAt:timestamp
-          };
-        });
-
-        data.doctors.forEach(item=>{
-          const specialtyId = specialtyIds.get(staffImportKey(item.specialty));
-          if(!specialtyId) return;
-          const id = firebase.database().ref().push().key;
-          doctorsObj[id] = {
-            name:item.name,
-            shortName:item.shortName || item.name,
-            specialtyId,
-            active:true,
-            createdAt:timestamp,
-            updatedAt:timestamp
-          };
-        });
-
-        await staffDirectoryRef.update({
-          specialties:specialtiesObj,
-          doctors:doctorsObj
-        });
-        writeAuditLog({
-          action:"clinics_import_replace",
-          summary:"استبدال قوائم العيادات: " + data.specialties.length + " تخصص، " + data.doctors.length + " طبيب"
-        });
-        staffAdminMessage(
-          "تم استبدال التخصصات والأطباء بنجاح: " +
-          data.specialties.length + " تخصص، " +
-          data.doctors.length + " طبيب."
-        );
-      }
-    }else{
-      const payload = buildImportPayload(data);
-      const allowedUpdates = {};
-
-      Object.entries(payload.updates || {}).forEach(([path,value])=>{
-        if(isNursing){
-          if(path.startsWith("nurses/")) allowedUpdates[path] = value;
-        }else{
-          if(path.startsWith("specialties/") || path.startsWith("doctors/")) allowedUpdates[path] = value;
-        }
+      data.specialties.forEach(name=>{
+        const id = firebase.database().ref().push().key;
+        specialtyIds.set(staffImportKey(name),id);
+        specialtiesObj[id] = {
+          name,
+          active:true,
+          createdAt:timestamp,
+          updatedAt:timestamp
+        };
       });
 
-      await staffDirectoryRef.update(allowedUpdates);
+      data.doctors.forEach(item=>{
+        const specialtyId = specialtyIds.get(staffImportKey(item.specialty));
+        if(!specialtyId) return;
+        const id = firebase.database().ref().push().key;
+        doctorsObj[id] = {
+          name:item.name,
+          shortName:item.shortName || item.name,
+          specialtyId,
+          active:true,
+          createdAt:timestamp,
+          updatedAt:timestamp
+        };
+      });
 
-      if(isNursing){
-        writeAuditLog({
-          action:"nursing_import_merge",
-          summary:"دمج قائمة التمريض: أضيف " + payload.summary.newNurses + " اسم تمريض"
-        });
-        staffAdminMessage("تم دمج أسماء التمريض بنجاح. أضيف: " + payload.summary.newNurses + " اسم.");
-      }else{
-        writeAuditLog({
-          action:"clinics_import_merge",
-          summary:"دمج قوائم العيادات: أضيف " + payload.summary.newSpecialties + " تخصص، " + payload.summary.newDoctors + " طبيب"
-        });
-        staffAdminMessage(
-          "تم دمج التخصصات والأطباء بنجاح. أضيف: " +
-          payload.summary.newSpecialties + " تخصص، " +
-          payload.summary.newDoctors + " طبيب."
-        );
-      }
+      data.nurses.forEach(name=>{
+        const id = firebase.database().ref().push().key;
+        nursesObj[id] = {
+          name,
+          active:true,
+          createdAt:timestamp,
+          updatedAt:timestamp
+        };
+      });
+
+      await staffDirectoryRef.set({
+        meta:{
+          ready:true,
+          updatedAt:timestamp
+        },
+        specialties:specialtiesObj,
+        doctors:doctorsObj,
+        nurses:nursesObj
+      });
+      writeAuditLog({
+        action:"staff_import_replace",
+        summary:"استبدال قوائم النظام بالكامل: " + data.specialties.length + " تخصص، " + data.doctors.length + " طبيب، " + data.nurses.length + " تمريض"
+      });
+
+      staffAdminMessage(
+        "تم استبدال القوائم ببيانات الملف: " +
+        data.specialties.length + " تخصص، " +
+        data.doctors.length + " طبيب، " +
+        data.nurses.length + " تمريض."
+      );
+    }else{
+      const payload = buildImportPayload(data);
+      await staffDirectoryRef.update(payload.updates);
+      writeAuditLog({
+        action:"staff_import_merge",
+        summary:"دمج ملف القوائم: أضيف " + payload.summary.newSpecialties + " تخصص، " + payload.summary.newDoctors + " طبيب، " + payload.summary.newNurses + " تمريض"
+      });
+      staffAdminMessage(
+        "تم دمج البيانات بنجاح. أضيف: " +
+        payload.summary.newSpecialties + " تخصص، " +
+        payload.summary.newDoctors + " طبيب، " +
+        payload.summary.newNurses + " تمريض."
+      );
     }
   }catch(e){
     console.error("Staff Excel import error:",e);
@@ -9258,25 +8797,11 @@ function buildStaffManualDiff(){
     }
   });
 
-  const allowClinics = staffManagerCanClinics();
-  const allowNursing = staffManagerCanNursing();
+  if(changes.length){
+    updates["meta/updatedAt"] = timestamp;
+  }
 
-  const scopedChanges = changes.filter(change=>{
-    if(allowClinics) return change.includes("تخصص") || change.includes("طبيب");
-    if(allowNursing) return change.includes("تمريض");
-    return false;
-  });
-
-  const scopedUpdates = {};
-  Object.entries(updates).forEach(([path,value])=>{
-    if(allowClinics && (path.startsWith("specialties/") || path.startsWith("doctors/"))){
-      scopedUpdates[path] = value;
-    }else if(allowNursing && path.startsWith("nurses/")){
-      scopedUpdates[path] = value;
-    }
-  });
-
-  return {changes:scopedChanges,updates:scopedUpdates};
+  return {changes,updates};
 }
 
 function refreshStaffManualDirtyState(){
@@ -9398,9 +8923,7 @@ function renderStaffGlobalSearch(){
 
   if(!query){
     count.textContent = "بحث";
-    results.innerHTML = staffManagerCanNursing()
-      ? '<div class="staff-directory-search-empty">ابدأ بالكتابة للبحث في أسماء التمريض.</div>'
-      : '<div class="staff-directory-search-empty">ابدأ بالكتابة للبحث في التخصصات والأطباء.</div>';
+    results.innerHTML = '<div class="staff-directory-search-empty">ابدأ بالكتابة للبحث في التخصصات والأطباء والتمريض.</div>';
     return;
   }
 
@@ -9451,21 +8974,15 @@ function renderStaffGlobalSearch(){
     }
   });
 
-  const visibleMatches = matches.filter(result=>{
-    if(staffManagerCanNursing()) return result.type === "تمريض";
-    return result.type === "تخصص" || result.type === "طبيب";
-  });
+  count.textContent = matches.length ? ar(matches.length) + " نتيجة" : "غير موجود";
 
-  count.textContent = visibleMatches.length ? ar(visibleMatches.length) + " نتيجة" : "غير موجود";
-
-  if(!visibleMatches.length){
-    const scopeLabel = staffManagerCanNursing() ? "أسماء التمريض" : "التخصصات أو الأطباء";
+  if(!matches.length){
     results.innerHTML = '<div class="staff-directory-search-empty">لا توجد نتيجة مطابقة لـ «' +
-      escapeHtml(rawQuery) + '» في ' + scopeLabel + '.</div>';
+      escapeHtml(rawQuery) + '» في التخصصات أو الأطباء أو التمريض.</div>';
     return;
   }
 
-  results.innerHTML = visibleMatches.slice(0,50).map(result=>
+  results.innerHTML = matches.slice(0,50).map(result=>
     '<div class="staff-directory-result">' +
       '<div class="staff-directory-result-main">' +
         '<div class="staff-directory-result-name">' + escapeHtml(result.name) + '</div>' +
@@ -9519,7 +9036,6 @@ function createStaffAdminRow(name, meta, active, onEdit, onToggle){
 
 function renderStaffManager(){
   if(!$("#staffDirectoryStatus")) return;
-  applyStaffManagerRoleUI();
   renderStaffImportPreview();
 
   const manualState = getStaffManualState();
@@ -9567,7 +9083,7 @@ function renderStaffManager(){
           $("#staffSpecialtyName").focus();
         },
         ()=>{
-          if(!staffManagerCanClinics()) return;
+          if(!isStaffManagerUser()) return;
           item.active = item.active === false;
           refreshStaffManualDirtyState();
           renderStaffManager();
@@ -9596,7 +9112,7 @@ function renderStaffManager(){
           $("#staffDoctorName").focus();
         },
         ()=>{
-          if(!staffManagerCanClinics()) return;
+          if(!isStaffManagerUser()) return;
           item.active = item.active === false;
           refreshStaffManualDirtyState();
           renderStaffManager();
@@ -9620,7 +9136,7 @@ function renderStaffManager(){
           $("#staffNurseName").focus();
         },
         ()=>{
-          if(!staffManagerCanNursing()) return;
+          if(!isStaffManagerUser()) return;
           item.active = item.active === false;
           refreshStaffManualDirtyState();
           renderStaffManager();
@@ -9632,7 +9148,7 @@ function renderStaffManager(){
 
 $("#staffSpecialtyForm").addEventListener("submit", event=>{
   event.preventDefault();
-  if(!staffManagerCanClinics()) return;
+  if(!isStaffManagerUser()) return;
 
   const state = getStaffManualState();
   const id = $("#staffSpecialtyId").value.trim();
@@ -9659,7 +9175,7 @@ $("#staffSpecialtyForm").addEventListener("submit", event=>{
 
 $("#staffDoctorForm").addEventListener("submit", event=>{
   event.preventDefault();
-  if(!staffManagerCanClinics()) return;
+  if(!isStaffManagerUser()) return;
 
   const state = getStaffManualState();
   const id = $("#staffDoctorId").value.trim();
@@ -9694,7 +9210,7 @@ $("#staffDoctorForm").addEventListener("submit", event=>{
 
 $("#staffNurseForm").addEventListener("submit", event=>{
   event.preventDefault();
-  if(!staffManagerCanNursing()) return;
+  if(!isStaffManagerUser()) return;
 
   const state = getStaffManualState();
   const id = $("#staffNurseId").value.trim();
@@ -9725,42 +9241,31 @@ $("#staffNurseCancel").addEventListener("click", resetStaffNurseForm);
 
 $("#staffSeedDirectoryBtn").addEventListener("click", async ()=>{
   if(!isStaffManagerUser()) return;
-
-  const isNursing = staffManagerCanNursing();
-  const confirmText = isNursing
-    ? "سيتم نسخ أسماء التمريض الحالية من ملف الموارد البشرية إلى Firebase. متابعة؟"
-    : "سيتم نسخ التخصصات الحالية إلى Firebase. متابعة؟";
-  if(!confirm(confirmText)) return;
+  if(!confirm("سيتم نسخ التخصصات وأسماء التمريض الحالية إلى Firebase دون اعتمادها للمستخدمين بعد. متابعة؟")) return;
 
   const updates = {};
-  if(isNursing){
-    EMBEDDED_STAFF_IMPORT.nurses.forEach(name=>{
-      const key = firebase.database().ref().push().key;
-      updates["nurses/" + key] = {
-        name,
-        active:true,
-        updatedAt:firebase.database.ServerValue.TIMESTAMP
-      };
-    });
-  }else{
-    CLINIC_OPTIONS.forEach(item=>{
-      updates["specialties/" + item.id] = {
-        name:item.name,
-        active:true,
-        updatedAt:firebase.database.ServerValue.TIMESTAMP
-      };
-    });
-  }
+  CLINIC_OPTIONS.forEach(item=>{
+    updates["specialties/" + item.id] = {
+      name:item.name,
+      active:true,
+      updatedAt:firebase.database.ServerValue.TIMESTAMP
+    };
+  });
+  EMBEDDED_STAFF_IMPORT.nurses.forEach(name=>{
+    const key = firebase.database().ref().push().key;
+    updates["nurses/" + key] = {
+      name,
+      active:true,
+      updatedAt:firebase.database.ServerValue.TIMESTAMP
+    };
+  });
+  updates["meta/ready"] = false;
+  updates["meta/updatedAt"] = firebase.database.ServerValue.TIMESTAMP;
 
   try{
     await staffDirectoryRef.update(updates);
-    if(isNursing){
-      writeAuditLog({action:"nursing_seed",summary:"تهيئة أسماء التمريض الحالية في Firebase"});
-      staffAdminMessage("تمت تهيئة أسماء التمريض بنجاح.");
-    }else{
-      writeAuditLog({action:"clinics_seed",summary:"تهيئة تخصصات العيادات الحالية في Firebase"});
-      staffAdminMessage("تمت تهيئة التخصصات. يمكنك الآن إضافة أو استيراد الأطباء.");
-    }
+    writeAuditLog({action:"staff_seed",summary:"تهيئة التخصصات وأسماء التمريض في Firebase"});
+    staffAdminMessage("تمت تهيئة التخصصات والتمريض. أضف الأطباء ثم اعتمد القوائم.");
   }catch(e){
     staffAdminMessage("تعذرت تهيئة البيانات. راجع Firebase Rules.", false);
   }
@@ -9796,16 +9301,14 @@ $("#staffManagerBackBtn").addEventListener("click", ()=>{
 
 $("#staffManagerLoginForm").addEventListener("submit", async event=>{
   event.preventDefault();
-
-  const config = staffManagerLoginConfig(staffManagerLoginRole);
   const username = $("#staffManagerUsername").value.trim().toLowerCase();
   const password = $("#staffManagerPassword").value;
   const message = $("#staffManagerLoginMessage");
   const button = $("#staffManagerLoginButton");
 
   message.textContent = "";
-  if(![config.username, config.email].includes(username)){
-    message.textContent = "اسم المستخدم غير صحيح";
+  if(!["staff_manager", STAFF_MANAGER_EMAIL].includes(username)){
+    message.textContent = "اسم المستخدم غير صحيح. استخدم staff_manager";
     return;
   }
   if(!password){
@@ -9816,16 +9319,11 @@ $("#staffManagerLoginForm").addEventListener("submit", async event=>{
   button.disabled = true;
   button.textContent = "جاري الدخول...";
   try{
-    const credential = await auth.signInWithEmailAndPassword(config.email, password);
-    const validUser = config.role === "nursing_manager"
-      ? isNursingManagerUser(credential.user)
-      : isClinicsManagerUser(credential.user);
-
-    if(!validUser){
+    const credential = await auth.signInWithEmailAndPassword(STAFF_MANAGER_EMAIL, password);
+    if(!isStaffManagerUser(credential.user)){
       await auth.signOut();
       throw new Error("unauthorized-manager");
     }
-
     $("#staffManagerPassword").value = "";
     location.hash = "#/staff-manager";
     route();
@@ -9937,11 +9435,6 @@ function renderAll(numberChanged){
   const displayedDoctor = doctorDisplayFromData(state);
   $("#panelDoctor").textContent = displayedDoctor;
   $("#panelNurse").textContent = state.nurse;
-  $("#nurseDisplayedNumber").textContent = state.status === "finished"
-    ? "انتهت"
-    : closed
-      ? "—"
-      : ar(state.displayCurrent);
   $("#nurseMeta").textContent = state.doctor !== "—"
     ? "الجلسة الحالية: " + displayedDoctor + (state.period ? " • " + state.period : "") + " • آخر تحديث " + timeStr(state.updatedAt)
     : "لم تبدأ أي جلسة بعد";
@@ -10560,7 +10053,7 @@ auth.onAuthStateChanged(user=>{
     sessionStorage.removeItem(SETUP_KEY);
     setupData = null;
     const currentView = (location.hash || "#/home").replace("#/","");
-    if(!["home","nurse","tv","qr","reception","patient","clinics-manager","nursing-manager","staff-manager-login","staff-manager","admin-login","admin"].includes(currentView)){
+    if(!["home","nurse","tv","qr","reception","patient","staff-manager-login","staff-manager","admin-login","admin"].includes(currentView)){
       location.hash = "#/home";
     }
     route();
