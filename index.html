@@ -17,6 +17,8 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 <style>
   /* ===== خط RB — الملفات الفعلية داخل مجلد fonts بجوار index.html ===== */
@@ -5518,6 +5520,11 @@
         <span id="syncBadge" class="text-xs px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700">متصل</span>
       </div>
 
+      <div class="mb-3 px-3 py-2.5 rounded-xl bg-sky-50 border border-sky-100 flex items-center justify-between gap-3">
+        <span class="text-xs font-bold text-slate-600">المعروض الآن على الشاشات</span>
+        <strong id="nurseDisplayedNumber" class="num text-2xl font-bold text-sky-700">—</strong>
+      </div>
+
       <div id="nurseQueueLock" class="nurse-queue-lock hidden-view" data-lock-status=""></div>
 
       <div id="nurseQueueControls">
@@ -6168,63 +6175,6 @@
 
 <script>
 /* ==========================================================
-   تحميل المكتبات الثقيلة عند الحاجة فقط
-   ========================================================== */
-const QR_LIBRARY_URL = "https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js";
-const XLSX_LIBRARY_URL = "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js";
-
-let qrLibraryPromise = null;
-let xlsxLibraryPromise = null;
-
-function loadExternalScriptOnce(src, readyCheck){
-  if(typeof readyCheck === "function" && readyCheck()) return Promise.resolve();
-
-  return new Promise((resolve,reject)=>{
-    const existing = document.querySelector('script[data-lazy-src="' + src + '"]');
-    if(existing){
-      existing.addEventListener("load",()=>resolve(),{once:true});
-      existing.addEventListener("error",()=>reject(new Error("script-load-failed")),{once:true});
-      return;
-    }
-
-    const script = document.createElement("script");
-    script.src = src;
-    script.async = true;
-    script.dataset.lazySrc = src;
-    script.onload = ()=>resolve();
-    script.onerror = ()=>{
-      script.remove();
-      reject(new Error("script-load-failed"));
-    };
-    document.head.appendChild(script);
-  });
-}
-
-function ensureQrLibrary(){
-  if(typeof QRCode !== "undefined") return Promise.resolve();
-  if(!qrLibraryPromise){
-    qrLibraryPromise = loadExternalScriptOnce(QR_LIBRARY_URL,()=>typeof QRCode !== "undefined")
-      .catch(error=>{
-        qrLibraryPromise = null;
-        throw error;
-      });
-  }
-  return qrLibraryPromise;
-}
-
-function ensureXlsxLibrary(){
-  if(typeof XLSX !== "undefined") return Promise.resolve();
-  if(!xlsxLibraryPromise){
-    xlsxLibraryPromise = loadExternalScriptOnce(XLSX_LIBRARY_URL,()=>typeof XLSX !== "undefined")
-      .catch(error=>{
-        xlsxLibraryPromise = null;
-        throw error;
-      });
-  }
-  return xlsxLibraryPromise;
-}
-
-/* ==========================================================
    ①  إعدادات Firebase — ضع بيانات مشروعك هنا
    ========================================================== */
 const firebaseConfig = {
@@ -6452,11 +6402,6 @@ const EMBEDDED_STAFF_IMPORT = {"source":"تحكم أدوار العيادات2.x
 const $ = (s) => document.querySelector(s);
 const ar = (n) => Number(n).toLocaleString("ar-EG");
 
-function isViewVisible(name){
-  const view = document.getElementById("view-" + name);
-  return Boolean(view && !view.classList.contains("hidden-view"));
-}
-
 document.title = "نظام متابعة الأدوار";
 
 $("#setupRoomPlace").textContent = CURRENT_ROOM.place + " — " + CURRENT_ROOM.floorName;
@@ -6638,7 +6583,7 @@ function addTvActivity(text, type = "update"){
   tvActivityItems.unshift({text:clean,type,ts:now});
   tvActivityItems = tvActivityItems.slice(0,TV_ACTIVITY_LIMIT);
   saveTvActivity();
-  if(isViewVisible("tv")) renderTvActivityPanel(true);
+  renderTvActivityPanel(true);
 }
 
 function tvActivityRoomSnapshot(clinics){
@@ -6838,27 +6783,8 @@ function updateQueueCard(room, data){
   return numberChanged;
 }
 
-let tvDashboardBuilt = false;
-
-function ensureTvDashboardBuilt(){
-  if(tvDashboardBuilt) return;
-  buildTvDashboard();
-  tvDashboardBuilt = true;
-  renderTvActivityPanel(false);
-}
-
-function renderTvClinicsData(clinics, allowChime = true){
-  ensureTvDashboardBuilt();
-  let shouldChime = false;
-
-  ROOM_OPTIONS.forEach(room=>{
-    /* توافق مؤقت مع نسخة تجربة الأسنان القديمة داخل clinics/dental */
-    const roomData = clinics?.[room.id] || (room.id === "311" ? clinics?.dental : null) || {};
-    if(updateQueueCard(room, roomData)) shouldChime = true;
-  });
-
-  if(allowChime && shouldChime && isViewVisible("tv")) chime();
-}
+buildTvDashboard();
+renderTvActivityPanel(false);
 
 const tvActivityPanelElement = $("#tvActivityPanel");
 if(tvActivityPanelElement){
@@ -7453,12 +7379,18 @@ allClinicsRef.on("value", snapshot=>{
   const clinics = snapshot.val() || {};
   trackTvClinicUpdates(clinics);
   receptionClinicsData = clinics;
+  let shouldChime = false;
 
-  /* لا نعيد بناء واجهات الصفحات المخفية. البيانات تظل محدثة في الذاكرة. */
-  if(isViewVisible("tv")) renderTvClinicsData(clinics,true);
-  if(isViewVisible("reception")) renderReceptionDashboard();
-  if(isViewVisible("admin")) renderAdminDashboard();
-  if(isViewVisible("qr") && typeof QRCode !== "undefined") renderQrDashboard();
+  ROOM_OPTIONS.forEach(room=>{
+    /* توافق مؤقت مع نسخة تجربة الأسنان القديمة داخل clinics/dental */
+    const roomData = clinics[room.id] || (room.id === "311" ? clinics.dental : null) || {};
+    if(updateQueueCard(room, roomData)) shouldChime = true;
+  });
+
+  renderReceptionDashboard();
+  renderAdminDashboard();
+  renderQrDashboard();
+  if(shouldChime && !$("#view-tv").classList.contains("hidden-view")) chime();
 });
 
 /* ==========================================================
@@ -7550,18 +7482,8 @@ function route(){
   const h = (location.hash || "#/home").replace("#/","");
   syncAdminRoomControls();
   if(h === "home")      { show("home"); }
-  else if(h === "tv"){
-    show("tv");
-    renderTvClinicsData(receptionClinicsData,false);
-    renderTvActivityPanel(false);
-    startClock();
-  }
-  else if(h === "qr"){
-    show("qr");
-    ensureQrLibrary()
-      .then(()=>{ if(isViewVisible("qr")) renderQrDashboard(); })
-      .catch(error=>console.warn("QR library load failed:",error));
-  }
+  else if(h === "tv")   { show("tv"); startClock(); }
+  else if(h === "qr")   { show("qr"); renderQrDashboard(); }
   else if(h === "admin-login"){
     if(isAdminUser()){ show("admin"); renderAdminDashboard(); }
     else show("admin-login");
@@ -7587,13 +7509,8 @@ function route(){
     else { prepareStaffManagerLogin(staffManagerLoginRole); show("staff-manager-login"); }
   }
   else if(h === "reception"){
-    if(isReceptionUser()){
-      show("reception");
-      renderReceptionDashboard();
-      ensureQrLibrary()
-        .then(()=>{ if(isViewVisible("reception")) renderReceptionDetail(); })
-        .catch(error=>console.warn("QR library load failed:",error));
-    }else{
+    if(isReceptionUser()){ show("reception"); renderReceptionDashboard(); }
+    else {
       $("#receptionUsername").value = "";
       $("#receptionPassword").value = "";
       show("reception-login");
@@ -7601,14 +7518,7 @@ function route(){
   }
   else if(h === "patient")  { show("patient"); startClock(); }
   else if(isStaffManagerUser()){ location.hash = "#/staff-manager"; show("staff-manager"); renderStaffManager(); }
-  else if(isReceptionUser()){
-    location.hash = "#/reception";
-    show("reception");
-    renderReceptionDashboard();
-    ensureQrLibrary()
-      .then(()=>{ if(isViewVisible("reception")) renderReceptionDetail(); })
-      .catch(error=>console.warn("QR library load failed:",error));
-  }
+  else if(isReceptionUser()){ location.hash = "#/reception"; show("reception"); renderReceptionDashboard(); }
   else if(isAdminUser() && !["setup","nurse"].includes(h)){ location.hash = "#/admin"; show("admin"); renderAdminDashboard(); }
   else if(!auth.currentUser)  { show("login"); }
   else if(h === "setup" || !setupData){ show("setup"); prefillSetup(); }
@@ -7708,7 +7618,7 @@ function handleStaffDirectorySnapshot(snapshot){
   if(doctorMenuOpen) renderDoctorOptions($("#setupDoctorSearch").value);
   if(nurseMenuOpen) renderNurseOptions($("#setupNurseSearch").value);
 
-  if(isStaffManagerUser() && isViewVisible("staff-manager")) renderStaffManager();
+  if(isStaffManagerUser()) renderStaffManager();
 }
 
 function startStaffDirectoryListener(){
@@ -8241,6 +8151,7 @@ $("#saveSetupBtn").addEventListener("click", async ()=>{
       roomNumber:DISPLAY_SLOT_ID,
       floor:CURRENT_ROOM.floorName,
       location:"عيادة رقم " + DISPLAY_SLOT_ID + " — " + CURRENT_ROOM.floorName,
+      status:"active",
       updatedAt:firebase.database.ServerValue.TIMESTAMP
     });
     writeAuditLog({
@@ -8443,11 +8354,6 @@ let staffImportState = null;
 
 function cloneEmbeddedStaffImport(){
   return JSON.parse(JSON.stringify(EMBEDDED_STAFF_IMPORT));
-}
-
-function ensureStaffImportPreviewInitialized(){
-  if(staffImportState) return;
-  staffImportState = normalizeStaffImportData(cloneEmbeddedStaffImport());
 }
 
 function staffImportKey(value){
@@ -8879,11 +8785,6 @@ function parseExcelWorkbook(workbook, sourceName){
 }
 
 async function readStaffExcelArrayBuffer(buffer, sourceName){
-  try{
-    await ensureXlsxLibrary();
-  }catch(error){
-    throw new Error("excel-library-unavailable");
-  }
   if(typeof XLSX === "undefined"){
     throw new Error("excel-library-unavailable");
   }
@@ -9220,6 +9121,9 @@ $("#staffExcelLink").addEventListener("keydown",event=>{
 });
 
 $("#staffCommitImport").addEventListener("click",commitStaffImport);
+
+staffImportState = normalizeStaffImportData(cloneEmbeddedStaffImport());
+renderStaffImportPreview();
 
 
 
@@ -9616,7 +9520,6 @@ function createStaffAdminRow(name, meta, active, onEdit, onToggle){
 function renderStaffManager(){
   if(!$("#staffDirectoryStatus")) return;
   applyStaffManagerRoleUI();
-  ensureStaffImportPreviewInitialized();
   renderStaffImportPreview();
 
   const manualState = getStaffManualState();
@@ -10034,6 +9937,11 @@ function renderAll(numberChanged){
   const displayedDoctor = doctorDisplayFromData(state);
   $("#panelDoctor").textContent = displayedDoctor;
   $("#panelNurse").textContent = state.nurse;
+  $("#nurseDisplayedNumber").textContent = state.status === "finished"
+    ? "انتهت"
+    : closed
+      ? "—"
+      : ar(state.displayCurrent);
   $("#nurseMeta").textContent = state.doctor !== "—"
     ? "الجلسة الحالية: " + displayedDoctor + (state.period ? " • " + state.period : "") + " • آخر تحديث " + timeStr(state.updatedAt)
     : "لم تبدأ أي جلسة بعد";
