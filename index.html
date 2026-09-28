@@ -5716,6 +5716,8 @@
         <button data-status="finished" class="statusBtn py-3 rounded-xl bg-slate-100 text-sm font-bold">🔴<br>إنهاء</button>
       </div>
       <div id="nurseBookingStatus" class="booking-badge" aria-live="polite"></div>
+      <button id="nurseBookingClose" type="button" class="booking-button" disabled>جارٍ تحميل حالة الحجز...</button>
+      <p id="nurseBookingMessage" class="text-xs mt-2" role="status"></p>
       <p class="text-xs text-slate-500 mt-3" id="nurseMeta"></p>
     </div>
 
@@ -6618,11 +6620,27 @@ function renderBookingStatus(){
     }
   });
   const button = $("#rcBookingToggle");
-  if(!button) return;
-  const closed = bookingStates[receptionSelectedRoom]?.closed === true;
-  button.dataset.closed = String(closed);
-  button.disabled = closed || bookingBusy || !bookingLoaded || !bookingConnected || !isReceptionUser();
-  button.textContent = bookingBusy ? "جارٍ حفظ حالة الحجز..." : closed ? "الحجز مغلق — اكتمل العدد" : "قفل الحجز لاكتمال العدد";
+  if(button){
+    const closed = bookingStates[receptionSelectedRoom]?.closed === true;
+    button.dataset.closed = String(closed);
+    button.disabled = bookingBusy || !bookingLoaded || !bookingConnected || !isReceptionUser();
+    button.textContent = bookingBusy
+      ? "جارٍ حفظ حالة الحجز..."
+      : closed
+        ? "فتح الحجز من جديد"
+        : "قفل الحجز لاكتمال العدد";
+  }
+
+  const nurseButton = $("#nurseBookingClose");
+  if(nurseButton){
+    const nurseClosed = bookingStates[DISPLAY_SLOT_ID]?.closed === true;
+    nurseButton.disabled = nurseClosed || bookingBusy || !bookingLoaded || !bookingConnected || !canControlCurrentRoom();
+    nurseButton.textContent = bookingBusy
+      ? "جارٍ حفظ حالة الحجز..."
+      : nurseClosed
+        ? "الحجز مغلق — الفتح من الاستعلامات فقط"
+        : "قفل الحجز لاكتمال العدد";
+  }
 }
 const dashboardLastNumbers = {};
 
@@ -10819,6 +10837,8 @@ bookingRef.on("value", snapshot=>{
 }, ()=>{
   bookingLoaded = false;
   $("#rcBookingMessage").textContent = "تعذّر قراءة حالة الحجز. راجع صلاحيات Firebase.";
+  const nurseBookingMessage = $("#nurseBookingMessage");
+  if(nurseBookingMessage) nurseBookingMessage.textContent = "تعذّر قراءة حالة الحجز. راجع الاتصال وصلاحيات Firebase.";
   renderBookingStatus();
 });
 firebase.database().ref(".info/connected").on("value", snapshot=>{
@@ -10828,9 +10848,12 @@ firebase.database().ref(".info/connected").on("value", snapshot=>{
 $("#rcBookingToggle").addEventListener("click", async ()=>{
   if(bookingBusy || !bookingLoaded || !bookingConnected || !isReceptionUser()) return;
   const roomId = receptionSelectedRoom;
-  if(bookingStates[roomId]?.closed === true) return;
-  const closed = true;
-  if(!confirm("قفل الحجز لاكتمال العدد — غرفة " + roomId + "؟")) return;
+  const currentlyClosed = bookingStates[roomId]?.closed === true;
+  const closed = !currentlyClosed;
+  const confirmation = closed
+    ? "قفل الحجز لاكتمال العدد — غرفة " + roomId + "؟"
+    : "فتح الحجز من جديد — غرفة " + roomId + "؟";
+  if(!confirm(confirmation)) return;
   bookingBusy = true;
   const message = $("#rcBookingMessage");
   message.textContent = "جارٍ الحفظ...";
@@ -10840,12 +10863,16 @@ $("#rcBookingToggle").addEventListener("click", async ()=>{
     const bookingRoom = ROOM_OPTIONS.find(item=>item.id === roomId);
     const bookingData = bookingRoom ? receptionDataForRoom(bookingRoom) : {};
     writeAuditLog({
-      action:"booking_closed",
+      action:closed ? "booking_closed" : "booking_opened",
       roomId,
       clinicName:String(bookingData.clinicName || bookingData.specialty || bookingRoom?.place || "").trim(),
-      summary:"اكتمل العدد المتاح لهذه الفترة وتم إغلاق الحجز"
+      summary:closed
+        ? "اكتمل العدد المتاح لهذه الفترة وتم إغلاق الحجز"
+        : "تم فتح الحجز من جديد لاستقبال أعداد إضافية"
     });
-    message.textContent = "تم قفل الحجز لغرفة " + roomId;
+    message.textContent = closed
+      ? "تم قفل الحجز لغرفة " + roomId
+      : "تم فتح الحجز من جديد لغرفة " + roomId;
   }catch(error){
     message.textContent = "تعذّر حفظ حالة الحجز لغرفة " + roomId + ". راجع الاتصال وصلاحيات Firebase.";
   }finally{
@@ -10853,6 +10880,38 @@ $("#rcBookingToggle").addEventListener("click", async ()=>{
     renderBookingStatus();
   }
 });
+$("#nurseBookingClose").addEventListener("click", async ()=>{
+  if(bookingBusy || !bookingLoaded || !bookingConnected || !canControlCurrentRoom()) return;
+  const roomId = DISPLAY_SLOT_ID;
+  if(bookingStates[roomId]?.closed === true) return;
+  if(!confirm("قفل الحجز لاكتمال العدد — عيادة " + roomId + "؟")) return;
+
+  bookingBusy = true;
+  const message = $("#nurseBookingMessage");
+  message.textContent = "جارٍ قفل الحجز...";
+  renderBookingStatus();
+
+  try{
+    await bookingRef.child(roomId).set({
+      closed:true,
+      updatedAt:firebase.database.ServerValue.TIMESTAMP
+    });
+    writeAuditLog({
+      action:"booking_closed",
+      roomId,
+      clinicName:String(state.clinicName || "").trim(),
+      nurseName:String(state.nurse || "").trim(),
+      summary:"تم إغلاق الحجز من لوحة التمريض لاكتمال العدد"
+    });
+    message.textContent = "تم قفل الحجز. إعادة فتحه متاحة من الاستعلامات فقط.";
+  }catch(error){
+    message.textContent = "تعذّر قفل الحجز. راجع الاتصال وصلاحيات Firebase.";
+  }finally{
+    bookingBusy = false;
+    renderBookingStatus();
+  }
+});
+
 renderBookingStatus();
 
 route();
