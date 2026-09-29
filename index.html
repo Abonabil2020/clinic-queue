@@ -6559,6 +6559,65 @@ function timeStr(ts){
   return new Date(ts).toLocaleTimeString("ar-EG",{hour:"2-digit",minute:"2-digit",hour12:true});
 }
 
+/* ===== Reset تشغيلي يومي — بداية اليوم الساعة 2:00 صباحًا بتوقيت القاهرة ===== */
+const OPERATIONAL_TIME_ZONE = "Africa/Cairo";
+const OPERATIONAL_RESET_HOUR = 2;
+
+function operationalDayKey(timestamp = Date.now()){
+  const date = new Date(Number(timestamp) || Date.now());
+  const parts = new Intl.DateTimeFormat("en-CA",{
+    timeZone:OPERATIONAL_TIME_ZONE,
+    year:"numeric",
+    month:"2-digit",
+    day:"2-digit",
+    hour:"2-digit",
+    hourCycle:"h23"
+  }).formatToParts(date);
+
+  const values = {};
+  parts.forEach(part=>{
+    if(part.type !== "literal") values[part.type] = part.value;
+  });
+
+  let year = Number(values.year);
+  let month = Number(values.month);
+  let day = Number(values.day);
+  const hour = Number(values.hour);
+
+  if(hour < OPERATIONAL_RESET_HOUR){
+    const previous = new Date(Date.UTC(year, month - 1, day));
+    previous.setUTCDate(previous.getUTCDate() - 1);
+    year = previous.getUTCFullYear();
+    month = previous.getUTCMonth() + 1;
+    day = previous.getUTCDate();
+  }
+
+  return [
+    String(year).padStart(4,"0"),
+    String(month).padStart(2,"0"),
+    String(day).padStart(2,"0")
+  ].join("-");
+}
+
+function operationalDataForToday(data){
+  if(!data || typeof data !== "object") return {};
+  const updatedAt = Number(data.updatedAt || 0);
+  if(!updatedAt) return data;
+  return operationalDayKey(updatedAt) === operationalDayKey() ? data : {};
+}
+
+function bookingStateForToday(roomId){
+  return operationalDataForToday(bookingStates[roomId] || {});
+}
+
+let activeOperationalDayKey = operationalDayKey();
+setInterval(()=>{
+  const nextOperationalDayKey = operationalDayKey();
+  if(nextOperationalDayKey !== activeOperationalDayKey){
+    location.reload();
+  }
+},15000);
+
 /* نغمة تنبيه بدون ملفات صوت */
 let audioCtx = null;
 function chime(){
@@ -6592,7 +6651,7 @@ const bookingRef = firebase.database().ref("bookingStatus");
 let bookingStates = {}, bookingLoaded = false, bookingConnected = false, bookingBusy = false;
 function bookingInfo(roomId){
   if(!bookingLoaded || !bookingConnected) return {key:"unknown", label:"حالة الحجز غير مؤكدة — جارٍ الاتصال"};
-  return bookingStates[roomId]?.closed === true
+  return bookingStateForToday(roomId).closed === true
     ? {key:"closed", label:"الحجز مغلق — اكتمل العدد"}
     : {key:"open", label:"الحجز مفتوح"};
 }
@@ -6621,7 +6680,7 @@ function renderBookingStatus(){
   });
   const button = $("#rcBookingToggle");
   if(button){
-    const closed = bookingStates[receptionSelectedRoom]?.closed === true;
+    const closed = bookingStateForToday(receptionSelectedRoom).closed === true;
     button.dataset.closed = String(closed);
     button.disabled = bookingBusy || !bookingLoaded || !bookingConnected || !isReceptionUser();
     button.textContent = bookingBusy
@@ -6633,7 +6692,7 @@ function renderBookingStatus(){
 
   const nurseButton = $("#nurseBookingClose");
   if(nurseButton){
-    const nurseClosed = bookingStates[DISPLAY_SLOT_ID]?.closed === true;
+    const nurseClosed = bookingStateForToday(DISPLAY_SLOT_ID).closed === true;
     nurseButton.disabled = nurseClosed || bookingBusy || !bookingLoaded || !bookingConnected || !canControlCurrentRoom();
     nurseButton.textContent = bookingBusy
       ? "جارٍ حفظ حالة الحجز..."
@@ -6653,7 +6712,12 @@ let tvActivityPanelTimer = null;
 
 try{
   const savedActivity = JSON.parse(localStorage.getItem(TV_ACTIVITY_STORAGE_KEY) || "[]");
-  if(Array.isArray(savedActivity)) tvActivityItems = savedActivity.slice(0,TV_ACTIVITY_LIMIT);
+  if(Array.isArray(savedActivity)){
+    tvActivityItems = savedActivity
+      .filter(item=>operationalDayKey(item?.ts) === operationalDayKey())
+      .slice(0,TV_ACTIVITY_LIMIT);
+    localStorage.setItem(TV_ACTIVITY_STORAGE_KEY, JSON.stringify(tvActivityItems));
+  }
 }catch(e){
   tvActivityItems = [];
 }
@@ -7523,21 +7587,45 @@ function syncAdminRoomControls(){
 }
 
 allClinicsRef.on("value", snapshot=>{
-  const clinics = snapshot.val() || {};
+  const rawClinics = snapshot.val() || {};
+  const clinics = Object.fromEntries(
+    Object.entries(rawClinics).map(([key,value])=>[key, operationalDataForToday(value)])
+  );
   trackTvClinicUpdates(clinics);
+
+  const previousClinics = receptionClinicsData || {};
   receptionClinicsData = clinics;
+  const tvVisible = !$("#view-tv").classList.contains("hidden-view");
   let shouldChime = false;
 
-  ROOM_OPTIONS.forEach(room=>{
-    /* توافق مؤقت مع نسخة تجربة الأسنان القديمة داخل clinics/dental */
-    const roomData = clinics[room.id] || (room.id === "311" ? clinics.dental : null) || {};
-    if(updateQueueCard(room, roomData)) shouldChime = true;
-  });
+  if(tvVisible){
+    ROOM_OPTIONS.forEach(room=>{
+      /* توافق مؤقت مع نسخة تجربة الأسنان القديمة داخل clinics/dental */
+      const roomData = clinics[room.id] || (room.id === "311" ? clinics.dental : null) || {};
+      const previousRoomData = previousClinics[room.id] || (room.id === "311" ? previousClinics.dental : null) || {};
+      const roomChanged =
+        previousRoomData.updatedAt !== roomData.updatedAt ||
+        previousRoomData.current !== roomData.current ||
+        previousRoomData.displayCurrent !== roomData.displayCurrent ||
+        previousRoomData.status !== roomData.status ||
+        previousRoomData.recallMode !== roomData.recallMode ||
+        previousRoomData.recallNumber !== roomData.recallNumber ||
+        previousRoomData.clinicName !== roomData.clinicName ||
+        previousRoomData.specialty !== roomData.specialty ||
+        previousRoomData.doctor !== roomData.doctor ||
+        previousRoomData.nurse !== roomData.nurse ||
+        previousRoomData.missedTurns !== roomData.missedTurns;
 
-  renderReceptionDashboard();
-  renderAdminDashboard();
-  renderQrDashboard();
-  if(shouldChime && !$("#view-tv").classList.contains("hidden-view")) chime();
+      if(roomChanged && updateQueueCard(room, roomData)) shouldChime = true;
+    });
+  }
+
+  /* لا نعيد بناء الصفحات المخفية مع كل نقلة دور؛ كل صفحة تُرسم عند فتحها أصلًا. */
+  if(!$("#view-reception").classList.contains("hidden-view")) renderReceptionDashboard();
+  if(!$("#view-admin").classList.contains("hidden-view")) renderAdminDashboard();
+  if(!$("#view-qr").classList.contains("hidden-view")) renderQrDashboard();
+
+  if(shouldChime && tvVisible) chime();
 });
 
 /* ==========================================================
@@ -7617,6 +7705,16 @@ let setupData = null;
 
 try{
   setupData = JSON.parse(sessionStorage.getItem(SETUP_KEY) || "null");
+  if(setupData){
+    const todayKey = operationalDayKey();
+    if(!setupData.operationalDayKey){
+      setupData.operationalDayKey = todayKey;
+      sessionStorage.setItem(SETUP_KEY, JSON.stringify(setupData));
+    }else if(setupData.operationalDayKey !== todayKey){
+      setupData = null;
+      sessionStorage.removeItem(SETUP_KEY);
+    }
+  }
 }catch(e){
   setupData = null;
 }
@@ -8293,7 +8391,14 @@ $("#saveSetupBtn").addEventListener("click", async ()=>{
   msg.textContent = "";
 
   const doctorShortName = doctorDisplayName(doctor);
-  setupData = { clinicId, clinicName:clinic.name, doctor, doctorDisplayName:doctorShortName, nurse };
+  setupData = {
+    clinicId,
+    clinicName:clinic.name,
+    doctor,
+    doctorDisplayName:doctorShortName,
+    nurse,
+    operationalDayKey:operationalDayKey()
+  };
 
   try{
     await clinicRef.update({
@@ -10013,7 +10118,7 @@ let state = {
 let lastSeen = null;
 
 clinicRef.on("value", (snap) => {
-  const d = snap.val() || {};
+  const d = operationalDataForToday(snap.val() || {});
   state = {
     clinicName:d.clinicName || d.specialty || "—",
     doctor:   d.doctor   || "—",
@@ -10330,7 +10435,7 @@ wheel.addEventListener("scroll", ()=>{
     if(suppressWrite) return;
     const v = wheelValue();
     if(v !== state.current) pushNumber(v);
-  }, 220);
+  }, 100);
 }, { passive:true });
 
 /* السحب بالماوس على الكمبيوتر */
@@ -10384,7 +10489,7 @@ function pushNumber(v){
       }))
       .catch(()=> flashSync("تعذّر الحفظ", false));
     flashSync("تم الإرسال", true);
-  }, 120);
+  }, 35);
 }
 
 async function markSelectedTurnAsMissed(){
@@ -10848,7 +10953,7 @@ firebase.database().ref(".info/connected").on("value", snapshot=>{
 $("#rcBookingToggle").addEventListener("click", async ()=>{
   if(bookingBusy || !bookingLoaded || !bookingConnected || !isReceptionUser()) return;
   const roomId = receptionSelectedRoom;
-  const currentlyClosed = bookingStates[roomId]?.closed === true;
+  const currentlyClosed = bookingStateForToday(roomId).closed === true;
   const closed = !currentlyClosed;
   const confirmation = closed
     ? "قفل الحجز لاكتمال العدد — غرفة " + roomId + "؟"
@@ -10883,7 +10988,7 @@ $("#rcBookingToggle").addEventListener("click", async ()=>{
 $("#nurseBookingClose").addEventListener("click", async ()=>{
   if(bookingBusy || !bookingLoaded || !bookingConnected || !canControlCurrentRoom()) return;
   const roomId = DISPLAY_SLOT_ID;
-  if(bookingStates[roomId]?.closed === true) return;
+  if(bookingStateForToday(roomId).closed === true) return;
   if(!confirm("قفل الحجز لاكتمال العدد — عيادة " + roomId + "؟")) return;
 
   bookingBusy = true;
