@@ -6678,13 +6678,16 @@ let presenceRegistrationBusy = false;
 const networkConnectionRef = firebase.database().ref(".info/connected");
 let browserOnline = navigator.onLine;
 let firebaseConnected = true;
+let firebaseDisconnectTimer = null;
+let firebaseDisconnectConfirmed = false;
+const FIREBASE_DISCONNECT_NOTICE_DELAY = 5000;
 
 function updateNetworkStatusIndicator(){
   const indicator = document.getElementById("networkStatusIndicator");
   const statusText = document.getElementById("networkStatusText");
   if(!indicator) return;
 
-  const disconnected = !browserOnline || !firebaseConnected;
+  const disconnected = !browserOnline || firebaseDisconnectConfirmed;
   indicator.classList.toggle("visible", disconnected);
 
   if(disconnected && statusText){
@@ -6692,6 +6695,32 @@ function updateNetworkStatusIndicator(){
       ? "لا يوجد اتصال بالإنترنت"
       : "انقطع الاتصال بالخادم";
   }
+}
+
+function scheduleFirebaseDisconnectNotice(){
+  clearTimeout(firebaseDisconnectTimer);
+  firebaseDisconnectTimer = null;
+
+  if(firebaseConnected || !browserOnline){
+    firebaseDisconnectConfirmed = false;
+    updateNetworkStatusIndicator();
+    return;
+  }
+
+  firebaseDisconnectTimer = setTimeout(()=>{
+    firebaseDisconnectTimer = null;
+    if(!firebaseConnected && browserOnline){
+      firebaseDisconnectConfirmed = true;
+      updateNetworkStatusIndicator();
+    }
+  }, FIREBASE_DISCONNECT_NOTICE_DELAY);
+}
+
+function clearFirebaseDisconnectNotice(){
+  clearTimeout(firebaseDisconnectTimer);
+  firebaseDisconnectTimer = null;
+  firebaseDisconnectConfirmed = false;
+  updateNetworkStatusIndicator();
 }
 
 async function registerPresenceSession(){
@@ -6769,18 +6798,30 @@ function stopAdminPresenceListener(){
 
 window.addEventListener("online", ()=>{
   browserOnline = true;
-  updateNetworkStatusIndicator();
+  if(firebaseConnected){
+    clearFirebaseDisconnectNotice();
+  }else{
+    scheduleFirebaseDisconnectNotice();
+  }
 });
 
 window.addEventListener("offline", ()=>{
   browserOnline = false;
+  clearTimeout(firebaseDisconnectTimer);
+  firebaseDisconnectTimer = null;
+  firebaseDisconnectConfirmed = false;
   updateNetworkStatusIndicator();
 });
 
 networkConnectionRef.on("value", snapshot=>{
   firebaseConnected = snapshot.val() === true;
-  updateNetworkStatusIndicator();
-  if(firebaseConnected) registerPresenceSession();
+
+  if(firebaseConnected){
+    clearFirebaseDisconnectNotice();
+    registerPresenceSession();
+  }else{
+    scheduleFirebaseDisconnectNotice();
+  }
 });
 
 updateNetworkStatusIndicator();
