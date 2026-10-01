@@ -5918,6 +5918,38 @@
 
       <div id="nurseQueueLock" class="nurse-queue-lock hidden-view" data-lock-status=""></div>
 
+      <!-- الأدوار الفائتة -->
+      <div id="missedTurnsCard" class="missed-turns-wrap rounded-2xl shadow-sm p-4 mb-4">
+        <div class="flex items-center justify-between gap-3 mb-3">
+          <div>
+            <h2 class="font-bold">الأدوار الفائتة</h2>
+            <p class="text-xs text-slate-500 mt-1">تظهر هنا الأرقام التي سجّلها التمريض «لم يحضر» — اضغط على الرقم لإعادة استدعائه</p>
+          </div>
+          <span id="missedTurnsCount" class="shrink-0 min-w-8 h-8 px-2 rounded-full bg-orange-100 text-orange-700 font-bold flex items-center justify-center num">٠</span>
+        </div>
+        <div id="missedTurnsEmpty" class="text-sm text-slate-400 text-center py-3">لا توجد أدوار فائتة</div>
+        <div id="missedTurnsList" class="missed-turns-list"></div>
+      </div>
+
+      <!-- وضع إعادة الاستدعاء -->
+      <div id="recallPanel" class="recall-panel hidden-view rounded-2xl shadow-sm p-4 mb-4">
+        <div class="flex items-center justify-between gap-3 mb-3">
+          <div>
+            <p class="text-xs text-sky-700 font-bold">إعادة استدعاء رقم فائت</p>
+            <p class="text-sm text-slate-500 mt-1">الدور الأساسي ما زال محفوظًا ولن يتغير</p>
+          </div>
+          <div class="text-center">
+            <div id="recallNumber" class="recall-number num">—</div>
+            <div class="text-[11px] text-slate-500 mt-1">معروض الآن</div>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <button id="completeRecallBtn" class="py-3 rounded-xl bg-emerald-600 text-white font-bold">✓ تم الكشف</button>
+          <button id="noShowRecallBtn" class="py-3 rounded-xl bg-orange-100 text-orange-800 font-bold">لم يحضر</button>
+        </div>
+        <button id="returnPreviousBtn" class="w-full mt-2 py-3 rounded-xl bg-slate-100 text-slate-700 font-bold">↩ الرجوع لآخر رقم معروض</button>
+      </div>
+
       <div id="nurseQueueControls">
       <div class="wheel-control-row">
         <div class="relative">
@@ -5935,38 +5967,6 @@
         <button id="plusBtn" class="py-4 rounded-xl text-3xl font-bold text-white active:opacity-80" style="background:var(--navy)">+١</button>
       </div>
       </div>
-    </div>
-
-    <!-- الأدوار الفائتة -->
-    <div id="missedTurnsCard" class="missed-turns-wrap rounded-2xl shadow-sm p-4 mb-4">
-      <div class="flex items-center justify-between gap-3 mb-3">
-        <div>
-          <h2 class="font-bold">الأدوار الفائتة</h2>
-          <p class="text-xs text-slate-500 mt-1">تظهر هنا الأرقام التي سجّلها التمريض «لم يحضر» — اضغط على الرقم لإعادة استدعائه</p>
-        </div>
-        <span id="missedTurnsCount" class="shrink-0 min-w-8 h-8 px-2 rounded-full bg-orange-100 text-orange-700 font-bold flex items-center justify-center num">٠</span>
-      </div>
-      <div id="missedTurnsEmpty" class="text-sm text-slate-400 text-center py-3">لا توجد أدوار فائتة</div>
-      <div id="missedTurnsList" class="missed-turns-list"></div>
-    </div>
-
-    <!-- وضع إعادة الاستدعاء -->
-    <div id="recallPanel" class="recall-panel hidden-view rounded-2xl shadow-sm p-4 mb-4">
-      <div class="flex items-center justify-between gap-3 mb-3">
-        <div>
-          <p class="text-xs text-sky-700 font-bold">إعادة استدعاء رقم فائت</p>
-          <p class="text-sm text-slate-500 mt-1">الدور الأساسي ما زال محفوظًا ولن يتغير</p>
-        </div>
-        <div class="text-center">
-          <div id="recallNumber" class="recall-number num">—</div>
-          <div class="text-[11px] text-slate-500 mt-1">معروض الآن</div>
-        </div>
-      </div>
-      <div class="grid grid-cols-2 gap-2">
-        <button id="completeRecallBtn" class="py-3 rounded-xl bg-emerald-600 text-white font-bold">✓ تم الكشف</button>
-        <button id="noShowRecallBtn" class="py-3 rounded-xl bg-orange-100 text-orange-800 font-bold">لم يحضر</button>
-      </div>
-      <button id="returnPreviousBtn" class="w-full mt-2 py-3 rounded-xl bg-slate-100 text-slate-700 font-bold">↩ الرجوع لآخر رقم معروض</button>
     </div>
 
     <!-- الحالة -->
@@ -6660,7 +6660,7 @@ const CLINIC_OPTIONS = [
   { id:"pediatric-cardiac-surgery",  name:"جراحة قلب الأطفال" }
 ];
 
-const MAX_NUMBER = 300;
+const MAX_NUMBER = 50;
 
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
@@ -6819,9 +6819,9 @@ function timeStr(ts){
   return new Date(ts).toLocaleTimeString("ar-EG",{hour:"2-digit",minute:"2-digit",hour12:true});
 }
 
-/* ===== Reset تشغيلي يومي — بداية اليوم الساعة 2:00 صباحًا بتوقيت القاهرة ===== */
+/* ===== Reset تشغيلي يومي — بداية اليوم الساعة 3:00 صباحًا بتوقيت القاهرة ===== */
 const OPERATIONAL_TIME_ZONE = "Africa/Cairo";
-const OPERATIONAL_RESET_HOUR = 2;
+const OPERATIONAL_RESET_HOUR = 3;
 
 function operationalDayKey(timestamp = Date.now()){
   const date = new Date(Number(timestamp) || Date.now());
@@ -6859,11 +6859,41 @@ function operationalDayKey(timestamp = Date.now()){
   ].join("-");
 }
 
+function operationalMissedTurnsForToday(missedTurns){
+  const todayKey = operationalDayKey();
+
+  return Object.fromEntries(
+    Object.entries(missedTurns || {}).filter(([,item])=>{
+      const missedAt = Number(item?.missedAt || 0);
+      return missedAt > 0 && operationalDayKey(missedAt) === todayKey;
+    })
+  );
+}
+
 function operationalDataForToday(data){
   if(!data || typeof data !== "object") return {};
+
   const updatedAt = Number(data.updatedAt || 0);
-  if(!updatedAt) return data;
-  return operationalDayKey(updatedAt) === operationalDayKey() ? data : {};
+  if(updatedAt && operationalDayKey(updatedAt) !== operationalDayKey()) return {};
+
+  const cleanData = { ...data };
+
+  if(Object.prototype.hasOwnProperty.call(cleanData, "missedTurns")){
+    cleanData.missedTurns = operationalMissedTurnsForToday(cleanData.missedTurns);
+
+    const recallKey = String(cleanData.recallNumber ?? "");
+    if(cleanData.recallMode && !cleanData.missedTurns[recallKey]){
+      cleanData.recallMode = false;
+      cleanData.recallNumber = null;
+      cleanData.previousDisplay = null;
+
+      if(typeof cleanData.current === "number"){
+        cleanData.displayCurrent = cleanData.current;
+      }
+    }
+  }
+
+  return cleanData;
 }
 
 function bookingStateForToday(roomId){
@@ -10697,6 +10727,7 @@ function updateNoShowButton(number = wheelValue()){
 
 function syncWheel(n){
   if(!wheelReady) return;
+  n = Math.max(0, Math.min(MAX_NUMBER, Number(n) || 0));
   if(wheelValue() === n){ highlight(); return; }
   suppressWrite = true;
   wheel.scrollTo({ top:n * ITEM_H, behavior:"auto" });
@@ -10711,7 +10742,7 @@ wheel.addEventListener("scroll", ()=>{
     if(suppressWrite) return;
     const v = wheelValue();
     if(v !== state.current) pushNumber(v);
-  }, 100);
+  }, 180);
 }, { passive:true });
 
 /* السحب بالماوس على الكمبيوتر */
@@ -10725,7 +10756,7 @@ wheel.addEventListener("mousedown", e=>{
 window.addEventListener("mousemove", e=>{
   if(!dragging) return;
   e.preventDefault();
-  wheel.scrollTop = startTop + (startY - e.clientY);
+  wheel.scrollTop = startTop + ((startY - e.clientY) * 0.45);
 }, { passive:false });
 window.addEventListener("mouseup", ()=>{
   if(!dragging) return;
@@ -10733,6 +10764,99 @@ window.addEventListener("mouseup", ()=>{
   wheel.classList.remove("dragging");
   wheel.scrollTo({ top: wheelValue() * ITEM_H, behavior:"smooth" });
 });
+
+/* عجلة الماوس / التاتش باد: حركة واحدة = رقم واحد فقط */
+let desktopWheelGestureLocked = false;
+let desktopWheelGestureTimer = null;
+
+wheel.addEventListener("wheel", e=>{
+  if(isNurseQueueLocked() || state.recallMode) return;
+
+  e.preventDefault();
+  clearTimeout(desktopWheelGestureTimer);
+
+  if(!desktopWheelGestureLocked && Math.abs(e.deltaY) >= 2){
+    desktopWheelGestureLocked = true;
+    stepNumber(e.deltaY > 0 ? 1 : -1);
+  }
+
+  desktopWheelGestureTimer = setTimeout(()=>{
+    desktopWheelGestureLocked = false;
+  }, 260);
+}, { passive:false });
+
+/* الموبايل:
+   السحب العادي على البكرة يمرر الصفحة ولا يغيّر الرقم.
+   تغيير البكرة يحتاج ضغطًا قصيرًا ثابتًا ثم سحبًا، وبحد أقصى رقم واحد. */
+let mobileWheelHoldTimer = null;
+let mobileWheelTouchActive = false;
+let mobileWheelArmed = false;
+let mobileWheelMovedBeforeArm = false;
+let mobileWheelStartY = 0;
+let mobileWheelDeltaY = 0;
+
+function resetMobileWheelTouch(){
+  clearTimeout(mobileWheelHoldTimer);
+  mobileWheelHoldTimer = null;
+  mobileWheelTouchActive = false;
+  mobileWheelArmed = false;
+  mobileWheelMovedBeforeArm = false;
+  mobileWheelDeltaY = 0;
+  wheel.style.overflowY = "";
+}
+
+wheel.addEventListener("touchstart", e=>{
+  if(isNurseQueueLocked() || state.recallMode || e.touches.length !== 1) return;
+
+  mobileWheelTouchActive = true;
+  mobileWheelArmed = false;
+  mobileWheelMovedBeforeArm = false;
+  mobileWheelStartY = e.touches[0].clientY;
+  mobileWheelDeltaY = 0;
+
+  /* نمنع البكرة نفسها من التحرك أثناء السحب العادي للصفحة */
+  wheel.style.overflowY = "hidden";
+
+  clearTimeout(mobileWheelHoldTimer);
+  mobileWheelHoldTimer = setTimeout(()=>{
+    if(mobileWheelTouchActive && !mobileWheelMovedBeforeArm){
+      mobileWheelArmed = true;
+      if(navigator.vibrate) navigator.vibrate(8);
+    }
+  }, 220);
+}, { passive:true });
+
+wheel.addEventListener("touchmove", e=>{
+  if(!mobileWheelTouchActive || e.touches.length !== 1) return;
+
+  const deltaY = e.touches[0].clientY - mobileWheelStartY;
+  mobileWheelDeltaY = deltaY;
+
+  if(!mobileWheelArmed){
+    if(Math.abs(deltaY) > 8){
+      mobileWheelMovedBeforeArm = true;
+      clearTimeout(mobileWheelHoldTimer);
+      mobileWheelHoldTimer = null;
+    }
+    return;
+  }
+
+  e.preventDefault();
+}, { passive:false });
+
+function finishMobileWheelTouch(){
+  if(!mobileWheelTouchActive) return;
+
+  const armed = mobileWheelArmed;
+  const deltaY = mobileWheelDeltaY;
+  resetMobileWheelTouch();
+
+  if(!armed || Math.abs(deltaY) < 34) return;
+  stepNumber(deltaY < 0 ? 1 : -1);
+}
+
+wheel.addEventListener("touchend", finishMobileWheelTouch, { passive:true });
+wheel.addEventListener("touchcancel", resetMobileWheelTouch, { passive:true });
 
 /* الكتابة في قاعدة البيانات مع Debounce */
 function pushNumber(v){
