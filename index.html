@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#0f4c6c">
-<title>إدارة الأدوار</title>
+<title>نظام متابعة الأدوار</title>
 <meta name="application-name" content="إدارة الأدوار">
 <meta name="apple-mobile-web-app-title" content="إدارة الأدوار">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -6797,6 +6797,29 @@ const EMBEDDED_STAFF_IMPORT = {"source":"تحكم أدوار العيادات2.x
 const $ = (s) => document.querySelector(s);
 const ar = (n) => Number(n).toLocaleString("ar-EG");
 
+function pageTitleForView(viewName){
+  const titles = {
+    home:"نظام متابعة الأدوار",
+    login:"دخول التمريض",
+    setup:"إعداد العيادة",
+    nurse:"التمريض",
+    tv:"شاشة الأدوار",
+    qr:"QR العيادات",
+    reception:"الاستعلامات",
+    patient:"متابعة الدور",
+    "reception-login":"الاستعلامات",
+    "admin-login":"الإدارة",
+    admin:"الإدارة"
+  };
+
+  if(viewName === "staff-manager" || viewName === "staff-manager-login"){
+    const role = currentStaffManagerRole() || staffManagerLoginRole;
+    return role === "nursing_manager" ? "إدارة التمريض" : "إدارة العيادات";
+  }
+
+  return titles[viewName] || "نظام متابعة الأدوار";
+}
+
 document.title = "نظام متابعة الأدوار";
 
 $("#setupRoomPlace").textContent = CURRENT_ROOM.place + " — " + CURRENT_ROOM.floorName;
@@ -8027,6 +8050,7 @@ try{
 function show(v){
   VIEWS.forEach(x => $("#view-" + x).classList.add("hidden-view"));
   $("#view-" + v).classList.remove("hidden-view");
+  document.title = pageTitleForView(v);
   syncAllClinicsListenerForView(v);
 
   if(v === "tv" && Object.keys(receptionClinicsData).length){
