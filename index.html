@@ -5969,6 +5969,13 @@
       </div>
     </div>
 
+    <!-- قفل الحجز -->
+    <div class="bg-white rounded-2xl shadow-sm p-4 mb-4">
+      <div id="nurseBookingStatus" class="booking-badge" aria-live="polite"></div>
+      <button id="nurseBookingClose" type="button" class="booking-button" disabled>جارٍ تحميل حالة الحجز...</button>
+      <p id="nurseBookingMessage" class="text-xs mt-2" role="status"></p>
+    </div>
+
     <!-- الحالة -->
     <div class="bg-white rounded-2xl shadow-sm p-4">
       <h2 class="font-bold mb-3">حالة العيادة</h2>
@@ -5977,9 +5984,6 @@
         <button data-status="break"    class="statusBtn py-3 rounded-xl bg-slate-100 text-sm font-bold">🟡<br>استراحة</button>
         <button data-status="finished" class="statusBtn py-3 rounded-xl bg-slate-100 text-sm font-bold">🔴<br>إنهاء</button>
       </div>
-      <div id="nurseBookingStatus" class="booking-badge" aria-live="polite"></div>
-      <button id="nurseBookingClose" type="button" class="booking-button" disabled>جارٍ تحميل حالة الحجز...</button>
-      <p id="nurseBookingMessage" class="text-xs mt-2" role="status"></p>
       <p class="text-xs text-slate-500 mt-3" id="nurseMeta"></p>
     </div>
 
@@ -10786,77 +10790,42 @@ wheel.addEventListener("wheel", e=>{
 }, { passive:false });
 
 /* الموبايل:
-   السحب العادي على البكرة يمرر الصفحة ولا يغيّر الرقم.
-   تغيير البكرة يحتاج ضغطًا قصيرًا ثابتًا ثم سحبًا، وبحد أقصى رقم واحد. */
-let mobileWheelHoldTimer = null;
+   حركة البكرة طبيعية ومستمرة، لكن أبطأ لتقليل تخطي أكثر من رقم بالخطأ. */
 let mobileWheelTouchActive = false;
-let mobileWheelArmed = false;
-let mobileWheelMovedBeforeArm = false;
 let mobileWheelStartY = 0;
-let mobileWheelDeltaY = 0;
-
-function resetMobileWheelTouch(){
-  clearTimeout(mobileWheelHoldTimer);
-  mobileWheelHoldTimer = null;
-  mobileWheelTouchActive = false;
-  mobileWheelArmed = false;
-  mobileWheelMovedBeforeArm = false;
-  mobileWheelDeltaY = 0;
-  wheel.style.overflowY = "";
-}
+let mobileWheelStartTop = 0;
+const MOBILE_WHEEL_DRAG_FACTOR = 0.48;
 
 wheel.addEventListener("touchstart", e=>{
   if(isNurseQueueLocked() || state.recallMode || e.touches.length !== 1) return;
 
   mobileWheelTouchActive = true;
-  mobileWheelArmed = false;
-  mobileWheelMovedBeforeArm = false;
   mobileWheelStartY = e.touches[0].clientY;
-  mobileWheelDeltaY = 0;
-
-  /* نمنع البكرة نفسها من التحرك أثناء السحب العادي للصفحة */
-  wheel.style.overflowY = "hidden";
-
-  clearTimeout(mobileWheelHoldTimer);
-  mobileWheelHoldTimer = setTimeout(()=>{
-    if(mobileWheelTouchActive && !mobileWheelMovedBeforeArm){
-      mobileWheelArmed = true;
-      if(navigator.vibrate) navigator.vibrate(8);
-    }
-  }, 220);
+  mobileWheelStartTop = wheel.scrollTop;
 }, { passive:true });
 
 wheel.addEventListener("touchmove", e=>{
   if(!mobileWheelTouchActive || e.touches.length !== 1) return;
 
-  const deltaY = e.touches[0].clientY - mobileWheelStartY;
-  mobileWheelDeltaY = deltaY;
-
-  if(!mobileWheelArmed){
-    if(Math.abs(deltaY) > 8){
-      mobileWheelMovedBeforeArm = true;
-      clearTimeout(mobileWheelHoldTimer);
-      mobileWheelHoldTimer = null;
-    }
-    return;
-  }
+  const currentY = e.touches[0].clientY;
+  const deltaY = mobileWheelStartY - currentY;
 
   e.preventDefault();
+  wheel.scrollTop = mobileWheelStartTop + (deltaY * MOBILE_WHEEL_DRAG_FACTOR);
 }, { passive:false });
 
 function finishMobileWheelTouch(){
   if(!mobileWheelTouchActive) return;
+  mobileWheelTouchActive = false;
 
-  const armed = mobileWheelArmed;
-  const deltaY = mobileWheelDeltaY;
-  resetMobileWheelTouch();
-
-  if(!armed || Math.abs(deltaY) < 34) return;
-  stepNumber(deltaY < 0 ? 1 : -1);
+  const target = wheelValue();
+  wheel.scrollTo({ top: target * ITEM_H, behavior:"smooth" });
 }
 
 wheel.addEventListener("touchend", finishMobileWheelTouch, { passive:true });
-wheel.addEventListener("touchcancel", resetMobileWheelTouch, { passive:true });
+wheel.addEventListener("touchcancel", ()=>{
+  mobileWheelTouchActive = false;
+}, { passive:true });
 
 /* الكتابة في قاعدة البيانات مع Debounce */
 function pushNumber(v){
