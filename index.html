@@ -6677,50 +6677,19 @@ let adminPresenceErrorHandler = null;
 let presenceRegistrationBusy = false;
 const networkConnectionRef = firebase.database().ref(".info/connected");
 let browserOnline = navigator.onLine;
-let firebaseConnected = true;
-let firebaseDisconnectTimer = null;
-let firebaseDisconnectConfirmed = false;
-const FIREBASE_DISCONNECT_NOTICE_DELAY = 5000;
+let firebaseConnected = false;
 
 function updateNetworkStatusIndicator(){
   const indicator = document.getElementById("networkStatusIndicator");
   const statusText = document.getElementById("networkStatusText");
   if(!indicator) return;
 
-  const disconnected = !browserOnline || firebaseDisconnectConfirmed;
-  indicator.classList.toggle("visible", disconnected);
+  const offline = !browserOnline;
+  indicator.classList.toggle("visible", offline);
 
-  if(disconnected && statusText){
-    statusText.textContent = !browserOnline
-      ? "لا يوجد اتصال بالإنترنت"
-      : "انقطع الاتصال بالخادم";
+  if(offline && statusText){
+    statusText.textContent = "لا يوجد اتصال بالإنترنت";
   }
-}
-
-function scheduleFirebaseDisconnectNotice(){
-  clearTimeout(firebaseDisconnectTimer);
-  firebaseDisconnectTimer = null;
-
-  if(firebaseConnected || !browserOnline){
-    firebaseDisconnectConfirmed = false;
-    updateNetworkStatusIndicator();
-    return;
-  }
-
-  firebaseDisconnectTimer = setTimeout(()=>{
-    firebaseDisconnectTimer = null;
-    if(!firebaseConnected && browserOnline){
-      firebaseDisconnectConfirmed = true;
-      updateNetworkStatusIndicator();
-    }
-  }, FIREBASE_DISCONNECT_NOTICE_DELAY);
-}
-
-function clearFirebaseDisconnectNotice(){
-  clearTimeout(firebaseDisconnectTimer);
-  firebaseDisconnectTimer = null;
-  firebaseDisconnectConfirmed = false;
-  updateNetworkStatusIndicator();
 }
 
 async function registerPresenceSession(){
@@ -6798,30 +6767,18 @@ function stopAdminPresenceListener(){
 
 window.addEventListener("online", ()=>{
   browserOnline = true;
-  if(firebaseConnected){
-    clearFirebaseDisconnectNotice();
-  }else{
-    scheduleFirebaseDisconnectNotice();
-  }
+  updateNetworkStatusIndicator();
 });
 
 window.addEventListener("offline", ()=>{
   browserOnline = false;
-  clearTimeout(firebaseDisconnectTimer);
-  firebaseDisconnectTimer = null;
-  firebaseDisconnectConfirmed = false;
   updateNetworkStatusIndicator();
 });
 
 networkConnectionRef.on("value", snapshot=>{
   firebaseConnected = snapshot.val() === true;
-
-  if(firebaseConnected){
-    clearFirebaseDisconnectNotice();
-    registerPresenceSession();
-  }else{
-    scheduleFirebaseDisconnectNotice();
-  }
+  renderBookingStatus();
+  if(firebaseConnected) registerPresenceSession();
 });
 
 updateNetworkStatusIndicator();
@@ -6951,9 +6908,9 @@ const DASHBOARD_STATUS = {
 };
 
 const bookingRef = firebase.database().ref("bookingStatus");
-let bookingStates = {}, bookingLoaded = false, bookingConnected = false, bookingBusy = false;
+let bookingStates = {}, bookingLoaded = false, bookingBusy = false;
 function bookingInfo(roomId){
-  if(!bookingLoaded || !bookingConnected) return {key:"unknown", label:"حالة الحجز غير مؤكدة — جارٍ الاتصال"};
+  if(!bookingLoaded || !firebaseConnected) return {key:"unknown", label:"حالة الحجز غير مؤكدة — جارٍ الاتصال"};
   return bookingStateForToday(roomId).closed === true
     ? {key:"closed", label:"الحجز مغلق — اكتمل العدد"}
     : {key:"open", label:"الحجز مفتوح"};
@@ -6985,7 +6942,7 @@ function renderBookingStatus(){
   if(button){
     const closed = bookingStateForToday(receptionSelectedRoom).closed === true;
     button.dataset.closed = String(closed);
-    button.disabled = bookingBusy || !bookingLoaded || !bookingConnected || !isReceptionUser();
+    button.disabled = bookingBusy || !bookingLoaded || !firebaseConnected || !isReceptionUser();
     button.textContent = bookingBusy
       ? "جارٍ حفظ حالة الحجز..."
       : closed
@@ -6996,7 +6953,7 @@ function renderBookingStatus(){
   const nurseButton = $("#nurseBookingClose");
   if(nurseButton){
     const nurseClosed = bookingStateForToday(DISPLAY_SLOT_ID).closed === true;
-    nurseButton.disabled = nurseClosed || bookingBusy || !bookingLoaded || !bookingConnected || !canControlCurrentRoom();
+    nurseButton.disabled = nurseClosed || bookingBusy || !bookingLoaded || !firebaseConnected || !canControlCurrentRoom();
     nurseButton.textContent = bookingBusy
       ? "جارٍ حفظ حالة الحجز..."
       : nurseClosed
@@ -7889,14 +7846,9 @@ function syncAdminRoomControls(){
   if(logout) logout.textContent = admin ? "تسجيل الخروج" : "تسليم الوردية";
 }
 
-allClinicsRef.on("value", snapshot=>{
-  const rawClinics = snapshot.val() || {};
-  const clinics = Object.fromEntries(
-    Object.entries(rawClinics).map(([key,value])=>[key, operationalDataForToday(value)])
-  );
+let allClinicsListening = false;
 
-  trackTvClinicUpdates(clinics);
-  receptionClinicsData = clinics;
+function renderTvDashboardFromClinics(clinics, allowChime = true){
   let shouldChime = false;
 
   ROOM_OPTIONS.forEach(room=>{
@@ -7905,13 +7857,47 @@ allClinicsRef.on("value", snapshot=>{
     if(updateQueueCard(room, roomData)) shouldChime = true;
   });
 
-  /* الصفحات المخفية لا يعاد بناؤها مع كل نقلة دور؛ تُرسم عند فتحها من route(). */
+  if(allowChime && shouldChime) chime();
+}
+
+function handleAllClinicsSnapshot(snapshot){
+  const rawClinics = snapshot.val() || {};
+  const clinics = Object.fromEntries(
+    Object.entries(rawClinics).map(([key,value])=>[key, operationalDataForToday(value)])
+  );
+
+  receptionClinicsData = clinics;
+
+  const tvVisible = !$("#view-tv").classList.contains("hidden-view");
+  if(tvVisible){
+    trackTvClinicUpdates(clinics);
+    renderTvDashboardFromClinics(clinics, true);
+  }
+
   if(!$("#view-reception").classList.contains("hidden-view")) renderReceptionDashboard();
   if(!$("#view-admin").classList.contains("hidden-view")) renderAdminDashboard();
   if(!$("#view-qr").classList.contains("hidden-view")) renderQrDashboard();
+}
 
-  if(shouldChime && !$("#view-tv").classList.contains("hidden-view")) chime();
-});
+function startAllClinicsListener(){
+  if(allClinicsListening) return;
+  allClinicsListening = true;
+  allClinicsRef.on("value", handleAllClinicsSnapshot);
+}
+
+function stopAllClinicsListener(){
+  if(!allClinicsListening) return;
+  allClinicsRef.off("value", handleAllClinicsSnapshot);
+  allClinicsListening = false;
+}
+
+function syncAllClinicsListenerForView(viewName){
+  if(["tv","reception","admin","qr"].includes(viewName)){
+    startAllClinicsListener();
+  }else{
+    stopAllClinicsListener();
+  }
+}
 
 /* ==========================================================
    ③  التوجيه بين الشاشات
@@ -8007,6 +7993,11 @@ try{
 function show(v){
   VIEWS.forEach(x => $("#view-" + x).classList.add("hidden-view"));
   $("#view-" + v).classList.remove("hidden-view");
+  syncAllClinicsListenerForView(v);
+
+  if(v === "tv" && Object.keys(receptionClinicsData).length){
+    renderTvDashboardFromClinics(receptionClinicsData, false);
+  }
 }
 function route(){
   const h = (location.hash || "#/home").replace("#/","");
@@ -11231,12 +11222,8 @@ bookingRef.on("value", snapshot=>{
   if(nurseBookingMessage) nurseBookingMessage.textContent = "تعذّر قراءة حالة الحجز. راجع الاتصال وصلاحيات Firebase.";
   renderBookingStatus();
 });
-firebase.database().ref(".info/connected").on("value", snapshot=>{
-  bookingConnected = snapshot.val() === true;
-  renderBookingStatus();
-});
 $("#rcBookingToggle").addEventListener("click", async ()=>{
-  if(bookingBusy || !bookingLoaded || !bookingConnected || !isReceptionUser()) return;
+  if(bookingBusy || !bookingLoaded || !firebaseConnected || !isReceptionUser()) return;
   const roomId = receptionSelectedRoom;
   const currentlyClosed = bookingStateForToday(roomId).closed === true;
   const closed = !currentlyClosed;
@@ -11279,7 +11266,7 @@ $("#rcBookingToggle").addEventListener("click", async ()=>{
   }
 });
 $("#nurseBookingClose").addEventListener("click", async ()=>{
-  if(bookingBusy || !bookingLoaded || !bookingConnected || !canControlCurrentRoom()) return;
+  if(bookingBusy || !bookingLoaded || !firebaseConnected || !canControlCurrentRoom()) return;
 
   const roomId = DISPLAY_SLOT_ID;
   if(bookingStateForToday(roomId).closed === true) return;
