@@ -18,7 +18,6 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 <style>
   /* ===== خط RB — الملفات الفعلية داخل مجلد fonts بجوار index.html ===== */
@@ -9986,10 +9985,42 @@ function parseExcelWorkbook(workbook, sourceName){
   return normalizeStaffImportData(result);
 }
 
+// مكتبة الاستيراد لا تعطل فتح النظام؛ تحمل عند اختيار ملف Excel فقط.
+let staffExcelLibraryPromise = null;
+function loadStaffExcelLibrary(){
+  if(typeof XLSX !== "undefined") return Promise.resolve();
+  if(staffExcelLibraryPromise) return staffExcelLibraryPromise;
+  staffExcelLibraryPromise = new Promise((resolve,reject)=>{
+    const script = document.createElement("script");
+    script.src = "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js";
+    script.async = true;
+    let settled = false;
+    const finish = error=>{
+      if(settled) return;
+      settled = true;
+      clearTimeout(timeout);
+      script.onload = null;
+      script.onerror = null;
+      if(error){
+        script.remove();
+        reject(error);
+      }else{
+        resolve();
+      }
+    };
+    const timeout = setTimeout(()=>finish(new Error("excel-library-unavailable")),30000);
+    script.onload = ()=>finish(typeof XLSX === "undefined" ? new Error("excel-library-unavailable") : null);
+    script.onerror = ()=>finish(new Error("excel-library-unavailable"));
+    document.head.appendChild(script);
+  }).catch(error=>{
+    staffExcelLibraryPromise = null;
+    throw error;
+  });
+  return staffExcelLibraryPromise;
+}
+
 async function readStaffExcelArrayBuffer(buffer, sourceName){
-  if(typeof XLSX === "undefined"){
-    throw new Error("excel-library-unavailable");
-  }
+  await loadStaffExcelLibrary();
   const workbook = XLSX.read(buffer,{type:"array"});
   const parsed = parseExcelWorkbook(workbook,sourceName);
   if(!parsed.specialties.length && !parsed.doctors.length && !parsed.nurses.length){
