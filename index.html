@@ -1705,7 +1705,8 @@
   #view-staff-manager .staff-admin-list,
   #view-staff-manager .staff-manual-pending-list,
   #view-staff-manager .staff-directory-search-results{
-    overscroll-behavior:contain;
+    /* السماح باستكمال التمرير إلى الصفحة بدل احتجاز المستخدم داخل القائمة */
+    overscroll-behavior:auto;
     -webkit-overflow-scrolling:touch;
     touch-action:pan-y;
   }
@@ -1727,6 +1728,69 @@
     backdrop-filter:blur(8px);
   }
   #staffManagerTopBtn.hidden-view{display:none!important}
+
+  /* شريط تحكم ثابت داخل صفحة المسؤول حتى لا تضيع أزرار الاعتماد/الإغلاق أثناء النزول */
+  #staffManagerQuickBar{
+    position:fixed;
+    left:50%;
+    bottom:16px;
+    transform:translateX(-50%);
+    z-index:120;
+    min-height:52px;
+    max-width:calc(100vw - 28px);
+    padding:7px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:7px;
+    border:1px solid #dbe3ee;
+    border-radius:16px;
+    background:rgba(255,255,255,.97);
+    box-shadow:0 12px 34px rgba(15,23,42,.18);
+    backdrop-filter:blur(10px);
+  }
+  #staffManagerQuickBar.hidden-view{display:none!important}
+  #staffManagerQuickBar button{
+    min-height:38px;
+    padding:0 13px;
+    border-radius:10px;
+    font-size:11px;
+    font-weight:800;
+    white-space:nowrap;
+  }
+  #staffQuickTopBtn,#staffQuickCloseBtn{
+    background:#f1f5f9;
+    color:#475569;
+    border:1px solid #e2e8f0;
+  }
+  #staffQuickApproveBtn{
+    background:#059669;
+    color:#fff;
+  }
+  #staffQuickApproveBtn:disabled{opacity:.45;cursor:not-allowed}
+  #staffQuickPendingCount{
+    min-width:30px;
+    height:30px;
+    padding:0 7px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:999px;
+    background:#fff7ed;
+    color:#9a3412;
+    border:1px solid #fed7aa;
+    font-size:10px;
+    font-weight:800;
+  }
+  #staffQuickPendingCount.hidden-view{display:none!important}
+  @media(max-width:700px){
+    #staffManagerQuickBar{
+      left:12px; right:12px; bottom:10px;
+      transform:none; max-width:none;
+      justify-content:stretch;
+    }
+    #staffManagerQuickBar button{flex:1;min-width:0;padding-inline:8px;font-size:10px}
+  }
 
   /* ===== فصل صلاحيات مسؤول العيادات ومسؤول التمريض ===== */
   #view-staff-manager[data-manager-role="clinics_manager"] [data-manager-only="nursing"],
@@ -6630,6 +6694,12 @@
     </section>
   </div>
   <button id="staffManagerTopBtn" type="button" class="hidden-view" aria-label="العودة إلى أعلى صفحة الإدارة">↑ أعلى الصفحة</button>
+  <div id="staffManagerQuickBar" class="hidden-view" aria-label="تحكم سريع في قسم الإدارة">
+    <button id="staffQuickTopBtn" type="button">↑ أعلى</button>
+    <button id="staffQuickCloseBtn" type="button">إغلاق القسم</button>
+    <button id="staffQuickApproveBtn" type="button" class="hidden-view" disabled>اعتماد التعديلات</button>
+    <span id="staffQuickPendingCount" class="hidden-view num">٠</span>
+  </div>
 </section>
 
 
@@ -9329,6 +9399,7 @@ function closeStaffWorkspace(returnToSwitcher = true){
     card.classList.remove("active");
   });
   activeStaffWorkspace = null;
+  refreshStaffManagerQuickBar();
 
   if(returnToSwitcher){
     const switcher = $("#staffWorkspaceSwitcher");
@@ -9356,6 +9427,7 @@ function openStaffWorkspace(target){
   });
 
   activeStaffWorkspace = target;
+  refreshStaffManagerQuickBar();
 
   const panel = document.querySelector('[data-workspace-panel="' + target + '"]');
   if(panel){
@@ -9384,6 +9456,49 @@ function updateStaffManagerTopButton(){
 window.addEventListener("scroll",updateStaffManagerTopButton,{passive:true});
 staffManagerTopBtn?.addEventListener("click",()=>{
   window.scrollTo({top:0,behavior:"smooth"});
+});
+
+const staffManagerQuickBar = $("#staffManagerQuickBar");
+const staffQuickTopBtn = $("#staffQuickTopBtn");
+const staffQuickCloseBtn = $("#staffQuickCloseBtn");
+const staffQuickApproveBtn = $("#staffQuickApproveBtn");
+const staffQuickPendingCount = $("#staffQuickPendingCount");
+
+function refreshStaffManagerQuickBar(){
+  if(!staffManagerQuickBar) return;
+
+  const viewVisible = !$("#view-staff-manager").classList.contains("hidden-view");
+  const workspaceOpen = activeStaffWorkspace === "manual" || activeStaffWorkspace === "import";
+  const visible = viewVisible && workspaceOpen;
+  staffManagerQuickBar.classList.toggle("hidden-view", !visible);
+  if(!visible) return;
+
+  const manualOpen = activeStaffWorkspace === "manual";
+  staffQuickApproveBtn.classList.toggle("hidden-view", !manualOpen);
+  staffQuickPendingCount.classList.toggle("hidden-view", !manualOpen);
+
+  if(manualOpen){
+    const diff = refreshStaffManualDirtyState();
+    const count = diff.changes.length;
+    staffQuickPendingCount.textContent = ar(count);
+    staffQuickApproveBtn.disabled = count === 0;
+    staffQuickApproveBtn.textContent = count
+      ? "اعتماد التعديلات (" + ar(count) + ")"
+      : "لا تعديلات معلقة";
+  }
+}
+
+staffQuickTopBtn?.addEventListener("click",()=>{
+  window.scrollTo({top:0,behavior:"smooth"});
+});
+
+staffQuickCloseBtn?.addEventListener("click",()=>{
+  closeStaffWorkspace(true);
+});
+
+staffQuickApproveBtn?.addEventListener("click",()=>{
+  const approveButton = $("#staffManualApproveBtn");
+  if(approveButton && !approveButton.disabled) approveButton.click();
 });
 
 let staffImportState = null;
@@ -10347,6 +10462,7 @@ function renderStaffManualPending(){
 
   $("#staffManualApproveBtn").disabled = !hasChanges;
   $("#staffManualDiscardBtn").disabled = !hasChanges;
+  refreshStaffManagerQuickBar();
 }
 
 async function approveStaffManualChanges(){
@@ -10360,10 +10476,16 @@ async function approveStaffManualChanges(){
   if(!confirm("سيتم تطبيق " + diff.changes.length + " تعديل يدوي على Firebase. متابعة؟")) return;
 
   const button = $("#staffManualApproveBtn");
+  const quickButton = $("#staffQuickApproveBtn");
   const localStatus = $("#staffManualApproveStatus");
   const oldText = button.textContent;
+  const oldQuickText = quickButton?.textContent || "";
   button.disabled = true;
   button.textContent = "جارٍ الاعتماد...";
+  if(quickButton){
+    quickButton.disabled = true;
+    quickButton.textContent = "جارٍ الاعتماد...";
+  }
   if(localStatus){
     localStatus.classList.remove("error");
     localStatus.textContent = "جارٍ إرسال التعديلات إلى Firebase...";
@@ -10377,19 +10499,25 @@ async function approveStaffManualChanges(){
       details:{changes:diff.changes.slice(0,40)}
     });
     staffManualDirty = false;
-    staffManualDraftState = null;
+    /* حدث Firebase يصل أثناء عملية الاعتماد؛ أعد مزامنة المسودة والرسم فورًا بعد نجاح الكتابة */
+    syncStaffManualDraftFromFirebase();
     resetStaffSpecialtyForm();
     resetStaffDoctorForm();
     resetStaffNurseForm();
+    renderStaffManager();
     staffAdminMessage("تم اعتماد التعديلات اليدوية وتطبيقها على النظام.");
     if(localStatus){
       localStatus.classList.remove("error");
       localStatus.textContent = "✓ تم الاعتماد وتطبيق التعديلات على النظام.";
     }
     button.textContent = "تم الاعتماد ✓";
+    if(quickButton) quickButton.textContent = "تم الاعتماد ✓";
+    refreshStaffManagerQuickBar();
     setTimeout(()=>{
       if(button) button.textContent = oldText;
+      if(quickButton) quickButton.textContent = oldQuickText;
       if(localStatus && !staffManualDirty) localStatus.textContent = "";
+      refreshStaffManagerQuickBar();
     },1800);
   }catch(e){
     console.error("Manual staff approval error:",e);
@@ -10399,8 +10527,14 @@ async function approveStaffManualChanges(){
       localStatus.textContent = "تعذر الاعتماد. لم يتم تطبيق التعديلات.";
     }
     button.disabled = false;
+    if(quickButton){
+      quickButton.disabled = false;
+      quickButton.textContent = oldQuickText;
+    }
+    refreshStaffManagerQuickBar();
   }finally{
     if(button.textContent === "جارٍ الاعتماد...") button.textContent = oldText;
+    if(quickButton && quickButton.textContent === "جارٍ الاعتماد...") quickButton.textContent = oldQuickText;
   }
 }
 
