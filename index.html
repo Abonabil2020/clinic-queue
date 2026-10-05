@@ -1792,6 +1792,24 @@
     #staffManagerQuickBar button{flex:1;min-width:0;padding-inline:8px;font-size:10px}
   }
 
+
+  /* أدوات المسؤول تظل في إطار الشاشة، والقوائم تستخدم تمرير الصفحة. */
+  #view-staff-manager:not(.hidden-view) #staffManagerQuickBar{
+    display:flex!important;
+    position:fixed;
+    z-index:1000;
+    bottom:max(12px,env(safe-area-inset-bottom));
+    flex-wrap:wrap;
+  }
+  #view-staff-manager .staff-admin-shell{padding-bottom:110px}
+  #view-staff-manager .staff-admin-list,
+  #view-staff-manager .staff-manual-pending-list,
+  #view-staff-manager .staff-directory-search-results{
+    max-height:none;
+    overflow:visible;
+  }
+  #view-staff-manager #staffQuickCloseBtn:disabled{opacity:.45;cursor:not-allowed}
+
   /* ===== فصل صلاحيات مسؤول العيادات ومسؤول التمريض ===== */
   #view-staff-manager[data-manager-role="clinics_manager"] [data-manager-only="nursing"],
   #view-staff-manager[data-manager-role="nursing_manager"] [data-manager-only="clinics"]{
@@ -8589,6 +8607,7 @@ let staffDirectoryLoaded = false;
 /* التعديلات اليدوية لا تذهب إلى Firebase إلا بعد الاعتماد */
 let staffManualDraftState = null;
 let staffManualDirty = false;
+let staffManualSaving = false;
 
 function directorySpecialties(){
   if(!staffDirectoryState.ready) return CLINIC_OPTIONS;
@@ -8664,7 +8683,7 @@ function handleStaffDirectorySnapshot(snapshot){
   if(doctorMenuOpen) renderDoctorOptions($("#setupDoctorSearch").value);
   if(nurseMenuOpen) renderNurseOptions($("#setupNurseSearch").value);
 
-  if(isStaffManagerUser()) renderStaffManager();
+  if(isStaffManagerUser() && !staffManualSaving) renderStaffManager();
 }
 
 function startStaffDirectoryListener(){
@@ -9485,7 +9504,7 @@ function updateStaffManagerTopButton(){
   if(!staffManagerTopBtn) return;
   const viewVisible = !$("#view-staff-manager").classList.contains("hidden-view");
   const workspaceOpen = activeStaffWorkspace === "manual" || activeStaffWorkspace === "import";
-  const visible = viewVisible && !workspaceOpen && staffManagerScrollPosition() > 80;
+  const visible = false; // شريط التحكم الموحد يحتوي زر العودة للأعلى دائما.
   staffManagerTopBtn.classList.toggle("hidden-view", !visible);
 }
 window.addEventListener("scroll",updateStaffManagerTopButton,{passive:true});
@@ -9502,10 +9521,11 @@ function refreshStaffManagerQuickBar(){
 
   const viewVisible = !$("#view-staff-manager").classList.contains("hidden-view");
   const workspaceOpen = activeStaffWorkspace === "manual" || activeStaffWorkspace === "import";
-  const visible = viewVisible && workspaceOpen;
+  const visible = viewVisible;
   staffManagerQuickBar.classList.toggle("hidden-view", !visible);
   if(!visible) return;
 
+  staffQuickCloseBtn.disabled = !workspaceOpen;
   const manualOpen = activeStaffWorkspace === "manual";
   staffQuickApproveBtn.classList.toggle("hidden-view", !manualOpen);
   staffQuickPendingCount.classList.toggle("hidden-view", !manualOpen);
@@ -9514,8 +9534,8 @@ function refreshStaffManagerQuickBar(){
     const diff = refreshStaffManualDirtyState();
     const count = diff.changes.length;
     staffQuickPendingCount.textContent = ar(count);
-    staffQuickApproveBtn.disabled = count === 0;
-    staffQuickApproveBtn.textContent = count
+    staffQuickApproveBtn.disabled = staffManualSaving || count === 0;
+    staffQuickApproveBtn.textContent = staffManualSaving ? "جارٍ الاعتماد..." : count
       ? "اعتماد التعديلات (" + ar(count) + ")"
       : "لا تعديلات معلقة";
   }
@@ -10491,13 +10511,13 @@ function renderStaffManualPending(){
     list.innerHTML = "";
   }
 
-  $("#staffManualApproveBtn").disabled = !hasChanges;
-  $("#staffManualDiscardBtn").disabled = !hasChanges;
+  $("#staffManualApproveBtn").disabled = staffManualSaving || !hasChanges;
+  $("#staffManualDiscardBtn").disabled = staffManualSaving || !hasChanges;
   refreshStaffManagerQuickBar();
 }
 
 async function approveStaffManualChanges(){
-  if(!isStaffManagerUser()) return;
+  if(!isStaffManagerUser() || staffManualSaving) return;
 
   const diff = refreshStaffManualDirtyState();
   if(!diff.changes.length){
@@ -10511,6 +10531,10 @@ async function approveStaffManualChanges(){
   const localStatus = $("#staffManualApproveStatus");
   const oldText = button.textContent;
   const oldQuickText = quickButton?.textContent || "";
+  staffManualSaving = true;
+  const manualControls = [...document.querySelectorAll('[data-workspace-panel="manual"] input, [data-workspace-panel="manual"] select, [data-workspace-panel="manual"] button')];
+  const previousDisabled = manualControls.map(control=>control.disabled);
+  manualControls.forEach(control=>{ control.disabled = true; });
   button.disabled = true;
   button.textContent = "جارٍ الاعتماد...";
   if(quickButton){
@@ -10536,6 +10560,7 @@ async function approveStaffManualChanges(){
     resetStaffDoctorForm();
     resetStaffNurseForm();
     renderStaffManager();
+    manualControls.forEach(control=>{ control.disabled = true; });
     staffAdminMessage("تم اعتماد التعديلات اليدوية وتطبيقها على النظام.");
     if(localStatus){
       localStatus.classList.remove("error");
@@ -10571,12 +10596,16 @@ async function approveStaffManualChanges(){
     }
     refreshStaffManagerQuickBar();
   }finally{
+    staffManualSaving = false;
+    manualControls.forEach((control,index)=>{ control.disabled = previousDisabled[index]; });
+    renderStaffManualPending();
     if(button.textContent === "جارٍ الاعتماد...") button.textContent = oldText;
     if(quickButton && quickButton.textContent === "جارٍ الاعتماد...") quickButton.textContent = oldQuickText;
   }
 }
 
 function discardStaffManualChanges(){
+  if(staffManualSaving) return;
   const diff = refreshStaffManualDirtyState();
   if(!diff.changes.length) return;
   if(!confirm("سيتم إلغاء كل التعديلات اليدوية غير المعتمدة. متابعة؟")) return;
@@ -10804,7 +10833,7 @@ function renderStaffManager(){
           $("#staffSpecialtyName").focus();
         },
         ()=>{
-          if(!staffManagerCanClinics()) return;
+          if(!staffManagerCanClinics() || staffManualSaving) return;
           item.active = item.active === false;
           refreshStaffManualDirtyState();
           renderStaffManager();
@@ -10833,7 +10862,7 @@ function renderStaffManager(){
           $("#staffDoctorName").focus();
         },
         ()=>{
-          if(!staffManagerCanClinics()) return;
+          if(!staffManagerCanClinics() || staffManualSaving) return;
           item.active = item.active === false;
           refreshStaffManualDirtyState();
           renderStaffManager();
@@ -10857,7 +10886,7 @@ function renderStaffManager(){
           $("#staffNurseName").focus();
         },
         ()=>{
-          if(!staffManagerCanNursing()) return;
+          if(!staffManagerCanNursing() || staffManualSaving) return;
           item.active = item.active === false;
           refreshStaffManualDirtyState();
           renderStaffManager();
@@ -10869,7 +10898,7 @@ function renderStaffManager(){
 
 $("#staffSpecialtyForm").addEventListener("submit", event=>{
   event.preventDefault();
-  if(!staffManagerCanClinics()) return;
+  if(!staffManagerCanClinics() || staffManualSaving) return;
 
   const state = getStaffManualState();
   const id = $("#staffSpecialtyId").value.trim();
@@ -10896,7 +10925,7 @@ $("#staffSpecialtyForm").addEventListener("submit", event=>{
 
 $("#staffDoctorForm").addEventListener("submit", event=>{
   event.preventDefault();
-  if(!staffManagerCanClinics()) return;
+  if(!staffManagerCanClinics() || staffManualSaving) return;
 
   const state = getStaffManualState();
   const id = $("#staffDoctorId").value.trim();
@@ -10931,7 +10960,7 @@ $("#staffDoctorForm").addEventListener("submit", event=>{
 
 $("#staffNurseForm").addEventListener("submit", event=>{
   event.preventDefault();
-  if(!staffManagerCanNursing()) return;
+  if(!staffManagerCanNursing() || staffManualSaving) return;
 
   const state = getStaffManualState();
   const id = $("#staffNurseId").value.trim();
