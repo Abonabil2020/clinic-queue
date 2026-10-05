@@ -5561,6 +5561,254 @@
     }
   }
 
+
+  /* ===== خيارات شاشات العرض من الصفحة الرئيسية ===== */
+  .portal-tv-menu{
+    position:relative;
+    min-width:0;
+  }
+
+  .portal-tv-menu > summary{
+    list-style:none;
+    cursor:pointer;
+  }
+
+  .portal-tv-menu > summary::-webkit-details-marker{
+    display:none;
+  }
+
+  .portal-tv-menu[open] > .portal-shortcut{
+    background:rgba(255,255,255,.98);
+    border-color:rgba(94,234,212,.92);
+    box-shadow:0 12px 28px rgba(15,23,42,.10);
+  }
+
+  .portal-tv-menu-arrow{
+    transition:transform .18s ease;
+  }
+
+  .portal-tv-menu[open] .portal-tv-menu-arrow{
+    transform:rotate(180deg);
+  }
+
+  .portal-tv-options{
+    position:absolute;
+    z-index:80;
+    top:calc(100% + 8px);
+    right:0;
+    left:0;
+    padding:7px;
+    display:grid;
+    gap:5px;
+    border:1px solid #dbe7e5;
+    border-radius:15px;
+    background:rgba(255,255,255,.98);
+    box-shadow:0 16px 34px rgba(15,23,42,.14);
+    backdrop-filter:blur(10px);
+  }
+
+  .portal-tv-option{
+    min-height:48px;
+    padding:8px 10px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    border-radius:11px;
+    color:#334155;
+    background:#fff;
+    transition:background .15s ease,color .15s ease,transform .15s ease;
+  }
+
+  .portal-tv-option:hover{
+    background:#ecfdf5;
+    color:#0f766e;
+    transform:translateX(-2px);
+  }
+
+  .portal-tv-option strong{
+    font-size:12px;
+    font-weight:700;
+  }
+
+  .portal-tv-option small{
+    color:#94a3b8;
+    font-size:9px;
+    white-space:nowrap;
+  }
+
+  /* ===== شاشات منفصلة للدور الثالث والدور الأرضي ===== */
+  #view-tv.tv-floor-third .ground-floor,
+  #view-tv.tv-floor-ground .third-floor{
+    display:none !important;
+  }
+
+  @media (min-width:901px){
+    #view-tv.tv-floor-only .tv-dashboard{
+      grid-template-rows:minmax(0,1fr) !important;
+      padding:1vh 1vw .8vh !important;
+    }
+
+    #view-tv.tv-floor-only .floor-section{
+      min-height:0;
+      grid-template-rows:5.8vh minmax(0,1fr) !important;
+      gap:.9vh !important;
+      padding:.8vh .9vw 1vh !important;
+    }
+
+    #view-tv.tv-floor-only .floor-heading{
+      justify-content:center;
+    }
+
+    #view-tv.tv-floor-only .floor-title{
+      min-width:360px !important;
+      padding:.7vh 4vw !important;
+      font-size:clamp(24px,3vh,54px) !important;
+      line-height:1.05 !important;
+    }
+
+    #view-tv.tv-floor-only .clinic-grid{
+      width:100%;
+      height:100%;
+      align-self:center;
+      justify-self:center;
+      align-content:center;
+      justify-content:center;
+    }
+
+    #view-tv.tv-floor-third .third-floor .clinic-grid{
+      grid-template-columns:repeat(4,minmax(0,1fr)) !important;
+      grid-template-rows:repeat(2,minmax(0,1fr)) !important;
+      gap:1.15vh .75vw !important;
+    }
+
+    #view-tv.tv-floor-ground .ground-floor .clinic-grid{
+      width:min(100%,82vw);
+      grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+      grid-template-rows:repeat(2,minmax(0,1fr)) !important;
+      gap:1.7vh 1.15vw !important;
+      margin:auto;
+    }
+
+    #view-tv.tv-floor-only .queue-card{
+      min-height:0 !important;
+      border-radius:20px !important;
+      box-shadow:0 7px 22px rgba(15,23,42,.075) !important;
+    }
+
+    #view-tv.tv-floor-only .queue-card-title{
+      padding:.9vh .9vw !important;
+      gap:.7vw !important;
+    }
+
+    #view-tv.tv-floor-only .queue-clinic-name{
+      font-size:clamp(20px,2.6vh,48px) !important;
+      line-height:1.12 !important;
+      text-align:center;
+      flex:1;
+    }
+
+    #view-tv.tv-floor-only .room-badge{
+      min-width:76px !important;
+      padding:.4vh .6vw !important;
+      font-size:clamp(12px,1.45vh,25px) !important;
+    }
+
+    #view-tv.tv-floor-only .queue-card-body{
+      padding:.85vh .9vw .9vh !important;
+      column-gap:.75vw !important;
+      row-gap:.55vh !important;
+    }
+
+    #view-tv.tv-floor-only .queue-doctor{
+      font-size:clamp(20px,2.5vh,46px) !important;
+      line-height:1.12 !important;
+      text-align:center;
+    }
+
+    #view-tv.tv-floor-only .queue-status{
+      padding:.32vh .55vw !important;
+      font-size:clamp(11px,1.3vh,23px) !important;
+    }
+
+    #view-tv.tv-floor-only .queue-number-box{
+      padding:.8vh .7vw .9vh !important;
+      border-radius:15px !important;
+    }
+
+    #view-tv.tv-floor-only .queue-number-label{
+      font-size:clamp(14px,1.65vh,29px) !important;
+    }
+
+    #view-tv.tv-floor-only .queue-number{
+      margin:.4vh 0 0 !important;
+      font-size:clamp(68px,8vh,150px) !important;
+      line-height:.88 !important;
+    }
+
+    #view-tv.tv-floor-only .queue-card[data-status="finished"] .queue-number{
+      font-size:clamp(24px,3.2vh,56px) !important;
+      line-height:1.08 !important;
+    }
+
+    #view-tv.tv-floor-only .queue-number-box .booking-badge{
+      margin:.5vh 0 0 !important;
+      padding:.32vh .65vw !important;
+      font-size:clamp(10px,1.15vh,20px) !important;
+    }
+
+    #view-tv.tv-floor-only .queue-missed-summary{
+      padding:.48vh .58vw !important;
+      gap:.5vw !important;
+      border-radius:11px !important;
+    }
+
+    #view-tv.tv-floor-only .queue-missed-summary-head{
+      font-size:clamp(10px,1.2vh,21px) !important;
+    }
+
+    #view-tv.tv-floor-only .queue-missed-count{
+      min-width:25px !important;
+      height:22px !important;
+      font-size:clamp(10px,1.1vh,19px) !important;
+    }
+
+    #view-tv.tv-floor-only .queue-public-chip{
+      min-width:40px !important;
+      height:2.55vh !important;
+      min-height:23px !important;
+      padding:0 .5vw !important;
+      font-size:clamp(11px,1.2vh,21px) !important;
+    }
+
+    #view-tv.tv-floor-ground .queue-clinic-name{
+      font-size:clamp(24px,3.15vh,58px) !important;
+    }
+
+    #view-tv.tv-floor-ground .queue-doctor{
+      font-size:clamp(23px,3vh,54px) !important;
+    }
+
+    #view-tv.tv-floor-ground .queue-status{
+      font-size:clamp(12px,1.5vh,26px) !important;
+    }
+
+    #view-tv.tv-floor-ground .queue-number-label{
+      font-size:clamp(15px,1.85vh,32px) !important;
+    }
+
+    #view-tv.tv-floor-ground .queue-number{
+      font-size:clamp(78px,9.2vh,170px) !important;
+    }
+  }
+
+  @media (max-width:760px){
+    .portal-tv-options{
+      position:static;
+      margin-top:7px;
+    }
+  }
+
 </style>
 </head>
 <body>
@@ -5607,20 +5855,27 @@
         <span class="portal-shortcut-arrow" aria-hidden="true">←</span>
       </a>
 
-      <a href="#/tv" class="portal-shortcut tv-shortcut" title="شاشة عرض متابعة الأدوار">
-        <span class="portal-shortcut-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="5" width="18" height="13" rx="2"/>
-            <path d="M8 21h8M12 18v3"/>
-            <path d="M8 10h8M8 13h5"/>
-          </svg>
-        </span>
-        <span class="portal-shortcut-text">
-          <strong>شاشة عرض متابعة الأدوار</strong>
-          <small>فتح شاشة العرض الرئيسية</small>
-        </span>
-        <span class="portal-shortcut-arrow" aria-hidden="true">←</span>
-      </a>
+      <details class="portal-tv-menu">
+        <summary class="portal-shortcut tv-shortcut" title="اختيار شاشة عرض متابعة الأدوار">
+          <span class="portal-shortcut-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="5" width="18" height="13" rx="2"/>
+              <path d="M8 21h8M12 18v3"/>
+              <path d="M8 10h8M8 13h5"/>
+            </svg>
+          </span>
+          <span class="portal-shortcut-text">
+            <strong>شاشة عرض متابعة الأدوار</strong>
+            <small>اختر شاشة العرض المطلوبة</small>
+          </span>
+          <span class="portal-shortcut-arrow portal-tv-menu-arrow" aria-hidden="true">⌄</span>
+        </summary>
+        <div class="portal-tv-options" role="menu" aria-label="اختيار شاشة العرض">
+          <a href="#/tv" class="portal-tv-option" role="menuitem"><strong>عرض جميع العيادات</strong><small>12 عيادة</small></a>
+          <a href="#/tv-third" class="portal-tv-option" role="menuitem"><strong>عيادات الدور الثالث</strong><small>8 عيادات</small></a>
+          <a href="#/tv-ground" class="portal-tv-option" role="menuitem"><strong>عيادات الدور الأرضي</strong><small>4 عيادات</small></a>
+        </div>
+      </details>
     </nav>
 
     <nav class="portal-cards" aria-label="اختيار نوع الدخول">
@@ -6280,7 +6535,7 @@
     </div>
   
     <div class="tv-center-heading">
-      <h1 class="tv-slogan">متابعة أدوار العيادات</h1>
+      <h1 id="tvSlogan" class="tv-slogan">متابعة أدوار العيادات</h1>
     </div>
 
     
@@ -6812,6 +7067,11 @@ function pageTitleForView(viewName){
     admin:"الإدارة"
   };
 
+  if(viewName === "tv"){
+    if(tvDisplayMode === "third") return "الدور الثالث";
+    if(tvDisplayMode === "ground") return "الدور الأرضي";
+  }
+
   if(viewName === "staff-manager" || viewName === "staff-manager-login"){
     const role = currentStaffManagerRole() || staffManagerLoginRole;
     return role === "nursing_manager" ? "إدارة التمريض" : "إدارة العيادات";
@@ -7019,6 +7279,33 @@ function renderBookingStatus(){
   }
 }
 const dashboardLastNumbers = {};
+let tvDisplayMode = "all";
+
+function tvRoomsForDisplay(){
+  if(tvDisplayMode === "third") return ROOM_OPTIONS.filter(room=>room.floor === "third");
+  if(tvDisplayMode === "ground") return ROOM_OPTIONS.filter(room=>room.floor === "ground");
+  return ROOM_OPTIONS;
+}
+
+function setTvDisplayMode(mode = "all"){
+  tvDisplayMode = mode === "third" || mode === "ground" ? mode : "all";
+
+  const tv = $("#view-tv");
+  if(tv){
+    tv.classList.toggle("tv-floor-only", tvDisplayMode !== "all");
+    tv.classList.toggle("tv-floor-third", tvDisplayMode === "third");
+    tv.classList.toggle("tv-floor-ground", tvDisplayMode === "ground");
+  }
+
+  const slogan = $("#tvSlogan");
+  if(slogan){
+    slogan.textContent = tvDisplayMode === "third"
+      ? "متابعة أدوار عيادات الدور الثالث"
+      : tvDisplayMode === "ground"
+        ? "متابعة أدوار عيادات الدور الأرضي"
+        : "متابعة أدوار العيادات";
+  }
+}
 
 const TV_ACTIVITY_STORAGE_KEY = "islahTvRecentActivity:v1";
 const TV_ACTIVITY_LIMIT = 8;
@@ -7908,7 +8195,7 @@ let allClinicsListening = false;
 function renderTvDashboardFromClinics(clinics, allowChime = true){
   let shouldChime = false;
 
-  ROOM_OPTIONS.forEach(room=>{
+  tvRoomsForDisplay().forEach(room=>{
     /* توافق مؤقت مع نسخة تجربة الأسنان القديمة داخل clinics/dental */
     const roomData = clinics[room.id] || (room.id === "311" ? clinics.dental : null) || {};
     if(updateQueueCard(room, roomData)) shouldChime = true;
@@ -8061,7 +8348,9 @@ function route(){
   const h = (location.hash || "#/home").replace("#/","");
   syncAdminRoomControls();
   if(h === "home")      { show("home"); }
-  else if(h === "tv")   { show("tv"); startClock(); }
+  else if(h === "tv")   { setTvDisplayMode("all"); show("tv"); startClock(); }
+  else if(h === "tv-third") { setTvDisplayMode("third"); show("tv"); startClock(); }
+  else if(h === "tv-ground") { setTvDisplayMode("ground"); show("tv"); startClock(); }
   else if(h === "qr")   { show("qr"); renderQrDashboard(); }
   else if(h === "admin-login"){
     if(isAdminUser()){ show("admin"); renderAdminDashboard(); }
