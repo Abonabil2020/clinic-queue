@@ -9490,12 +9490,16 @@ function scrollStaffManagerToTop(){
   const view = $("#view-staff-manager");
   const scrollingElement = document.scrollingElement || document.documentElement;
 
-  if(view) view.scrollIntoView({behavior:"smooth",block:"start"});
-  if(scrollingElement?.scrollTo) scrollingElement.scrollTo({top:0,left:0,behavior:"smooth"});
-  window.scrollTo({top:0,left:0,behavior:"smooth"});
+  /* بعض إصدارات Safari داخل التطبيق المستقل لا تستجيب لـ smooth وحده؛
+     نحرّك كل حاويات التمرير ثم نؤكد الموضع في الإطارات التالية. */
+  if(view) view.scrollIntoView({behavior:"auto",block:"start"});
+  if(scrollingElement?.scrollTo) scrollingElement.scrollTo({top:0,left:0,behavior:"auto"});
+  window.scrollTo(0,0);
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop = 0;
 
   /* بعض المتصفحات تحفظ موضعًا سابقًا بعد إعادة الرسم؛ تأكيد الوصول لأول الصفحة */
-  setTimeout(()=>{
+  const forceTop = ()=>{
     if(staffManagerScrollPosition() > 4){
       if(scrollingElement) scrollingElement.scrollTop = 0;
       document.documentElement.scrollTop = 0;
@@ -9503,7 +9507,10 @@ function scrollStaffManagerToTop(){
       window.scrollTo(0,0);
     }
     updateStaffManagerTopButton();
-  },420);
+  };
+  requestAnimationFrame(forceTop);
+  setTimeout(forceTop,120);
+  setTimeout(forceTop,420);
 }
 function updateStaffManagerTopButton(){
   if(!staffManagerTopBtn) return;
