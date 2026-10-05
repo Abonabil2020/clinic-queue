@@ -9450,17 +9450,46 @@ document.querySelectorAll("[data-staff-workspace-close]").forEach(button=>{
 });
 
 const staffManagerTopBtn = $("#staffManagerTopBtn");
+function staffManagerScrollPosition(){
+  return Math.max(
+    Number(window.scrollY || 0),
+    Number(document.documentElement?.scrollTop || 0),
+    Number(document.body?.scrollTop || 0)
+  );
+}
+function scrollStaffManagerToTop(){
+  /* الرجوع لأول صفحة مسؤول العيادات/التمريض فعليًا، وليس لأول القسم المفتوح فقط */
+  document.querySelectorAll(
+    "#view-staff-manager .staff-admin-list, #view-staff-manager .staff-manual-pending-list, #view-staff-manager .staff-directory-search-results"
+  ).forEach(el=>{ el.scrollTop = 0; });
+
+  const view = $("#view-staff-manager");
+  const scrollingElement = document.scrollingElement || document.documentElement;
+
+  if(view) view.scrollIntoView({behavior:"smooth",block:"start"});
+  if(scrollingElement?.scrollTo) scrollingElement.scrollTo({top:0,left:0,behavior:"smooth"});
+  window.scrollTo({top:0,left:0,behavior:"smooth"});
+
+  /* بعض المتصفحات تحفظ موضعًا سابقًا بعد إعادة الرسم؛ تأكيد الوصول لأول الصفحة */
+  setTimeout(()=>{
+    if(staffManagerScrollPosition() > 4){
+      if(scrollingElement) scrollingElement.scrollTop = 0;
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+      window.scrollTo(0,0);
+    }
+    updateStaffManagerTopButton();
+  },420);
+}
 function updateStaffManagerTopButton(){
   if(!staffManagerTopBtn) return;
   const viewVisible = !$("#view-staff-manager").classList.contains("hidden-view");
   const workspaceOpen = activeStaffWorkspace === "manual" || activeStaffWorkspace === "import";
-  const visible = viewVisible && !workspaceOpen && window.scrollY > 80;
+  const visible = viewVisible && !workspaceOpen && staffManagerScrollPosition() > 80;
   staffManagerTopBtn.classList.toggle("hidden-view", !visible);
 }
 window.addEventListener("scroll",updateStaffManagerTopButton,{passive:true});
-staffManagerTopBtn?.addEventListener("click",()=>{
-  window.scrollTo({top:0,behavior:"smooth"});
-});
+staffManagerTopBtn?.addEventListener("click",scrollStaffManagerToTop);
 
 const staffManagerQuickBar = $("#staffManagerQuickBar");
 const staffQuickTopBtn = $("#staffQuickTopBtn");
@@ -9492,9 +9521,7 @@ function refreshStaffManagerQuickBar(){
   }
 }
 
-staffQuickTopBtn?.addEventListener("click",()=>{
-  window.scrollTo({top:0,behavior:"smooth"});
-});
+staffQuickTopBtn?.addEventListener("click",scrollStaffManagerToTop);
 
 staffQuickCloseBtn?.addEventListener("click",()=>{
   closeStaffWorkspace(true);
@@ -10525,10 +10552,17 @@ async function approveStaffManualChanges(){
     },1800);
   }catch(e){
     console.error("Manual staff approval error:",e);
-    staffAdminMessage("تعذر اعتماد التعديلات اليدوية. راجع الاتصال والصلاحيات.", false);
+    const approvalErrorCode = String(e?.code || "").toUpperCase();
+    const permissionDenied = approvalErrorCode.includes("PERMISSION_DENIED") || approvalErrorCode.includes("PERMISSION-DENIED");
+    const approvalErrorText = permissionDenied
+      ? "تعذر الاعتماد: حساب المسؤول الحالي غير مصرح له بالكتابة على قوائم Firebase. راجع Firebase Rules."
+      : "تعذر اعتماد التعديلات اليدوية. راجع الاتصال والصلاحيات.";
+    staffAdminMessage(approvalErrorText, false);
     if(localStatus){
       localStatus.classList.add("error");
-      localStatus.textContent = "تعذر الاعتماد. لم يتم تطبيق التعديلات.";
+      localStatus.textContent = permissionDenied
+        ? "تعذر الاعتماد بسبب صلاحيات Firebase Rules — لم يتم تطبيق التعديلات."
+        : "تعذر الاعتماد. لم يتم تطبيق التعديلات.";
     }
     button.disabled = false;
     if(quickButton){
