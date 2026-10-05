@@ -1639,6 +1639,95 @@
 
   @media (max-width:950px){.staff-admin-grid{grid-template-columns:1fr}}
 
+  /* ===== تحسين وضوح وتحكم صفحة مسؤول العيادات والتمريض فقط ===== */
+  #view-staff-manager .staff-role-guide{
+    margin-top:14px;
+    padding:13px 15px;
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:14px;
+    flex-wrap:wrap;
+    border:1px solid #dbe3ee;
+    border-radius:16px;
+    background:#fff;
+    box-shadow:0 4px 14px rgba(15,23,42,.04);
+  }
+  #view-staff-manager .staff-role-guide-main{min-width:0;flex:1}
+  #view-staff-manager .staff-role-guide-title{
+    color:#0f172a;
+    font-size:14px;
+    font-weight:800;
+  }
+  #view-staff-manager .staff-role-guide-desc{
+    margin-top:3px;
+    color:#64748b;
+    font-size:11px;
+    line-height:1.65;
+  }
+  #view-staff-manager .staff-role-guide-flow{
+    flex:0 0 auto;
+    padding:7px 10px;
+    border-radius:999px;
+    background:#fff7ed;
+    color:#9a3412;
+    border:1px solid #fed7aa;
+    font-size:10px;
+    font-weight:800;
+    white-space:nowrap;
+  }
+  #view-staff-manager .staff-activation-hint{
+    margin-top:6px;
+    color:#64748b;
+    font-size:10px;
+    line-height:1.6;
+  }
+  #view-staff-manager .staff-manual-approve-status{
+    min-height:18px;
+    margin-top:8px;
+    font-size:10px;
+    font-weight:700;
+    color:#047857;
+  }
+  #view-staff-manager .staff-manual-approve-status.error{color:#b91c1c}
+  #view-staff-manager .staff-workspace-return{
+    width:calc(100% - 28px);
+    margin:0 14px 14px;
+    min-height:42px;
+    border:1px solid #dbe3ee;
+    border-radius:12px;
+    background:#f8fafc;
+    color:#475569;
+    font-size:11px;
+    font-weight:800;
+  }
+  #view-staff-manager .staff-workspace-return:active{transform:scale(.99)}
+  #view-staff-manager .staff-admin-list,
+  #view-staff-manager .staff-manual-pending-list,
+  #view-staff-manager .staff-directory-search-results{
+    overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch;
+    touch-action:pan-y;
+  }
+  #staffManagerTopBtn{
+    position:fixed;
+    left:18px;
+    bottom:18px;
+    z-index:90;
+    min-width:118px;
+    height:44px;
+    padding:0 14px;
+    border-radius:999px;
+    border:1px solid #dbe3ee;
+    background:rgba(255,255,255,.96);
+    color:#334155;
+    box-shadow:0 10px 28px rgba(15,23,42,.15);
+    font-size:11px;
+    font-weight:800;
+    backdrop-filter:blur(8px);
+  }
+  #staffManagerTopBtn.hidden-view{display:none!important}
+
   /* ===== فصل صلاحيات مسؤول العيادات ومسؤول التمريض ===== */
   #view-staff-manager[data-manager-role="clinics_manager"] [data-manager-only="nursing"],
   #view-staff-manager[data-manager-role="nursing_manager"] [data-manager-only="clinics"]{
@@ -6293,6 +6382,14 @@
       </div>
     </div>
 
+    <div id="staffRoleGuide" class="staff-role-guide">
+      <div class="staff-role-guide-main">
+        <div id="staffRoleGuideTitle" class="staff-role-guide-title">صلاحيات الحساب</div>
+        <div id="staffRoleGuideDesc" class="staff-role-guide-desc">سيظهر هنا نطاق عمل الحساب الحالي.</div>
+      </div>
+      <div class="staff-role-guide-flow">حفظ → تعديل معلق → اعتماد</div>
+    </div>
+
     <div class="staff-admin-toolbar">
       <button id="staffSeedDirectoryBtn" type="button"
         class="px-4 py-2.5 rounded-xl bg-slate-700 text-white text-sm font-bold">
@@ -6300,9 +6397,12 @@
       </button>
       <button id="staffActivateDirectoryBtn" type="button"
         class="px-4 py-2.5 rounded-xl bg-emerald-600 text-white text-sm font-bold">
-        اعتماد القوائم للمستخدمين
+        تفعيل قوائم Firebase لأول مرة
       </button>
     </div>
+    <p id="staffActivationHint" class="staff-activation-hint">
+      هذا الزر للتفعيل الأول فقط. بعد التفعيل، أي تعديل جديد يتم تطبيقه من زر «اعتماد التعديلات» داخل قسم الإضافة والتعديل اليدوي.
+    </p>
     <p id="staffAdminMessage" class="text-sm mt-2 min-h-[22px] text-slate-600"></p>
 
     <section class="staff-directory-search" aria-label="البحث في قوائم مسؤول العيادات والتمريض">
@@ -6426,6 +6526,9 @@
         </div>
 
       </div>
+      <button type="button" class="staff-workspace-return" data-staff-workspace-close>
+        ↑ إغلاق القسم والعودة لاختيارات الإدارة
+      </button>
     </section>
 
     <section class="staff-manual-panel staff-workspace-panel" data-workspace-panel="manual">
@@ -6452,8 +6555,9 @@
           <div id="staffManualPendingList" class="staff-manual-pending-list hidden-view"></div>
           <div class="staff-manual-pending-actions">
             <button id="staffManualDiscardBtn" type="button" class="staff-manual-discard" disabled>إلغاء التعديلات</button>
-            <button id="staffManualApproveBtn" type="button" class="staff-manual-approve" disabled>اعتماد التعديلات</button>
+            <button id="staffManualApproveBtn" type="button" class="staff-manual-approve" disabled>اعتماد التعديلات وتطبيقها</button>
           </div>
+          <div id="staffManualApproveStatus" class="staff-manual-approve-status" aria-live="polite"></div>
         </div>
 
         <div class="staff-admin-note">
@@ -6520,8 +6624,12 @@
       </section>
         </div>
       </div>
+      <button type="button" class="staff-workspace-return" data-staff-workspace-close>
+        ↑ إغلاق القسم والعودة لاختيارات الإدارة
+      </button>
     </section>
   </div>
+  <button id="staffManagerTopBtn" type="button" class="hidden-view" aria-label="العودة إلى أعلى صفحة الإدارة">↑ أعلى الصفحة</button>
 </section>
 
 
@@ -9103,6 +9211,15 @@ function applyStaffManagerRoleUI(){
   const searchDesc = $("#staffDirectorySearchDesc");
   const searchInput = $("#staffGlobalSearch");
   const seedBtn = $("#staffSeedDirectoryBtn");
+  const roleGuideTitle = $("#staffRoleGuideTitle");
+  const roleGuideDesc = $("#staffRoleGuideDesc");
+
+  if(roleGuideTitle) roleGuideTitle.textContent = isNursing
+    ? "حساب مسؤول التمريض"
+    : "حساب مسؤول العيادات";
+  if(roleGuideDesc) roleGuideDesc.textContent = isNursing
+    ? "هذا الحساب يدير أسماء التمريض فقط: إضافة، تعديل، إيقاف أو إعادة تفعيل. الحفظ يسجل تعديلًا معلقًا، ولا يصل للمستخدمين إلا بعد «اعتماد التعديلات»."
+    : "هذا الحساب يدير التخصصات والأطباء فقط. الحفظ يسجل تعديلًا معلقًا، ولا يصل للمستخدمين إلا بعد «اعتماد التعديلات».";
 
   if(title) title.textContent = isNursing ? "مسؤول التمريض" : "مسؤول العيادات";
   if(subtitle) subtitle.textContent = isNursing
@@ -9204,7 +9321,29 @@ function resetStaffNurseForm(){
 
 let activeStaffWorkspace = null;
 
+function closeStaffWorkspace(returnToSwitcher = true){
+  document.querySelectorAll("[data-workspace-panel]").forEach(panel=>{
+    panel.classList.remove("workspace-open");
+  });
+  document.querySelectorAll(".staff-workspace-card").forEach(card=>{
+    card.classList.remove("active");
+  });
+  activeStaffWorkspace = null;
+
+  if(returnToSwitcher){
+    const switcher = $("#staffWorkspaceSwitcher");
+    if(switcher){
+      setTimeout(()=>switcher.scrollIntoView({behavior:"smooth", block:"start"}),30);
+    }
+  }
+}
+
 function openStaffWorkspace(target){
+  if(activeStaffWorkspace === target){
+    closeStaffWorkspace(true);
+    return;
+  }
+
   const panels = document.querySelectorAll("[data-workspace-panel]");
   const cards = document.querySelectorAll(".staff-workspace-card");
 
@@ -9230,6 +9369,21 @@ document.querySelectorAll(".staff-workspace-card").forEach(card=>{
   card.addEventListener("click",()=>{
     openStaffWorkspace(card.dataset.target);
   });
+});
+
+document.querySelectorAll("[data-staff-workspace-close]").forEach(button=>{
+  button.addEventListener("click",()=>closeStaffWorkspace(true));
+});
+
+const staffManagerTopBtn = $("#staffManagerTopBtn");
+function updateStaffManagerTopButton(){
+  if(!staffManagerTopBtn) return;
+  const visible = !$("#view-staff-manager").classList.contains("hidden-view") && window.scrollY > 420;
+  staffManagerTopBtn.classList.toggle("hidden-view", !visible);
+}
+window.addEventListener("scroll",updateStaffManagerTopButton,{passive:true});
+staffManagerTopBtn?.addEventListener("click",()=>{
+  window.scrollTo({top:0,behavior:"smooth"});
 });
 
 let staffImportState = null;
@@ -10206,9 +10360,14 @@ async function approveStaffManualChanges(){
   if(!confirm("سيتم تطبيق " + diff.changes.length + " تعديل يدوي على Firebase. متابعة؟")) return;
 
   const button = $("#staffManualApproveBtn");
+  const localStatus = $("#staffManualApproveStatus");
   const oldText = button.textContent;
   button.disabled = true;
   button.textContent = "جارٍ الاعتماد...";
+  if(localStatus){
+    localStatus.classList.remove("error");
+    localStatus.textContent = "جارٍ إرسال التعديلات إلى Firebase...";
+  }
 
   try{
     await staffDirectoryRef.update(diff.updates);
@@ -10223,12 +10382,25 @@ async function approveStaffManualChanges(){
     resetStaffDoctorForm();
     resetStaffNurseForm();
     staffAdminMessage("تم اعتماد التعديلات اليدوية وتطبيقها على النظام.");
+    if(localStatus){
+      localStatus.classList.remove("error");
+      localStatus.textContent = "✓ تم الاعتماد وتطبيق التعديلات على النظام.";
+    }
+    button.textContent = "تم الاعتماد ✓";
+    setTimeout(()=>{
+      if(button) button.textContent = oldText;
+      if(localStatus && !staffManualDirty) localStatus.textContent = "";
+    },1800);
   }catch(e){
     console.error("Manual staff approval error:",e);
     staffAdminMessage("تعذر اعتماد التعديلات اليدوية. راجع الاتصال والصلاحيات.", false);
+    if(localStatus){
+      localStatus.classList.add("error");
+      localStatus.textContent = "تعذر الاعتماد. لم يتم تطبيق التعديلات.";
+    }
     button.disabled = false;
   }finally{
-    button.textContent = oldText;
+    if(button.textContent === "جارٍ الاعتماد...") button.textContent = oldText;
   }
 }
 
@@ -10401,6 +10573,7 @@ function createStaffAdminRow(name, meta, active, onEdit, onToggle){
 
 function renderStaffManager(){
   if(!$("#staffDirectoryStatus")) return;
+  if(typeof updateStaffManagerTopButton === "function") updateStaffManagerTopButton();
   applyStaffManagerRoleUI();
   renderStaffImportPreview();
 
@@ -10414,8 +10587,18 @@ function renderStaffManager(){
     ? "قوائم Firebase معتمدة وتعمل لحظيًا"
     : "القوائم المحلية ما زالت مستخدمة";
 
-  $("#staffActivateDirectoryBtn").disabled = staffDirectoryState.ready;
-  $("#staffActivateDirectoryBtn").classList.toggle("opacity-50", staffDirectoryState.ready);
+  const activateBtn = $("#staffActivateDirectoryBtn");
+  const activationHint = $("#staffActivationHint");
+  activateBtn.disabled = staffDirectoryState.ready;
+  activateBtn.classList.toggle("opacity-50", staffDirectoryState.ready);
+  activateBtn.textContent = staffDirectoryState.ready
+    ? "قوائم Firebase مفعلة ✓"
+    : "تفعيل قوائم Firebase لأول مرة";
+  if(activationHint){
+    activationHint.textContent = staffDirectoryState.ready
+      ? "القوائم مفعلة بالفعل. أي إضافة أو تعديل جديد لا يحتاج هذا الزر؛ استخدم «اعتماد التعديلات» داخل قسم الإضافة والتعديل اليدوي."
+      : "هذا الزر للتفعيل الأول فقط. بعد التفعيل، أي تعديل جديد يتم تطبيقه من زر «اعتماد التعديلات» داخل قسم الإضافة والتعديل اليدوي.";
+  }
 
   const seeded = staffDirectoryState.specialties.length > 0 || staffDirectoryState.nurses.length > 0;
   $("#staffSeedDirectoryBtn").disabled = seeded;
@@ -10650,6 +10833,8 @@ $("#staffSeedDirectoryBtn").addEventListener("click", async ()=>{
 
 $("#staffActivateDirectoryBtn").addEventListener("click", async ()=>{
   if(!isStaffManagerUser()) return;
+  const activateButton = $("#staffActivateDirectoryBtn");
+  const activateOldText = activateButton.textContent;
   const activeSpecialties = staffDirectoryState.specialties.filter(x=>x.active !== false);
   const activeDoctors = staffDirectoryState.doctors.filter(x=>x.active !== false && x.specialtyId);
   const activeNurses = staffDirectoryState.nurses.filter(x=>x.active !== false);
@@ -10658,16 +10843,21 @@ $("#staffActivateDirectoryBtn").addEventListener("click", async ()=>{
   if(!activeDoctors.length) return staffAdminMessage("أضف طبيبًا مفعلًا واحدًا على الأقل واربطه بتخصص", false);
   if(!activeNurses.length) return staffAdminMessage("أضف اسم تمريض مفعلًا واحدًا على الأقل", false);
 
-  if(!confirm("بعد الاعتماد ستقرأ قوائم إعداد العيادة من Firebase لحظيًا. متابعة؟")) return;
+  if(!confirm("هذا تفعيل أول مرة لقوائم Firebase. بعد التفعيل، التعديلات الجديدة تعتمد من داخل قسم الإضافة والتعديل اليدوي. متابعة؟")) return;
+  activateButton.disabled = true;
+  activateButton.textContent = "جارٍ التفعيل...";
   try{
     await staffDirectoryRef.child("meta").update({
       ready:true,
       updatedAt:firebase.database.ServerValue.TIMESTAMP
     });
     writeAuditLog({action:"staff_activate",summary:"اعتماد قوائم العيادات والأطباء والتمريض للمستخدمين"});
-    staffAdminMessage("تم اعتماد القوائم للمستخدمين");
+    activateButton.textContent = "قوائم Firebase مفعلة ✓";
+    staffAdminMessage("تم تفعيل قوائم Firebase للمستخدمين.");
   }catch(e){
-    staffAdminMessage("تعذر اعتماد القوائم", false);
+    activateButton.disabled = false;
+    activateButton.textContent = activateOldText;
+    staffAdminMessage("تعذر تفعيل القوائم. راجع الاتصال والصلاحيات.", false);
   }
 });
 
