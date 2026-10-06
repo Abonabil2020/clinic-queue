@@ -6284,6 +6284,41 @@
     padding:0 8px!important;
   }
 }
+/* العرض الفردي للعيادات: حجرة واحدة واضحة في كل صفحة */
+#view-tv.tv-individual .tv-dashboard{grid-template-rows:minmax(0,1fr)!important;min-height:0!important}
+#view-tv.tv-individual .floor-section{grid-template-rows:minmax(0,1fr)!important;gap:0!important;min-height:0!important}
+#view-tv.tv-individual .floor-section .clinic-grid{width:min(88vw,1700px)!important;height:100%!important;max-width:1700px!important;margin:0 auto!important;grid-template-columns:1fr!important;grid-template-rows:minmax(0,1fr)!important;gap:0!important;align-items:stretch!important;justify-items:stretch!important}
+#view-tv.tv-individual .queue-card{width:100%!important;max-width:1700px!important;margin:0 auto!important;min-height:0!important}
+#view-tv.tv-individual .queue-card-title{min-height:8vh!important;padding:1.25vh 2vw!important}
+#view-tv.tv-individual .queue-clinic-name{width:calc(100% - 16vw)!important;font-size:clamp(28px,4.4vh,86px)!important;line-height:1.12!important}
+#view-tv.tv-individual .room-badge{font-size:clamp(22px,3.1vh,62px)!important;padding:.55vh 1vw!important}
+#view-tv.tv-individual .queue-card-body{padding:1.3vh 2vw!important;row-gap:1vh!important}
+#view-tv.tv-individual .queue-doctor{font-size:clamp(24px,3.4vh,68px)!important;line-height:1.15!important}
+#view-tv.tv-individual .queue-status{font-size:clamp(16px,2.1vh,42px)!important;padding:.4vh .8vw!important}
+#view-tv.tv-individual .queue-number-box{min-height:0!important;border-radius:18px!important;padding:1.2vh 1vw!important}
+#view-tv.tv-individual .queue-number-label{font-size:clamp(18px,2.5vh,50px)!important}
+#view-tv.tv-individual .queue-number{font-size:clamp(110px,18vh,320px)!important;line-height:.95!important}
+#view-tv.tv-individual .queue-card[data-status="finished"] .queue-number{font-size:clamp(34px,5vh,96px)!important}
+#view-tv.tv-individual .queue-missed-summary{padding:.8vh 1vw!important;gap:1vw!important}
+#view-tv.tv-individual .queue-missed-summary-head{font-size:clamp(14px,1.8vh,36px)!important}
+#view-tv.tv-individual .queue-missed-count{font-size:clamp(14px,1.8vh,36px)!important;min-width:2.5vw!important;height:auto!important}
+#view-tv.tv-individual .queue-public-chip{height:3.8vh!important;min-height:30px!important;font-size:clamp(18px,2.5vh,50px)!important}
+#view-tv.tv-individual #tvPageProgress span{animation-duration:5s!important}
+#view-tv.tv-individual .tv-page-enter{animation:tvIndividualEntrance .7s cubic-bezier(.2,.8,.2,1) both}
+@keyframes tvIndividualEntrance{from{opacity:.12;transform:translateX(-7vw) scale(.97)}to{opacity:1;transform:translateX(0) scale(1)}}
+@media (max-width:900px){
+  #view-tv.tv-individual .tv-dashboard{padding:8px!important}
+  #view-tv.tv-individual .floor-section .clinic-grid{width:100%!important}
+  #view-tv.tv-individual .queue-card-title{min-height:58px!important;padding:9px 12px!important}
+  #view-tv.tv-individual .queue-clinic-name{width:calc(100% - 105px)!important;font-size:clamp(21px,5vw,34px)!important}
+  #view-tv.tv-individual .room-badge{font-size:clamp(16px,3.6vw,26px)!important}
+  #view-tv.tv-individual .queue-card-body{padding:12px!important;row-gap:9px!important}
+  #view-tv.tv-individual .queue-number{font-size:clamp(86px,24vw,180px)!important}
+  #view-tv.tv-individual .queue-number-label{font-size:clamp(16px,4vw,26px)!important}
+  #view-tv.tv-individual .queue-doctor{font-size:clamp(18px,4.5vw,30px)!important}
+  #view-tv.tv-individual .queue-status{font-size:clamp(13px,3.2vw,21px)!important}
+  #view-tv.tv-individual .queue-missed-summary{padding:8px!important}
+}
 </style>
 </head>
 <body>
@@ -6348,6 +6383,7 @@
         <div class="portal-tv-options" role="menu" aria-label="اختيار شاشة العرض">
           <a href="#/tv" class="portal-tv-option" role="menuitem"><strong>عرض جميع العيادات</strong><small>12 عيادة</small></a>
           <a href="#/tv-slideshow" class="portal-tv-option" role="menuitem"><strong>العرض المتتابع للعيادات</strong><small>٣ صفحات — كل ١٥ ثانية</small></a>
+          <a href="#/tv-individual" class="portal-tv-option" role="menuitem"><strong>العرض الفردي للعيادات</strong><small>12 عيادة — كل 5 ثوانٍ</small></a>
           <a href="#/tv-third" class="portal-tv-option" role="menuitem"><strong>عيادات الدور الثالث</strong><small>8 عيادات</small></a>
           <a href="#/tv-ground" class="portal-tv-option" role="menuitem"><strong>عيادات الدور الأرضي</strong><small>4 عيادات</small></a>
         </div>
@@ -7791,6 +7827,7 @@ function tvRoomsForDisplay(){
 }
 
 const TV_PAGE_MS = 15000;
+const TV_INDIVIDUAL_MS = 5000;
 const TV_PAGES = [
   {floor:"third", title:"الدور الثالث — صفحة ١", rooms:["301","303","307","308"]},
   {floor:"third", title:"الدور الثالث — صفحة ٢", rooms:["309","310","311","312"]},
@@ -7798,6 +7835,9 @@ const TV_PAGES = [
 ];
 let tvPageIndex = 0;
 let tvPageTimer = null;
+let tvIndividualIndex = 0;
+let tvIndividualTimer = null;
+let tvIndividualOrder = ROOM_OPTIONS.map(room=>room.id);
 function tvPagesForMode(){
   return tvDisplayMode === "slideshow" ? TV_PAGES : TV_PAGES.filter(page=>page.floor === tvDisplayMode);
 }
@@ -7840,12 +7880,72 @@ function stopTvPageTimer(){
   if(tvPageTimer !== null) clearInterval(tvPageTimer);
   tvPageTimer = null;
 }
+function stopTvIndividualTimer(){
+  if(tvIndividualTimer !== null) clearInterval(tvIndividualTimer);
+  tvIndividualTimer = null;
+}
+function individualRoomById(roomId){
+  return ROOM_OPTIONS.find(room=>room.id === roomId) || ROOM_OPTIONS[0];
+}
+function paintTvIndividual(animate = false){
+  const tv = $("#view-tv");
+  const room = individualRoomById(tvIndividualOrder[tvIndividualIndex]);
+  tv.classList.add("tv-floor-only", "tv-paged", "tv-individual");
+  tv.classList.toggle("tv-floor-third", room.floor === "third");
+  tv.classList.toggle("tv-floor-ground", room.floor === "ground");
+  ROOM_OPTIONS.forEach(item=>{
+    const card = $("#tvRoom" + item.id);
+    if(card) card.classList.toggle("tv-page-hidden", item.id !== room.id);
+  });
+  tv.querySelectorAll(".floor-title").forEach(title=>{
+    title.textContent = room.floor === "third" ? "متابعة عيادات الدور الثالث" : "متابعة عيادات الدور الأرضي";
+  });
+  const card = $("#tvRoom" + room.id);
+  if(card){
+    const clinicName = card.querySelector(".queue-clinic-name");
+    const roomBadge = card.querySelector(".room-badge");
+    if(clinicName) clinicName.textContent = "عيادة " + room.place.replace(/^حجرة\s*/, "");
+    if(roomBadge) roomBadge.textContent = "حجرة " + room.id;
+  }
+  $("#tvSlogan").textContent = room.floor === "third" ? "متابعة عيادات الدور الثالث" : "متابعة عيادات الدور الأرضي";
+  const dashboard = tv.querySelector(".tv-dashboard");
+  dashboard.classList.remove("tv-page-enter");
+  if(animate){ void dashboard.offsetWidth; dashboard.classList.add("tv-page-enter"); }
+  const badge = $("#tvPageBadge");
+  badge.textContent = String(tvIndividualIndex + 1);
+  badge.setAttribute("aria-label", "العيادة " + ar(tvIndividualIndex + 1) + " من 12");
+  const progress = $("#tvPageProgress");
+  progress.hidden = false;
+  progress.classList.remove("running");
+  void progress.offsetWidth;
+  progress.classList.add("running");
+}
+function noteIndividualRoom(roomId){
+  const idx = tvIndividualOrder.indexOf(roomId);
+  if(idx > 0) tvIndividualOrder.splice(0, 0, tvIndividualOrder.splice(idx, 1)[0]);
+  if(tvDisplayMode === "individual"){
+    tvIndividualIndex = 0;
+    paintTvIndividual(true);
+  }
+}
 function setTvDisplayMode(mode = "all"){
   stopTvPageTimer();
-  tvDisplayMode = ["third", "ground", "slideshow"].includes(mode) ? mode : "all";
+  stopTvIndividualTimer();
+  tvDisplayMode = ["third", "ground", "slideshow", "individual"].includes(mode) ? mode : "all";
+  if(tvDisplayMode === "individual"){
+    tvIndividualIndex = 0;
+    tvIndividualOrder = ROOM_OPTIONS.map(room=>room.id);
+    paintTvIndividual();
+    tvIndividualTimer = setInterval(()=>{
+      if($("#view-tv").classList.contains("hidden-view")) return;
+      tvIndividualIndex = (tvIndividualIndex + 1) % tvIndividualOrder.length;
+      paintTvIndividual(true);
+    }, TV_INDIVIDUAL_MS);
+    return;
+  }
   if(tvDisplayMode !== "slideshow"){
     const tv = $("#view-tv");
-    tv.classList.remove("tv-paged");
+    tv.classList.remove("tv-paged", "tv-individual");
     tv.classList.toggle("tv-floor-only", tvDisplayMode !== "all");
     tv.classList.toggle("tv-floor-third", tvDisplayMode === "third");
     tv.classList.toggle("tv-floor-ground", tvDisplayMode === "ground");
@@ -8003,6 +8103,13 @@ function trackTvClinicUpdates(clinics){
     const clinicLabel = curr.clinicName || room.place || "العيادة";
     const locationLabel = clinicLabel + " — غرفة " + room.id;
     let operationalMessage = "";
+    const roomChanged = curr.status !== prev.status ||
+      curr.displayCurrent !== prev.displayCurrent ||
+      curr.recallMode !== prev.recallMode ||
+      curr.recallNumber !== prev.recallNumber ||
+      curr.clinicName !== prev.clinicName ||
+      curr.doctor !== prev.doctor;
+    if(roomChanged) noteIndividualRoom(room.id);
 
     if(curr.recallMode && (!prev.recallMode || curr.recallNumber !== prev.recallNumber)){
       operationalMessage = locationLabel + ": إعادة نداء الدور " + ar(curr.recallNumber);
@@ -8041,6 +8148,7 @@ function trackTvBookingUpdates(nextBooking){
     const wasClosed = tvActivityPreviousBooking[room.id]?.closed === true;
     const isClosed = normalized[room.id]?.closed === true;
     if(!wasClosed && isClosed){
+      noteIndividualRoom(room.id);
       const clinicLabel = tvActivityPreviousClinics?.[room.id]?.clinicName || room.place || "العيادة";
       addTvActivity(clinicLabel + " — غرفة " + room.id + ": اكتمل العدد المتاح لهذه الفترة","booking");
     }
@@ -8905,7 +9013,10 @@ try{
 }
 
 function show(v){
-  if(v !== "tv") stopTvPageTimer();
+  if(v !== "tv"){
+    stopTvPageTimer();
+    stopTvIndividualTimer();
+  }
   VIEWS.forEach(x => $("#view-" + x).classList.add("hidden-view"));
   $("#view-" + v).classList.remove("hidden-view");
   document.title = pageTitleForView(v);
@@ -8921,6 +9032,7 @@ function route(){
   if(h === "home")      { show("home"); }
   else if(h === "tv")   { setTvDisplayMode("all"); show("tv"); startClock(); }
   else if(h === "tv-slideshow") { setTvDisplayMode("slideshow"); show("tv"); startClock(); }
+  else if(h === "tv-individual") { setTvDisplayMode("individual"); show("tv"); startClock(); }
   else if(h === "tv-third") { setTvDisplayMode("third"); show("tv"); startClock(); }
   else if(h === "tv-ground") { setTvDisplayMode("ground"); show("tv"); startClock(); }
   else if(h === "qr")   { show("qr"); renderQrDashboard(); }
