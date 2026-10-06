@@ -6068,17 +6068,32 @@
 }
 
 /* Slideshow: one header, balanced cards, and readable instructions. */
-#view-tv.tv-paged .floor-section .floor-heading{display:none!important}
-#view-tv.tv-paged .tv-dashboard .floor-section{grid-template-rows:minmax(0,1fr)!important;gap:0!important}
+#view-tv.tv-paged .floor-section .floor-heading{
+  display:flex!important;align-items:center;justify-content:center;min-width:0!important;min-height:0!important;
+  padding:.45vh 1vw!important;border:2px solid #f3514c;border-radius:12px;background:#f3514c;
+  box-shadow:0 2px 8px rgba(243,81,76,.14);overflow:hidden;
+}
+#view-tv.tv-paged .floor-section .floor-title{
+  width:100%;min-width:0!important;margin:0!important;color:#fff!important;text-align:center;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:clamp(22px,3vh,64px)!important;line-height:1.1!important;
+}
+#view-tv.tv-paged .tv-dashboard .floor-section{grid-template-rows:7vh minmax(0,1fr)!important;gap:.7vh!important}
+#view-tv.tv-paged .queue-card-title{position:relative;justify-content:flex-start!important}
+#view-tv.tv-paged .queue-clinic-name{
+  position:absolute;left:50%;top:50%;width:calc(100% - 12vw);transform:translate(-50%,-50%);
+  text-align:center;white-space:normal;overflow:hidden;text-overflow:ellipsis;z-index:0;
+}
+#view-tv.tv-paged .room-badge{position:relative;z-index:1;margin-inline-start:auto}
 #view-tv.tv-paged .tv-center-heading{display:flex!important;flex-direction:row!important;align-items:center;justify-content:center;gap:1vw;min-width:0;direction:rtl}
-#view-tv.tv-paged .tv-brand #tvPageBadge{display:flex!important;position:static!important;order:2;flex:0 0 auto;align-items:center;justify-content:center;min-width:0;width:4.5vh;height:4.5vh;box-sizing:border-box;padding:0!important;border-radius:9px;background:#263238;color:#fff;font-size:2.8vh!important;font-weight:700;line-height:1}
+#view-tv.tv-paged .tv-brand #tvPageBadge{display:flex!important;position:static!important;order:2;flex:0 0 auto;align-items:center;justify-content:center;min-width:0;width:4.5vh;height:4.5vh;box-sizing:border-box;padding:0!important;border:2px solid #f3514c;border-radius:9px;background:#f3514c;color:#fff;font-size:2.8vh!important;font-weight:700;line-height:1}
 #view-tv.tv-paged #tvSlogan{min-width:0;margin:0;white-space:normal;line-height:1.2}
-#view-tv.tv-paged .tv-footer-message{font-size:clamp(14px,1.7vh,40px)!important}
+#view-tv.tv-paged .tv-footer-message{font-size:clamp(16px,2.2vh,48px)!important;font-weight:700!important}
 #view-tv.tv-paged .tv-footer-track{animation-duration:38.2s!important}
 @media(orientation:landscape) and (min-width:901px){
+  #view-tv.tv-paged .tv-dashboard .floor-section{grid-template-rows:7vh minmax(0,1fr)!important}
   #view-tv.tv-paged .queue-card-title{padding:.9vh 1vw!important;gap:.8vw!important}
   #view-tv.tv-paged .queue-card-body{padding:.75vh .9vw!important;row-gap:.6vh!important}
-  #view-tv.tv-paged .queue-number{font-size:calc(11 * var(--tv-fit))!important}
+  #view-tv.tv-paged .queue-number{font-size:calc(13.2 * var(--tv-fit))!important}
   #view-tv.tv-paged .queue-card[data-status="finished"] .queue-number{font-size:calc(3.6 * var(--tv-fit))!important}
   #view-tv.tv-paged .queue-missed-public-list{flex-wrap:nowrap!important;gap:.4vw!important}
   #view-tv.tv-paged .queue-public-chip,#view-tv.tv-paged .queue-public-more{flex-shrink:0;white-space:nowrap}
@@ -7615,7 +7630,16 @@ function paintTvPage(animate = false){
     if(card) card.classList.toggle("tv-page-hidden", !page.rooms.includes(room.id));
   });
   tv.querySelectorAll(".floor-title").forEach(title=>{
-    title.textContent = page.floor === "third" ? "عيادات الدور الثالث" : "عيادات الدور الأرضي";
+    title.textContent = page.floor === "third" ? "متابعة عيادات الدور الثالث" : "متابعة عيادات الدور الأرضي";
+  });
+  page.rooms.forEach(roomId=>{
+    const room = ROOM_OPTIONS.find(item=>item.id === roomId);
+    const card = $("#tvRoom" + roomId);
+    if(!room || !card) return;
+    const clinicName = card.querySelector(".queue-clinic-name");
+    const roomBadge = card.querySelector(".room-badge");
+    if(clinicName) clinicName.textContent = "عيادة " + room.place.replace(/^حجرة\s*/, "");
+    if(roomBadge) roomBadge.textContent = "حجرة " + room.id;
   });
   $("#tvSlogan").textContent = page.floor === "third" ? "متابعة عيادات الدور الثالث" : "متابعة عيادات الدور الأرضي";
   const dashboard = tv.querySelector(".tv-dashboard");
@@ -7643,6 +7667,14 @@ function setTvDisplayMode(mode = "all"){
     tv.classList.toggle("tv-floor-third", tvDisplayMode === "third");
     tv.classList.toggle("tv-floor-ground", tvDisplayMode === "ground");
     tv.querySelectorAll(".tv-page-hidden").forEach(card=>card.classList.remove("tv-page-hidden"));
+    ROOM_OPTIONS.forEach(room=>{
+      const card = $("#tvRoom" + room.id);
+      if(!card) return;
+      const clinicName = card.querySelector(".queue-clinic-name");
+      const roomBadge = card.querySelector(".room-badge");
+      if(clinicName) clinicName.textContent = room.place;
+      if(roomBadge) roomBadge.textContent = "غرفة " + room.id;
+    });
     tv.querySelector(".third-floor .floor-title").textContent = "عيادات الدور الثالث";
     tv.querySelector(".ground-floor .floor-title").textContent = "عيادات الدور الأرضي";
     tv.querySelector(".tv-dashboard").classList.remove("tv-page-enter");
