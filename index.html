@@ -6235,6 +6235,38 @@
   45%,75%{opacity:.35;transform:translateX(-10px)}
   100%{opacity:1;transform:translateX(0)}
 }
+
+/* آخر التحديثات تظهر مؤقتًا عند وجود تعديل جديد فقط */
+#view-tv.tv-paged .tv-activity-panel{
+  opacity:0!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+  transform:translateY(-8px);
+  transition:opacity .35s ease,transform .35s ease,visibility .35s ease;
+}
+#view-tv.tv-paged .tv-activity-panel.has-new,
+#view-tv.tv-paged .tv-activity-panel.expanded{
+  opacity:1!important;
+  visibility:visible!important;
+  pointer-events:auto!important;
+  transform:translateY(0);
+}
+
+/* تعليمات أوضح ومريحة على الموبايل */
+@media (max-width:600px){
+  #view-tv.tv-paged .tv-footer{min-height:82px!important;height:auto!important;padding:0 6px!important}
+  #view-tv.tv-paged .tv-footer-ticker{width:100%!important;overflow:visible!important;white-space:normal!important}
+  #view-tv.tv-paged .tv-footer-track{
+    width:100%!important;max-width:100%!important;min-height:82px;box-sizing:border-box;
+    padding:10px 8px!important;justify-content:center!important;align-items:center!important;
+    animation:none!important;transform:none!important;
+  }
+  #view-tv.tv-paged .tv-footer-message{
+    display:block;width:100%;white-space:normal!important;text-align:center;
+    font-size:clamp(17px,4.7vw,25px)!important;line-height:1.35!important;
+    padding:0 8px!important;
+  }
+}
 </style>
 </head>
 <body>
