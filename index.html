@@ -5985,6 +5985,42 @@
     }
   }
 
+
+/* Four-room TV pages and readable updates; scoped to the TV display only. */
+#view-tv.tv-paged .tv-page-hidden{display:none!important}
+#view-tv.tv-paged .tv-dashboard{grid-template-rows:minmax(0,1fr)!important;min-height:0}
+#view-tv.tv-paged .floor-section{grid-template-rows:5.5vh minmax(0,1fr)!important;min-height:0}
+#view-tv.tv-paged .floor-title{font-size:clamp(20px,2.8vh,64px)!important;min-width:0!important}
+#view-tv.tv-paged .clinic-grid{width:100%!important;height:100%;grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-rows:repeat(2,minmax(0,1fr))!important;gap:1.2vh 1vw!important}
+#view-tv.tv-paged .queue-card{min-height:0!important}
+#view-tv.tv-paged .queue-card-title{gap:1vw!important;padding:.8vh 1vw!important}
+#view-tv.tv-paged .queue-clinic-name{font-size:clamp(24px,3.4vh,80px)!important;line-height:1.15!important;max-height:none!important;-webkit-line-clamp:2}
+#view-tv.tv-paged .room-badge{font-size:clamp(21px,2.8vh,66px)!important;min-width:0!important;flex-shrink:0;padding:.5vh .7vw!important}
+#view-tv.tv-paged .queue-number{font-size:clamp(84px,11vh,250px)!important;line-height:1!important}
+#view-tv.tv-paged .queue-card[data-status="finished"] .queue-number{font-size:clamp(26px,3.6vh,82px)!important;line-height:1.15!important}
+#view-tv.tv-paged .queue-number-label{font-size:clamp(16px,2vh,46px)!important}
+#view-tv.tv-paged .queue-missed-summary{padding:.55vh .6vw!important;gap:.6vw!important;flex-wrap:wrap}
+#view-tv.tv-paged .queue-missed-summary-head{font-size:clamp(16px,2.1vh,48px)!important;font-weight:700}
+#view-tv.tv-paged .queue-missed-count{height:auto!important;min-width:2.5vw!important;font-size:clamp(16px,2vh,46px)!important}
+#view-tv.tv-paged .queue-missed-public-list{gap:.4vw!important;flex-wrap:wrap;overflow:visible!important}
+#view-tv.tv-paged .queue-public-chip{height:3.8vh!important;min-height:28px!important;min-width:3vw!important;font-size:clamp(22px,3vh,70px)!important;padding:0 .55vw!important;font-weight:700}
+#view-tv.tv-paged .queue-public-more,#view-tv.tv-paged .queue-missed-empty{font-size:clamp(16px,2vh,46px)!important}
+#view-tv .tv-activity-panel.expanded{width:min(48vw,1100px)!important;height:auto!important;max-height:40vh!important;padding:1vh 1vw!important;gap:.6vh!important}
+#view-tv .tv-activity-panel.expanded .tv-activity-head{font-size:clamp(20px,2.6vh,60px)!important;min-height:3vh!important}
+#view-tv .tv-activity-panel.expanded .tv-activity-head strong{font-size:inherit!important}
+#view-tv .tv-activity-panel.expanded .tv-activity-item{font-size:clamp(20px,2.8vh,64px)!important;line-height:1.35!important;gap:.8vw!important;padding:.4vh 0!important}
+#view-tv .tv-activity-panel.expanded .tv-activity-text{white-space:normal!important;overflow:visible!important;text-overflow:clip!important}
+#view-tv .tv-activity-panel.expanded .tv-activity-time{color:#475569;font-size:.75em!important}
+#view-tv .tv-activity-panel.expanded .tv-activity-list{gap:.6vh!important;overflow-y:auto;min-height:0}
+#view-tv #tvPageProgress{position:absolute;top:0;left:0;right:0;height:4px;z-index:50;background:#fce5e5;pointer-events:none}
+#view-tv #tvPageProgress[hidden]{display:none}
+#view-tv #tvPageProgress span{display:block;height:100%;background:#fe6565;transform-origin:right}
+#view-tv #tvPageProgress.running span{animation:tvPageCountdown 10s linear forwards}
+#view-tv .tv-page-enter{animation:tvPageEntrance .45s ease-out both}
+@keyframes tvPageCountdown{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+@keyframes tvPageEntrance{from{opacity:.3;transform:translateX(-35px)}to{opacity:1;transform:translateX(0)}}
+@media(prefers-reduced-motion:reduce){#view-tv .tv-page-enter{animation:none}}
+
 </style>
 </head>
 <body>
@@ -6048,6 +6084,7 @@
         </summary>
         <div class="portal-tv-options" role="menu" aria-label="اختيار شاشة العرض">
           <a href="#/tv" class="portal-tv-option" role="menuitem"><strong>عرض جميع العيادات</strong><small>12 عيادة</small></a>
+          <a href="#/tv-slideshow" class="portal-tv-option" role="menuitem"><strong>العرض المتتابع للعيادات</strong><small>٣ صفحات — كل ١٠ ثواني</small></a>
           <a href="#/tv-third" class="portal-tv-option" role="menuitem"><strong>عيادات الدور الثالث</strong><small>8 عيادات</small></a>
           <a href="#/tv-ground" class="portal-tv-option" role="menuitem"><strong>عيادات الدور الأرضي</strong><small>4 عيادات</small></a>
         </div>
@@ -6764,6 +6801,7 @@
 
     </header>
 
+  <div id="tvPageProgress" aria-hidden="true"><span></span></div>
   <main class="tv-dashboard">
     <section class="floor-section third-floor">
       <div class="floor-heading">
@@ -7488,23 +7526,70 @@ function tvRoomsForDisplay(){
   return ROOM_OPTIONS;
 }
 
-function setTvDisplayMode(mode = "all"){
-  tvDisplayMode = mode === "third" || mode === "ground" ? mode : "all";
-
+const TV_PAGE_MS = 10000;
+const TV_PAGES = [
+  {floor:"third", title:"الدور الثالث — صفحة ١", rooms:["301","303","307","308"]},
+  {floor:"third", title:"الدور الثالث — صفحة ٢", rooms:["309","310","311","312"]},
+  {floor:"ground", title:"الدور الأرضي — صفحة ٣", rooms:["104","105","320","109"]}
+];
+let tvPageIndex = 0;
+let tvPageTimer = null;
+function tvPagesForMode(){
+  return tvDisplayMode === "slideshow" ? TV_PAGES : TV_PAGES.filter(page=>page.floor === tvDisplayMode);
+}
+function paintTvPage(animate = false){
   const tv = $("#view-tv");
-  if(tv){
+  const pages = tvPagesForMode();
+  const page = pages[tvPageIndex];
+  tv.classList.add("tv-floor-only", "tv-paged");
+  tv.classList.toggle("tv-floor-third", page.floor === "third");
+  tv.classList.toggle("tv-floor-ground", page.floor === "ground");
+  ROOM_OPTIONS.forEach(room=>{
+    const card = $("#tvRoom" + room.id);
+    if(card) card.classList.toggle("tv-page-hidden", !page.rooms.includes(room.id));
+  });
+  tv.querySelectorAll(".floor-title").forEach(title=>{
+    title.textContent = page.title + "  •  " + ar(tvPageIndex + 1) + " / " + ar(pages.length);
+  });
+  $("#tvSlogan").textContent = page.floor === "third" ? "متابعة أدوار عيادات الدور الثالث" : "متابعة أدوار عيادات الدور الأرضي";
+  const dashboard = tv.querySelector(".tv-dashboard");
+  dashboard.classList.remove("tv-page-enter");
+  if(animate){ void dashboard.offsetWidth; dashboard.classList.add("tv-page-enter"); }
+  const progress = $("#tvPageProgress");
+  progress.hidden = pages.length < 2;
+  progress.classList.remove("running");
+  if(pages.length > 1){ void progress.offsetWidth; progress.classList.add("running"); }
+}
+function stopTvPageTimer(){
+  if(tvPageTimer !== null) clearInterval(tvPageTimer);
+  tvPageTimer = null;
+}
+function setTvDisplayMode(mode = "all"){
+  stopTvPageTimer();
+  tvDisplayMode = ["third", "ground", "slideshow"].includes(mode) ? mode : "all";
+  if(tvDisplayMode !== "slideshow"){
+    const tv = $("#view-tv");
+    tv.classList.remove("tv-paged");
     tv.classList.toggle("tv-floor-only", tvDisplayMode !== "all");
     tv.classList.toggle("tv-floor-third", tvDisplayMode === "third");
     tv.classList.toggle("tv-floor-ground", tvDisplayMode === "ground");
+    tv.querySelectorAll(".tv-page-hidden").forEach(card=>card.classList.remove("tv-page-hidden"));
+    tv.querySelector(".third-floor .floor-title").textContent = "عيادات الدور الثالث";
+    tv.querySelector(".ground-floor .floor-title").textContent = "عيادات الدور الأرضي";
+    tv.querySelector(".tv-dashboard").classList.remove("tv-page-enter");
+    $("#tvPageProgress").hidden = true;
+    $("#tvPageProgress").classList.remove("running");
+    $("#tvSlogan").textContent = tvDisplayMode === "third" ? "متابعة أدوار عيادات الدور الثالث" : tvDisplayMode === "ground" ? "متابعة أدوار عيادات الدور الأرضي" : "متابعة أدوار العيادات";
+    return;
   }
-
-  const slogan = $("#tvSlogan");
-  if(slogan){
-    slogan.textContent = tvDisplayMode === "third"
-      ? "متابعة أدوار عيادات الدور الثالث"
-      : tvDisplayMode === "ground"
-        ? "متابعة أدوار عيادات الدور الأرضي"
-        : "متابعة أدوار العيادات";
+  tvPageIndex = 0;
+  paintTvPage();
+  if(tvPagesForMode().length > 1){
+    tvPageTimer = setInterval(()=>{
+      if($("#view-tv").classList.contains("hidden-view")) return;
+      tvPageIndex = (tvPageIndex + 1) % tvPagesForMode().length;
+      paintTvPage(true);
+    }, TV_PAGE_MS);
   }
 }
 
@@ -8536,6 +8621,7 @@ try{
 }
 
 function show(v){
+  if(v !== "tv") stopTvPageTimer();
   VIEWS.forEach(x => $("#view-" + x).classList.add("hidden-view"));
   $("#view-" + v).classList.remove("hidden-view");
   document.title = pageTitleForView(v);
@@ -8550,6 +8636,7 @@ function route(){
   syncAdminRoomControls();
   if(h === "home")      { show("home"); }
   else if(h === "tv")   { setTvDisplayMode("all"); show("tv"); startClock(); }
+  else if(h === "tv-slideshow") { setTvDisplayMode("slideshow"); show("tv"); startClock(); }
   else if(h === "tv-third") { setTvDisplayMode("third"); show("tv"); startClock(); }
   else if(h === "tv-ground") { setTvDisplayMode("ground"); show("tv"); startClock(); }
   else if(h === "qr")   { show("qr"); renderQrDashboard(); }
