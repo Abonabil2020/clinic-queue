@@ -6198,7 +6198,7 @@
 /* وضع الرقم في الجهة المقابلة للّوجو */
 #view-tv.tv-paged .tv-brand{
   direction:ltr!important;
-  flex-direction:row-reverse!important;
+  flex-direction:row!important;
   justify-content:center!important;
   gap:1vw!important;
 }
@@ -6213,6 +6213,27 @@
   #view-tv.tv-paged #tvSlogan{max-width:88vw!important;min-height:42px!important;padding:8px 34px!important;font-size:clamp(19px,5.8vw,32px)!important;white-space:normal!important;text-align:center}
   #view-tv.tv-paged #tvSlogan::before{right:14px}
   #view-tv.tv-paged #tvSlogan::after{left:14px}
+}
+
+/* تمييز الدور الأرضي بالرصاصي مع الحفاظ على نفس الشكل الهندسي */
+#view-tv.tv-paged.tv-floor-ground #tvSlogan{
+  background:linear-gradient(135deg,#64748b 0%,#475569 100%)!important;
+  box-shadow:0 4px 12px rgba(71,85,105,.22),inset 0 1px 0 rgba(255,255,255,.22)!important;
+}
+
+/* توزيع متساو وتحديثات متحركة بدل الثبات */
+#view-tv.tv-paged .tv-topbar{column-gap:2vw!important;justify-items:center!important}
+#view-tv.tv-paged .tv-brand,
+#view-tv.tv-paged .tv-center-heading,
+#view-tv.tv-paged .tv-datetime{justify-self:center!important}
+#view-tv.tv-paged .tv-activity-panel{justify-self:center!important}
+#view-tv.tv-paged .tv-activity-list{overflow:hidden;max-height:3.2em}
+#view-tv.tv-paged .tv-activity-item{animation:tvActivityFloat 6s ease-in-out infinite;}
+#view-tv.tv-paged .tv-activity-item:nth-child(2){animation-delay:1.8s}
+@keyframes tvActivityFloat{
+  0%,20%{opacity:1;transform:translateX(0)}
+  45%,75%{opacity:.35;transform:translateX(-10px)}
+  100%{opacity:1;transform:translateX(0)}
 }
 </style>
 </head>
