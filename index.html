@@ -6319,6 +6319,206 @@
   #view-tv.tv-individual .queue-status{font-size:clamp(13px,3.2vw,21px)!important}
   #view-tv.tv-individual .queue-missed-summary{padding:8px!important}
 }
+
+/* تحسين بصري نهائي لشاشات العرض فقط — لا يغير الوظائف أو البيانات */
+#view-tv.tv-paged .queue-card,
+#view-tv.tv-individual .queue-card{
+  box-sizing:border-box;
+}
+
+#view-tv.tv-paged .queue-card-title,
+#view-tv.tv-individual .queue-card-title{
+  align-items:center!important;
+  justify-content:center!important;
+  text-align:center!important;
+}
+
+#view-tv.tv-paged .queue-clinic-name,
+#view-tv.tv-individual .queue-clinic-name{
+  font-size:clamp(28px,4.15vh,88px)!important;
+  line-height:1.16!important;
+  text-align:center!important;
+  overflow-wrap:anywhere!important;
+  word-break:normal!important;
+}
+
+#view-tv.tv-paged .queue-doctor,
+#view-tv.tv-individual .queue-doctor{
+  font-size:clamp(24px,3.05vh,66px)!important;
+  line-height:1.2!important;
+  white-space:normal!important;
+  overflow-wrap:anywhere!important;
+  text-align:center!important;
+}
+
+#view-tv.tv-paged .queue-number,
+#view-tv.tv-individual .queue-number{
+  font-size:clamp(118px,19vh,350px)!important;
+  line-height:.92!important;
+  text-align:center!important;
+}
+
+#view-tv.tv-paged .queue-card[data-status="finished"] .queue-number,
+#view-tv.tv-individual .queue-card[data-status="finished"] .queue-number{
+  font-size:clamp(38px,5.2vh,110px)!important;
+  line-height:1.12!important;
+  white-space:normal!important;
+}
+
+/* الأدوار الفائتة: أوضح وأكبر مع مساحة داخلية تمنع التداخل */
+#view-tv.tv-paged .queue-missed-summary,
+#view-tv.tv-individual .queue-missed-summary{
+  box-sizing:border-box!important;
+  width:100%!important;
+  margin-top:.45vh!important;
+  padding:.85vh .85vw!important;
+  border:2px solid #f59e0b!important;
+  border-radius:13px!important;
+  background:linear-gradient(180deg,#fffaf0 0%,#fff3d6 100%)!important;
+  box-shadow:0 3px 10px rgba(180,83,9,.12)!important;
+}
+
+#view-tv.tv-paged .queue-missed-summary-head,
+#view-tv.tv-individual .queue-missed-summary-head{
+  font-size:clamp(17px,2.25vh,50px)!important;
+  line-height:1.15!important;
+  color:#9a3412!important;
+}
+
+#view-tv.tv-paged .queue-missed-count,
+#view-tv.tv-individual .queue-missed-count{
+  min-width:clamp(28px,3.2vh,60px)!important;
+  height:clamp(26px,3.1vh,58px)!important;
+  padding:0 .45vw!important;
+  font-size:clamp(17px,2.15vh,48px)!important;
+  background:#fed7aa!important;
+  color:#9a3412!important;
+  border:1px solid #fb923c!important;
+}
+
+#view-tv.tv-paged .queue-missed-public-list,
+#view-tv.tv-individual .queue-missed-public-list{
+  justify-content:center!important;
+  align-items:center!important;
+  gap:.45vw!important;
+  margin-top:.55vh!important;
+  min-height:clamp(28px,3.8vh,68px)!important;
+  flex-wrap:wrap!important;
+  overflow:visible!important;
+}
+
+#view-tv.tv-paged .queue-public-chip,
+#view-tv.tv-individual .queue-public-chip{
+  min-width:clamp(38px,4.4vh,76px)!important;
+  height:clamp(29px,4vh,70px)!important;
+  padding:0 .6vw!important;
+  font-size:clamp(19px,2.7vh,58px)!important;
+  line-height:1!important;
+  font-weight:800!important;
+}
+
+#view-tv.tv-paged .queue-public-more,
+#view-tv.tv-paged .queue-missed-empty,
+#view-tv.tv-individual .queue-public-more,
+#view-tv.tv-individual .queue-missed-empty{
+  font-size:clamp(15px,1.95vh,42px)!important;
+  line-height:1.2!important;
+}
+
+/* التعليمات السفلية: شريط واضح من بعيد، مع التفاف آمن على الموبايل */
+#view-tv.tv-paged .tv-footer,
+#view-tv.tv-individual .tv-footer{
+  min-height:clamp(64px,7vh,118px)!important;
+  height:auto!important;
+  box-sizing:border-box!important;
+  padding:clamp(8px,1vh,16px) clamp(10px,1.4vw,28px)!important;
+  background:#fff!important;
+  border-top:3px solid #f59e0b!important;
+}
+
+#view-tv.tv-paged .tv-footer-ticker,
+#view-tv.tv-individual .tv-footer-ticker{
+  width:100%!important;
+  max-width:1500px!important;
+  box-sizing:border-box!important;
+  padding:clamp(7px,1vh,14px) clamp(12px,1.3vw,26px)!important;
+  border:2px solid #f59e0b!important;
+  border-radius:14px!important;
+  background:linear-gradient(90deg,#fff7ed,#fffbeb,#fff7ed)!important;
+  box-shadow:0 3px 12px rgba(180,83,9,.14)!important;
+}
+
+#view-tv.tv-paged .tv-footer-track,
+#view-tv.tv-individual .tv-footer-track{
+  width:100%!important;
+  max-width:none!important;
+  justify-content:center!important;
+  animation:none!important;
+  transform:none!important;
+}
+
+#view-tv.tv-paged .tv-footer-message,
+#view-tv.tv-individual .tv-footer-message{
+  display:block!important;
+  width:100%!important;
+  color:#7c2d12!important;
+  font-size:clamp(18px,2.55vh,56px)!important;
+  line-height:1.35!important;
+  font-weight:800!important;
+  text-align:center!important;
+  white-space:normal!important;
+  overflow-wrap:anywhere!important;
+}
+
+/* رقم الصفحة الأرضية رمادي في العرض الرباعي والفردي */
+#view-tv.tv-floor-ground.tv-paged #tvPageBadge,
+#view-tv.tv-floor-ground.tv-individual #tvPageBadge{
+  border-color:#64748b!important;
+  background:#64748b!important;
+  color:#fff!important;
+}
+
+@media (max-width:900px){
+  #view-tv.tv-paged .queue-clinic-name,
+  #view-tv.tv-individual .queue-clinic-name{
+    font-size:clamp(24px,6.2vw,38px)!important;
+  }
+  #view-tv.tv-paged .queue-doctor,
+  #view-tv.tv-individual .queue-doctor{
+    font-size:clamp(21px,5.2vw,32px)!important;
+  }
+  #view-tv.tv-paged .queue-number,
+  #view-tv.tv-individual .queue-number{
+    font-size:clamp(86px,25vw,190px)!important;
+  }
+  #view-tv.tv-paged .queue-card[data-status="finished"] .queue-number,
+  #view-tv.tv-individual .queue-card[data-status="finished"] .queue-number{
+    font-size:clamp(32px,7vw,58px)!important;
+  }
+  #view-tv.tv-paged .queue-missed-summary,
+  #view-tv.tv-individual .queue-missed-summary{
+    padding:9px!important;
+  }
+  #view-tv.tv-paged .queue-missed-summary-head,
+  #view-tv.tv-individual .queue-missed-summary-head{
+    font-size:clamp(16px,4.4vw,25px)!important;
+  }
+  #view-tv.tv-paged .queue-public-chip,
+  #view-tv.tv-individual .queue-public-chip{
+    font-size:clamp(17px,4.7vw,27px)!important;
+    min-width:42px!important;
+    height:34px!important;
+  }
+  #view-tv.tv-paged .tv-footer,
+  #view-tv.tv-individual .tv-footer{
+    min-height:92px!important;
+  }
+  #view-tv.tv-paged .tv-footer-message,
+  #view-tv.tv-individual .tv-footer-message{
+    font-size:clamp(18px,4.7vw,28px)!important;
+    line-height:1.4!important;
+  }
+}
 </style>
 </head>
 <body>
