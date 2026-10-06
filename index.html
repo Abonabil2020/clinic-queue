@@ -6152,6 +6152,68 @@
   #view-tv.tv-paged .queue-clinic-name{width:calc(100% - 92px);font-size:clamp(17px,5vw,25px)!important}
   #view-tv.tv-paged .tv-footer-message{font-size:clamp(16px,4.8vw,24px)!important}
 }
+
+/* عنوان الدور: شارة هندسية واضحة داخل الجزء الأبيض */
+#view-tv.tv-paged #tvSlogan{
+  position:relative;
+  isolation:isolate;
+  padding:.42vh 2.15vw!important;
+  border:1px solid rgba(255,255,255,.72)!important;
+  border-radius:10px!important;
+  background:linear-gradient(135deg,#f3514c 0%,#e44752 100%)!important;
+  box-shadow:0 4px 12px rgba(243,81,76,.22),inset 0 1px 0 rgba(255,255,255,.24)!important;
+  letter-spacing:.01em;
+}
+#view-tv.tv-paged #tvSlogan::before,
+#view-tv.tv-paged #tvSlogan::after{
+  content:"";
+  position:absolute;
+  top:24%;
+  width:4px;
+  height:52%;
+  border-radius:4px;
+  background:#fff;
+  opacity:.9;
+}
+#view-tv.tv-paged #tvSlogan::before{right:.72vw}
+#view-tv.tv-paged #tvSlogan::after{left:.72vw}
+
+/* عكس حركة شريط التعليمات: من اليسار إلى اليمين */
+#view-tv.tv-paged .tv-footer-track{animation-name:tvFooterTickerReverse!important}
+@keyframes tvFooterTickerReverse{
+  from{transform:translateX(-100%)}
+  to{transform:translateX(100vw)}
+}
+
+/* ضبط نهائي للعنوان والهيدر وبوكس الصفحة */
+#view-tv.tv-paged .tv-topbar > *{justify-self:center!important}
+#view-tv.tv-paged .tv-activity-panel{width:min(94%,1100px)!important;justify-self:center!important}
+#view-tv.tv-paged #tvSlogan{
+  max-width:min(60vw,980px)!important;
+  min-height:5.2vh!important;
+  padding:.62vh 2.8vw!important;
+  font-size:clamp(20px,2.85vh,56px)!important;
+  border-radius:12px!important;
+}
+/* وضع الرقم في الجهة المقابلة للّوجو */
+#view-tv.tv-paged .tv-brand{
+  direction:ltr!important;
+  flex-direction:row-reverse!important;
+  justify-content:center!important;
+  gap:1vw!important;
+}
+#view-tv.tv-paged .tv-brand img{order:1!important}
+#view-tv.tv-paged .tv-brand #tvPageBadge{order:2!important}
+@media (min-width:901px){
+  #view-tv.tv-paged{grid-template-rows:11% minmax(0,1fr) 5%!important}
+}
+@media (max-width:900px){
+  #view-tv.tv-paged .tv-topbar > *{justify-self:center!important;width:100%;}
+  #view-tv.tv-paged .tv-brand{width:min(94vw,420px)!important}
+  #view-tv.tv-paged #tvSlogan{max-width:88vw!important;min-height:42px!important;padding:8px 34px!important;font-size:clamp(19px,5.8vw,32px)!important;white-space:normal!important;text-align:center}
+  #view-tv.tv-paged #tvSlogan::before{right:14px}
+  #view-tv.tv-paged #tvSlogan::after{left:14px}
+}
 </style>
 </head>
 <body>
