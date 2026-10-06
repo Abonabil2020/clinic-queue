@@ -6066,6 +6066,24 @@
   #view-tv.tv-paged .queue-public-more{font-size:calc(2 * var(--tv-fit))!important}
   #view-tv.tv-paged .tv-footer{min-height:0;box-sizing:border-box}
 }
+
+/* Slideshow: one header, balanced cards, and readable instructions. */
+#view-tv.tv-paged .floor-section .floor-heading{display:none!important}
+#view-tv.tv-paged .tv-dashboard .floor-section{grid-template-rows:minmax(0,1fr)!important;gap:0!important}
+#view-tv.tv-paged .tv-center-heading{display:flex!important;flex-direction:row!important;align-items:center;justify-content:center;gap:1vw;min-width:0;direction:rtl}
+#view-tv.tv-paged .tv-center-heading #tvPageBadge{position:static!important;flex:0 0 auto;min-width:0;width:4.5vh;height:4.5vh;box-sizing:border-box;padding:0!important;font-size:2.8vh!important}
+#view-tv.tv-paged #tvSlogan{min-width:0;margin:0;white-space:normal;line-height:1.2}
+#view-tv.tv-paged .tv-footer-message{font-size:clamp(14px,1.7vh,40px)!important}
+#view-tv.tv-paged .tv-footer-track{animation-duration:38.2s!important}
+@media(orientation:landscape) and (min-width:901px){
+  #view-tv.tv-paged .queue-card-title{padding:.9vh 1vw!important;gap:.8vw!important}
+  #view-tv.tv-paged .queue-card-body{padding:.75vh .9vw!important;row-gap:.6vh!important}
+  #view-tv.tv-paged .queue-number{font-size:calc(11 * var(--tv-fit))!important}
+  #view-tv.tv-paged .queue-card[data-status="finished"] .queue-number{font-size:calc(3.6 * var(--tv-fit))!important}
+  #view-tv.tv-paged .queue-missed-public-list{flex-wrap:nowrap!important;gap:.4vw!important}
+  #view-tv.tv-paged .queue-public-chip,#view-tv.tv-paged .queue-public-more{flex-shrink:0;white-space:nowrap}
+}
+
 </style>
 </head>
 <body>
@@ -6818,6 +6836,7 @@
     </div>
   
     <div class="tv-center-heading">
+      <div id="tvPageBadge" dir="ltr" aria-label="رقم الصفحة"></div>
       <h1 id="tvSlogan" class="tv-slogan">متابعة أدوار العيادات</h1>
     </div>
 
@@ -6848,7 +6867,6 @@
 
   <div id="tvPageProgress" aria-hidden="true"><span></span></div>
   <main class="tv-dashboard">
-    <div id="tvPageBadge" dir="ltr" aria-label="رقم الصفحة"></div>
     <section class="floor-section third-floor">
       <div class="floor-heading">
         <h2 class="floor-title">عيادات الدور الثالث</h2>
@@ -7597,12 +7615,12 @@ function paintTvPage(animate = false){
   tv.querySelectorAll(".floor-title").forEach(title=>{
     title.textContent = page.floor === "third" ? "عيادات الدور الثالث" : "عيادات الدور الأرضي";
   });
-  $("#tvSlogan").textContent = page.floor === "third" ? "متابعة أدوار عيادات الدور الثالث" : "متابعة أدوار عيادات الدور الأرضي";
+  $("#tvSlogan").textContent = page.floor === "third" ? "متابعة عيادات الدور الثالث" : "متابعة عيادات الدور الأرضي";
   const dashboard = tv.querySelector(".tv-dashboard");
   dashboard.classList.remove("tv-page-enter");
   if(animate){ void dashboard.offsetWidth; dashboard.classList.add("tv-page-enter"); }
   const badge = $("#tvPageBadge");
-  badge.textContent = (tvPageIndex + 1) + "-" + pages.length;
+  badge.textContent = String(tvPageIndex + 1);
   badge.setAttribute("aria-label", "الصفحة " + ar(tvPageIndex + 1) + " من " + ar(pages.length));
   const progress = $("#tvPageProgress");
   progress.hidden = pages.length < 2;
@@ -7892,7 +7910,7 @@ function updateQueueCard(room, data){
     .sort((a,b)=>(b.completedAt || 0) - (a.completedAt || 0));
   const pendingLimit = Math.min(publicPending.length, 4);
   const visiblePublicTurns = publicPending.slice(0, pendingLimit)
-    .concat(publicDone.slice(0, Math.max(0, 5 - pendingLimit)));
+    .concat(publicDone.slice(0, Math.max(0, (tvDisplayMode === "slideshow" ? 4 : 5) - pendingLimit)));
   const missedCountEl = card.querySelector(".queue-missed-count");
   const missedListEl = card.querySelector(".queue-missed-public-list");
   card.dataset.hasMissed = publicMissed.length ? "true" : "false";
