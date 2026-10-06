@@ -6236,6 +6236,23 @@
   100%{opacity:1;transform:translateX(0)}
 }
 
+/* شارة عنوان الدور أعرض قليلًا وأكثر وضوحًا */
+#view-tv.tv-paged #tvSlogan{max-width:min(70vw,1120px)!important;min-width:min(34vw,520px)}
+
+/* تنبيه آخر التحديثات: صغير ومؤقت ولا يغطي الشاشة */
+#view-tv.tv-paged .tv-activity-panel.expanded{
+  width:min(30vw,520px)!important;
+  max-height:16vh!important;
+  padding:.55vh .65vw!important;
+  gap:.35vh!important;
+}
+#view-tv.tv-paged .tv-activity-panel.expanded .tv-activity-head{font-size:clamp(10px,1.15vh,18px)!important;min-height:0!important}
+#view-tv.tv-paged .tv-activity-panel.expanded .tv-activity-item{font-size:clamp(9px,1.25vh,20px)!important;line-height:1.15!important;padding:.12vh 0!important}
+#view-tv.tv-paged .tv-activity-panel.expanded .tv-activity-list{gap:.18vh!important;max-height:5.2em!important;overflow:hidden!important}
+@media (max-width:900px){
+  #view-tv.tv-paged #tvSlogan{max-width:92vw!important;min-width:0!important}
+}
+
 /* آخر التحديثات تظهر مؤقتًا عند وجود تعديل جديد فقط */
 #view-tv.tv-paged .tv-activity-panel{
   opacity:0!important;
@@ -7935,8 +7952,8 @@ function renderTvActivityPanel(highlight = false){
     if(tvActivityPanelTimer) clearTimeout(tvActivityPanelTimer);
     tvActivityPanelTimer = setTimeout(()=>{
       panel.classList.remove("expanded");
-      panel.classList.remove("has-new");
-    },9000);
+      setTimeout(()=>panel.classList.remove("has-new"),1200);
+    },5000);
   }
 }
 
