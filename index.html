@@ -5991,7 +5991,7 @@
 #view-tv.tv-paged .tv-dashboard{grid-template-rows:minmax(0,1fr)!important;min-height:0}
 #view-tv.tv-paged .floor-section{grid-template-rows:5.5vh minmax(0,1fr)!important;min-height:0}
 #view-tv.tv-paged .floor-title{font-size:clamp(20px,2.8vh,64px)!important;min-width:0!important}
-#view-tv.tv-paged .clinic-grid{width:100%!important;height:100%;grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-rows:repeat(2,minmax(0,1fr))!important;gap:1.2vh 1vw!important}
+#view-tv.tv-paged .floor-section .clinic-grid{width:100%!important;height:100%;grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-rows:repeat(2,minmax(0,1fr))!important;gap:1.2vh 1vw!important}
 #view-tv.tv-paged .queue-card{min-height:0!important}
 #view-tv.tv-paged .queue-card-title{gap:1vw!important;padding:.8vh 1vw!important}
 #view-tv.tv-paged .queue-clinic-name{font-size:clamp(24px,3.4vh,80px)!important;line-height:1.15!important;max-height:none!important;-webkit-line-clamp:2}
@@ -6015,12 +6015,57 @@
 #view-tv #tvPageProgress{position:absolute;top:0;left:0;right:0;height:4px;z-index:50;background:#fce5e5;pointer-events:none}
 #view-tv #tvPageProgress[hidden]{display:none}
 #view-tv #tvPageProgress span{display:block;height:100%;background:#fe6565;transform-origin:right}
-#view-tv #tvPageProgress.running span{animation:tvPageCountdown 10s linear forwards}
+#view-tv #tvPageProgress.running span{animation:tvPageCountdown 15s linear forwards}
 #view-tv .tv-page-enter{animation:tvPageEntrance .45s ease-out both}
 @keyframes tvPageCountdown{from{transform:scaleX(1)}to{transform:scaleX(0)}}
 @keyframes tvPageEntrance{from{opacity:.3;transform:translateX(-35px)}to{opacity:1;transform:translateX(0)}}
 @media(prefers-reduced-motion:reduce){#view-tv .tv-page-enter{animation:none}}
 
+
+/* Slideshow page indicator, clear of clinic cards. */
+#view-tv #tvPageBadge{display:none}
+#view-tv.tv-paged .tv-dashboard{position:relative}
+#view-tv.tv-paged #tvPageBadge{display:flex;position:absolute;right:2vw;top:1.5vh;z-index:5;align-items:center;justify-content:center;min-width:5vw;padding:.45vh .8vw;border:2px solid #fe6565;border-radius:10px;background:#fff;color:#263238;font-size:clamp(20px,2.8vh,64px);font-weight:700;line-height:1.1}
+#view-tv.tv-paged .floor-heading{padding-inline:7vw}
+#view-tv.tv-floor-ground .queue-missed-summary{padding:.55vh .6vw!important;gap:.6vw!important;flex-wrap:wrap}
+#view-tv.tv-floor-ground .queue-missed-summary-head{font-size:clamp(16px,2.1vh,48px)!important;font-weight:700}
+#view-tv.tv-floor-ground .queue-missed-count{height:auto!important;min-width:2.5vw!important;font-size:clamp(16px,2vh,46px)!important}
+#view-tv.tv-floor-ground .queue-missed-public-list{gap:.4vw!important;flex-wrap:wrap;overflow:visible!important}
+#view-tv.tv-floor-ground .queue-public-chip{height:3.8vh!important;min-height:28px!important;min-width:3vw!important;font-size:clamp(22px,3vh,70px)!important;padding:0 .55vw!important;font-weight:700}
+#view-tv.tv-floor-ground .queue-public-more,#view-tv.tv-floor-ground .queue-missed-empty{font-size:clamp(16px,2vh,46px)!important}
+
+
+/* Responsive landscape sizing: slideshow only. */
+@media (orientation:landscape) and (min-width:901px){
+  #view-tv.tv-paged{
+    --tv-fit:min(1vh,.5625vw);
+    width:100%;height:100vh;height:100dvh;min-height:0!important;
+    max-height:100dvh;box-sizing:border-box;overflow:hidden;
+    grid-template-rows:9% minmax(0,1fr) 4.5%!important;
+  }
+  #view-tv.tv-paged:not(.hidden-view){display:grid!important}
+  #view-tv.tv-paged .tv-dashboard{height:100%;min-height:0;box-sizing:border-box;padding:1vh 1vw .8vh!important;overflow:hidden}
+  #view-tv.tv-paged .floor-section{height:100%;min-width:0;box-sizing:border-box;grid-template-rows:5.5vh minmax(0,1fr)!important}
+  #view-tv.tv-paged .floor-section .clinic-grid{min-width:0;min-height:0;align-content:stretch!important}
+  #view-tv.tv-paged .queue-card{box-sizing:border-box;min-width:0;min-height:0;display:flex;flex-direction:column}
+  #view-tv.tv-paged .queue-card-title{flex:0 0 auto;min-height:0!important;box-sizing:border-box}
+  #view-tv.tv-paged .queue-clinic-name{font-size:calc(3.4 * var(--tv-fit))!important;white-space:normal;overflow-wrap:anywhere;min-width:0;line-height:1.15!important}
+  #view-tv.tv-paged .room-badge{font-size:calc(2.8 * var(--tv-fit))!important;white-space:nowrap}
+  #view-tv.tv-paged .queue-card-body{flex:1;min-height:0;box-sizing:border-box;grid-template-rows:auto minmax(0,1fr) auto!important;padding:.55vh .8vw!important;row-gap:.35vh!important}
+  #view-tv.tv-paged .queue-card[data-has-missed="false"] .queue-card-body{grid-template-rows:auto minmax(0,1fr)!important}
+  #view-tv.tv-paged .queue-doctor{font-size:calc(2.5 * var(--tv-fit))!important;min-height:0;line-height:1.12!important}
+  #view-tv.tv-paged .queue-status{font-size:calc(1.5 * var(--tv-fit))!important}
+  #view-tv.tv-paged .queue-number-box{height:100%;box-sizing:border-box;min-height:0;padding:.4vh .5vw!important;gap:.2vh!important}
+  #view-tv.tv-paged .queue-number{font-size:calc(10 * var(--tv-fit))!important;margin:0!important;line-height:1!important}
+  #view-tv.tv-paged .queue-card[data-status="finished"] .queue-number{font-size:calc(3.6 * var(--tv-fit))!important}
+  #view-tv.tv-paged .queue-number-label{font-size:calc(2 * var(--tv-fit))!important}
+  #view-tv.tv-paged .queue-missed-summary{flex-wrap:nowrap;box-sizing:border-box;min-width:0;padding:.4vh .6vw!important}
+  #view-tv.tv-paged .queue-missed-summary-head{font-size:calc(2.1 * var(--tv-fit))!important}
+  #view-tv.tv-paged .queue-missed-count{font-size:calc(2 * var(--tv-fit))!important}
+  #view-tv.tv-paged .queue-public-chip{font-size:calc(3 * var(--tv-fit))!important;height:calc(3.8 * var(--tv-fit))!important;min-height:0!important;min-width:calc(4 * var(--tv-fit))!important}
+  #view-tv.tv-paged .queue-public-more{font-size:calc(2 * var(--tv-fit))!important}
+  #view-tv.tv-paged .tv-footer{min-height:0;box-sizing:border-box}
+}
 </style>
 </head>
 <body>
@@ -6084,7 +6129,7 @@
         </summary>
         <div class="portal-tv-options" role="menu" aria-label="اختيار شاشة العرض">
           <a href="#/tv" class="portal-tv-option" role="menuitem"><strong>عرض جميع العيادات</strong><small>12 عيادة</small></a>
-          <a href="#/tv-slideshow" class="portal-tv-option" role="menuitem"><strong>العرض المتتابع للعيادات</strong><small>٣ صفحات — كل ١٠ ثواني</small></a>
+          <a href="#/tv-slideshow" class="portal-tv-option" role="menuitem"><strong>العرض المتتابع للعيادات</strong><small>٣ صفحات — كل ١٥ ثانية</small></a>
           <a href="#/tv-third" class="portal-tv-option" role="menuitem"><strong>عيادات الدور الثالث</strong><small>8 عيادات</small></a>
           <a href="#/tv-ground" class="portal-tv-option" role="menuitem"><strong>عيادات الدور الأرضي</strong><small>4 عيادات</small></a>
         </div>
@@ -6803,6 +6848,7 @@
 
   <div id="tvPageProgress" aria-hidden="true"><span></span></div>
   <main class="tv-dashboard">
+    <div id="tvPageBadge" dir="ltr" aria-label="رقم الصفحة"></div>
     <section class="floor-section third-floor">
       <div class="floor-heading">
         <h2 class="floor-title">عيادات الدور الثالث</h2>
@@ -7526,7 +7572,7 @@ function tvRoomsForDisplay(){
   return ROOM_OPTIONS;
 }
 
-const TV_PAGE_MS = 10000;
+const TV_PAGE_MS = 15000;
 const TV_PAGES = [
   {floor:"third", title:"الدور الثالث — صفحة ١", rooms:["301","303","307","308"]},
   {floor:"third", title:"الدور الثالث — صفحة ٢", rooms:["309","310","311","312"]},
@@ -7549,12 +7595,15 @@ function paintTvPage(animate = false){
     if(card) card.classList.toggle("tv-page-hidden", !page.rooms.includes(room.id));
   });
   tv.querySelectorAll(".floor-title").forEach(title=>{
-    title.textContent = page.title + "  •  " + ar(tvPageIndex + 1) + " / " + ar(pages.length);
+    title.textContent = page.floor === "third" ? "عيادات الدور الثالث" : "عيادات الدور الأرضي";
   });
   $("#tvSlogan").textContent = page.floor === "third" ? "متابعة أدوار عيادات الدور الثالث" : "متابعة أدوار عيادات الدور الأرضي";
   const dashboard = tv.querySelector(".tv-dashboard");
   dashboard.classList.remove("tv-page-enter");
   if(animate){ void dashboard.offsetWidth; dashboard.classList.add("tv-page-enter"); }
+  const badge = $("#tvPageBadge");
+  badge.textContent = (tvPageIndex + 1) + "-" + pages.length;
+  badge.setAttribute("aria-label", "الصفحة " + ar(tvPageIndex + 1) + " من " + ar(pages.length));
   const progress = $("#tvPageProgress");
   progress.hidden = pages.length < 2;
   progress.classList.remove("running");
