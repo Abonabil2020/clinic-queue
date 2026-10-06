@@ -6071,7 +6071,7 @@
 #view-tv.tv-paged .floor-section .floor-heading{display:none!important}
 #view-tv.tv-paged .tv-dashboard .floor-section{grid-template-rows:minmax(0,1fr)!important;gap:0!important}
 #view-tv.tv-paged .tv-center-heading{display:flex!important;flex-direction:row!important;align-items:center;justify-content:center;gap:1vw;min-width:0;direction:rtl}
-#view-tv.tv-paged .tv-center-heading #tvPageBadge{position:static!important;flex:0 0 auto;min-width:0;width:4.5vh;height:4.5vh;box-sizing:border-box;padding:0!important;font-size:2.8vh!important}
+#view-tv.tv-paged .tv-brand #tvPageBadge{display:flex!important;position:static!important;order:2;flex:0 0 auto;align-items:center;justify-content:center;min-width:0;width:4.5vh;height:4.5vh;box-sizing:border-box;padding:0!important;border-radius:9px;background:#263238;color:#fff;font-size:2.8vh!important;font-weight:700;line-height:1}
 #view-tv.tv-paged #tvSlogan{min-width:0;margin:0;white-space:normal;line-height:1.2}
 #view-tv.tv-paged .tv-footer-message{font-size:clamp(14px,1.7vh,40px)!important}
 #view-tv.tv-paged .tv-footer-track{animation-duration:38.2s!important}
@@ -6084,6 +6084,8 @@
   #view-tv.tv-paged .queue-public-chip,#view-tv.tv-paged .queue-public-more{flex-shrink:0;white-space:nowrap}
 }
 
+#view-tv.tv-paged .tv-brand{display:flex!important;flex-direction:row;align-items:center;justify-content:flex-end;gap:1vw;overflow:visible!important}
+#view-tv.tv-paged .tv-brand img{order:1}
 </style>
 </head>
 <body>
@@ -6832,11 +6834,11 @@
 <section id="view-tv" class="hidden-view min-h-screen flex flex-col">
   <header class="tv-topbar">
     <div class="tv-brand">
-          <img src="logo.png" alt="مجمع الإصلاح الطبي" onerror="this.style.display='none'">
+      <div id="tvPageBadge" dir="ltr" aria-label="رقم الصفحة"></div>
+      <img src="logo.png" alt="مجمع الإصلاح الطبي" onerror="this.style.display='none'">
     </div>
   
     <div class="tv-center-heading">
-      <div id="tvPageBadge" dir="ltr" aria-label="رقم الصفحة"></div>
       <h1 id="tvSlogan" class="tv-slogan">متابعة أدوار العيادات</h1>
     </div>
 
