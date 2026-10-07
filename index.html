@@ -6677,6 +6677,14 @@
     text-align:center!important;
   }
 }
+
+/* تعديل التعليمات فقط: رفعها قليلًا على الشاشات مع الحفاظ على ثبات الموبايل */
+@media (min-width:901px){
+  #view-tv.tv-paged .tv-footer-ticker,
+  #view-tv.tv-individual .tv-footer-ticker{
+    transform:translateY(clamp(-18px,-1.15vh,-7px))!important;
+  }
+}
 </style>
 </head>
 <body>
