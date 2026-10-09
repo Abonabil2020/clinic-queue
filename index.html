@@ -6848,6 +6848,14 @@
 #view-tv .queue-doctor{white-space:nowrap!important;min-width:0!important;overflow:hidden!important}
 #view-tv .queue-card[data-status="active"] .queue-card-title{background:#ef2020!important}
 #view-tv .queue-card[data-status="active"] .queue-number{color:#ef2020!important}
+/* Setup wizard only: one active field in the same panel. */
+#view-setup [data-setup-step][hidden],#view-setup button[hidden]{display:none!important}
+#view-setup .setup-wizard{min-width:0}
+#view-setup .setup-wizard-progress{display:flex;gap:6px;margin-bottom:20px}
+#view-setup .setup-wizard-progress span{height:5px;flex:1;border-radius:6px;background:#e2e8f0}
+#view-setup .setup-wizard-progress span.complete{background:#fe6565}
+#view-setup .setup-wizard-review{display:grid;gap:12px;padding:16px;background:#f8fafc;border-radius:12px;overflow-wrap:anywhere}
+#view-setup .setup-wizard-review span{color:#717171}
 </style>
 </head>
 <body>
@@ -7090,14 +7098,22 @@
     </div>
 
     <div class="p-6">
+      <div id="setupWizard" class="setup-wizard" aria-label="إعداد العيادة خطوة بخطوة">
+        <p id="setupStepCaption" class="text-sm text-slate-500 mb-2" aria-live="polite">الخطوة ١ من ٤ — رقم الحجرة</p>
+        <div class="setup-wizard-progress" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+        <div data-setup-step="0">
+          <label for="setupRoomSelect" class="block text-sm mb-1.5 text-slate-600">اختر رقم الحجرة</label>
+          <select id="setupRoomSelect" class="w-full px-4 py-3 rounded-xl bg-slate-100 mb-4"><option value="">اختر الحجرة للمتابعة</option></select>
       <div class="mb-4 px-4 py-3 rounded-xl bg-sky-50 border border-sky-100 flex items-center justify-between gap-3">
         <div>
-          <p class="text-xs text-slate-500">هذا الحساب يتحكم في</p>
+          <p class="text-xs text-slate-500">الحجرة المرتبطة بحسابك</p>
           <p id="setupRoomPlace" class="font-bold text-slate-800">—</p>
         </div>
         <span id="setupRoomValue" class="shrink-0 px-3 py-1.5 rounded-lg bg-white text-sky-800 font-bold num">—</span>
       </div>
 
+        </div>
+        <div data-setup-step="1" hidden>
       <label class="block text-sm mb-1.5 text-slate-600">اسم التخصص / العيادة الظاهر على الشاشة</label>
       <div id="clinicCombobox" class="clinic-combobox mb-4">
         <div class="relative">
@@ -7116,6 +7132,8 @@
         <div id="clinicOptions" role="listbox" class="clinic-menu hidden-view"></div>
       </div>
 
+        </div>
+        <div data-setup-step="2" hidden>
       <label class="block text-sm mb-1.5 text-slate-600">اسم الطبيب</label>
       <div id="doctorCombobox" class="doctor-combobox mb-4">
         <div class="relative">
@@ -7135,6 +7153,8 @@
         <div id="doctorOptions" role="listbox" class="doctor-menu hidden-view"></div>
       </div>
 
+        </div>
+        <div data-setup-step="3" hidden>
       <label class="block text-sm mb-1.5 text-slate-600">اسم التمريض المسؤول</label>
       <div id="nurseCombobox" class="nurse-combobox mb-5">
         <div class="relative">
@@ -7153,11 +7173,15 @@
         <div id="nurseOptions" role="listbox" class="nurse-menu hidden-view"></div>
       </div>
 
+        </div>
+        <div data-setup-step="4" hidden><p class="text-sm text-slate-600 mb-3">راجع بيانات العيادة قبل الدخول إلى لوحة الأدوار</p><div id="setupReview" class="setup-wizard-review"></div></div>
+      </div>
       <p id="setupMsg" class="text-red-600 text-sm mb-3 min-h-[20px]"></p>
 
-      <button id="saveSetupBtn" class="w-full py-3.5 rounded-xl text-white font-bold text-lg" style="background:var(--teal)">
+      <button id="saveSetupBtn" hidden class="w-full py-3.5 rounded-xl text-white font-bold text-lg" style="background:var(--teal)">
         حفظ والدخول إلى لوحة الأدوار
       </button>
+      <button id="setupStepBack" type="button" hidden class="w-full mt-3 py-2.5 rounded-xl bg-slate-100 text-slate-600 text-sm font-bold">رجوع للخطوة السابقة</button>
       <button id="setupAdminRoomsBtn" type="button" class="hidden-view w-full mt-3 py-2.5 rounded-xl bg-violet-50 text-violet-700 text-sm font-bold">
         اختيار حجرة أخرى
       </button>
@@ -9908,7 +9932,7 @@ function selectClinic(clinicId){
 
   /* بعد اختيار التخصص اعرض أطباء نفس التخصص فقط */
   setTimeout(()=>{
-    $("#setupDoctorSearch").focus();
+    setSetupWizardStep(2);
     openDoctorMenu(true);
   },0);
 }
@@ -9980,6 +10004,7 @@ function selectDoctor(doctor){
   $("#setupDoctorSearch").value = doctorNameWithTitle(doctorDisplayName(doctor));
   $("#setupMsg").textContent = "";
   closeDoctorMenu();
+  setSetupWizardStep(3);
 }
 
 function fillDoctorOptions(clinicId, selectedDoctor){
@@ -10065,7 +10090,10 @@ function selectNurse(nurse, closeMenu = true){
   $("#setupNurse").value = nurse;
   $("#setupNurseSearch").value = nurse;
   $("#setupMsg").textContent = "";
-  if(closeMenu) closeNurseMenu();
+  if(closeMenu){
+    closeNurseMenu();
+    setSetupWizardStep(4);
+  }
 }
 
 function fillNurseOptions(selectedNurse){
@@ -10079,6 +10107,76 @@ function fillNurseOptions(selectedNurse){
   }
 }
 
+let setupWizardStep = 0;
+const SETUP_ROOM_STEP_KEY = "islahSetupRoomStep";
+function setupWizardRooms(){
+  return isAdminUser() ? ROOM_OPTIONS : ROOM_OPTIONS.filter(room=>room.id === authorizedRoomForUser(auth.currentUser));
+}
+function setSetupWizardStep(step, focus = true){
+  setupWizardStep = Math.max(0,Math.min(4,step));
+  if(setupWizardStep === 0) $("#setupRoomSelect").value = "";
+  closeClinicMenu(); closeDoctorMenu(); closeNurseMenu();
+  document.querySelectorAll("#setupWizard [data-setup-step]").forEach(panel=>{
+    panel.hidden = Number(panel.dataset.setupStep) !== setupWizardStep;
+  });
+  const labels = ["رقم الحجرة","اسم العيادة","اسم الدكتور","اسم التمريض"];
+  $("#setupStepCaption").textContent = setupWizardStep < 4
+    ? "الخطوة " + ar(setupWizardStep + 1) + " من " + ar(4) + " — " + labels[setupWizardStep]
+    : "تم اختيار بيانات العيادة";
+  document.querySelectorAll("#setupWizard .setup-wizard-progress span").forEach((bar,index)=>{
+    bar.classList.toggle("complete",index <= setupWizardStep);
+  });
+  $("#saveSetupBtn").hidden = setupWizardStep !== 4;
+  $("#setupStepBack").hidden = setupWizardStep === 0;
+  if(setupWizardStep === 4){
+    const clinic = findSpecialtyById($("#setupClinic").value);
+    const review = $("#setupReview");
+    review.replaceChildren();
+    const values = ["حجرة " + DISPLAY_SLOT_ID + " — " + CURRENT_ROOM.floorName,
+      clinic?.name || "—", doctorNameWithTitle(doctorDisplayName($("#setupDoctor").value)), $("#setupNurse").value];
+    values.forEach((value,index)=>{
+      const row = document.createElement("div");
+      const label = document.createElement("span");
+      label.textContent = labels[index] + ": ";
+      row.append(label,document.createTextNode(value));
+      review.appendChild(row);
+    });
+  }
+  if(focus){
+    const ids = ["#setupRoomSelect","#setupClinicSearch","#setupDoctorSearch","#setupNurseSearch","#saveSetupBtn"];
+    $(ids[setupWizardStep]).focus();
+  }
+}
+function prepareSetupWizard(){
+  const select = $("#setupRoomSelect");
+  select.replaceChildren();
+  const placeholder = document.createElement("option");
+  placeholder.value = "";placeholder.textContent = "اختر الحجرة للمتابعة";
+  select.appendChild(placeholder);
+  setupWizardRooms().forEach(room=>{
+    const option = document.createElement("option");
+    option.value = room.id;
+    option.textContent = "حجرة " + room.id + " — " + room.floorName;
+    select.appendChild(option);
+  });
+  select.value = "";
+  const roomConfirmed = sessionStorage.getItem(SETUP_ROOM_STEP_KEY) === DISPLAY_SLOT_ID;
+  sessionStorage.removeItem(SETUP_ROOM_STEP_KEY);
+  if(roomConfirmed) select.value = DISPLAY_SLOT_ID;
+  setSetupWizardStep(roomConfirmed ? 1 : 0,false);
+}
+$("#setupRoomSelect").addEventListener("change",()=>{
+  const roomId = $("#setupRoomSelect").value;
+  if(!setupWizardRooms().some(room=>room.id === roomId)) return;
+  if(roomId !== DISPLAY_SLOT_ID){
+    sessionStorage.setItem(SETUP_ROOM_STEP_KEY,roomId);
+    openAuthorizedRoom(roomId,"#/setup");
+    return;
+  }
+  setSetupWizardStep(1);
+});
+$("#setupStepBack").addEventListener("click",()=>setSetupWizardStep(setupWizardStep - 1));
+
 function prefillSetup(){
   const allSpecialties = directorySpecialties();
   const stateClinic = allSpecialties.find(item=>item.name === state.clinicName) ||
@@ -10091,6 +10189,7 @@ function prefillSetup(){
   fillDoctorOptions(savedClinicId, setupData?.doctor || (state.doctor !== "—" ? state.doctor : ""));
   fillNurseOptions(setupData?.nurse || (state.nurse !== "—" ? state.nurse : ""));
   $("#setupMsg").textContent = "";
+  prepareSetupWizard();
 }
 
 $("#setupClinicSearch").addEventListener("focus", e=>{
@@ -10271,13 +10370,14 @@ $("#saveSetupBtn").addEventListener("click", async ()=>{
   const clinic = findSpecialtyById(clinicId);
   const msg = $("#setupMsg");
 
-  if(!clinic) return void (msg.textContent = "اختر اسم العيادة");
-  if(!doctor || !selectableDoctorNames(clinicId).includes(doctor)) return void (msg.textContent = "اختر الطبيب من قائمة أطباء التخصص");
-  if(!nurse)  return void (msg.textContent = "اختر اسم التمريض من القائمة");
+  if(!clinic){ setSetupWizardStep(1); return void (msg.textContent = "اختر اسم العيادة"); }
+  if(!doctor || !selectableDoctorNames(clinicId).includes(doctor)){ setSetupWizardStep(2); return void (msg.textContent = "اختر الطبيب من قائمة أطباء التخصص"); }
+  if(!nurse){ setSetupWizardStep(3); return void (msg.textContent = "اختر اسم التمريض من القائمة"); }
 
   const button = $("#saveSetupBtn");
   button.disabled = true;
   button.textContent = "جاري الحفظ...";
+  $("#setupStepBack").disabled = true;
   msg.textContent = "";
 
   const doctorShortName = doctorDisplayName(doctor);
@@ -10328,6 +10428,7 @@ $("#saveSetupBtn").addEventListener("click", async ()=>{
   }finally{
     button.disabled = false;
     button.textContent = "حفظ والدخول إلى لوحة الأدوار";
+    $("#setupStepBack").disabled = false;
   }
 });
 
