@@ -6846,8 +6846,11 @@
   text-overflow:clip!important;min-width:0!important;box-sizing:border-box!important;
 }
 #view-tv .queue-doctor{white-space:nowrap!important;min-width:0!important;overflow:hidden!important}
-#view-tv .queue-card[data-status="active"] .queue-card-title{background:#ef2020!important}
-#view-tv .queue-card[data-status="active"] .queue-number{color:#ef2020!important}
+#view-tv .queue-card[data-status="active"]{border-color:#fecaca;background:#fffafa}
+#view-tv .queue-card[data-status="active"] .queue-card-title{background:linear-gradient(135deg,#991b1b,#dc2626)!important}
+#view-tv .queue-card[data-status="active"] .queue-number-box{background:#fff1f2!important}
+#view-tv .queue-card[data-status="active"] .queue-number-label,
+#view-tv .queue-card[data-status="active"] .queue-number{color:#b91c1c!important}
 /* Setup wizard only: one active field in the same panel. */
 #view-setup [hidden]{display:none!important}
 #view-setup .setup-wizard{min-width:0}
@@ -8856,6 +8859,8 @@ function fitTvText(){
     name.style.setProperty("max-width", Math.max(1,title.clientWidth - clearance * 2) + "px", "important");
     [name,doctor,card.querySelector(".queue-number-label"),card.querySelector(".queue-number")].forEach(el=>{
       el.style.removeProperty("font-size");
+      // Keep the queue number at its responsive CSS size.
+      if(el === card.querySelector(".queue-number")) return;
       const original = parseFloat(getComputedStyle(el).fontSize);
       let availableWidth = el.clientWidth;
       if(el === doctor){
@@ -10279,7 +10284,7 @@ function prepareSetupWizard(){
   select.appendChild(placeholder);
   setupWizardRooms().forEach(room=>{
     const option = document.createElement("option");
-    option.value = room.id; option.textContent = "حجرة " + room.id + " — " + room.floorName;
+    option.value = room.id; option.textContent = room.place + " — " + room.id;
     select.appendChild(option);
   });
   const selected = sessionStorage.getItem(SETUP_ROOM_STEP_KEY) === DISPLAY_SLOT_ID;
