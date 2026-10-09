@@ -6840,6 +6840,14 @@
   #view-tv.tv-paged .tv-footer-ticker,
   #view-tv.tv-individual .tv-footer-ticker{animation:none!important}
 }
+/* Fit TV text inside existing cards; preserve card and grid dimensions. */
+#view-tv .queue-clinic-name{
+  white-space:nowrap!important;display:block!important;-webkit-line-clamp:unset!important;
+  text-overflow:clip!important;min-width:0!important;box-sizing:border-box!important;
+}
+#view-tv .queue-doctor{white-space:nowrap!important;min-width:0!important;overflow:hidden!important}
+#view-tv .queue-card[data-status="active"] .queue-card-title{background:#ef2020!important}
+#view-tv .queue-card[data-status="active"] .queue-number{color:#ef2020!important}
 </style>
 </head>
 <body>
@@ -8363,6 +8371,7 @@ function tvPagesForMode(){
   return tvDisplayMode === "slideshow" ? TV_PAGES : TV_PAGES.filter(page=>page.floor === tvDisplayMode);
 }
 function paintTvPage(animate = false){
+  scheduleTvTextFit();
   const tv = $("#view-tv");
   const pages = tvPagesForMode();
   const page = pages[tvPageIndex];
@@ -8382,7 +8391,7 @@ function paintTvPage(animate = false){
     if(!room || !card) return;
     const clinicName = card.querySelector(".queue-clinic-name");
     const roomBadge = card.querySelector(".room-badge");
-    if(clinicName) clinicName.textContent = "عيادة " + room.place.replace(/^حجرة\s*/, "");
+    if(clinicName) clinicName.textContent = card.dataset.clinicName || "عيادة " + room.place.replace(/^حجرة\s*/, "");
     if(roomBadge) roomBadge.textContent = "حجرة " + room.id;
   });
   $("#tvSlogan").textContent = page.floor === "third" ? "متابعة عيادات الدور الثالث" : "متابعة عيادات الدور الأرضي";
@@ -8409,6 +8418,7 @@ function individualRoomById(roomId){
   return ROOM_OPTIONS.find(room=>room.id === roomId) || ROOM_OPTIONS[0];
 }
 function paintTvIndividual(animate = false){
+  scheduleTvTextFit();
   const tv = $("#view-tv");
   const room = individualRoomById(tvIndividualOrder[tvIndividualIndex]);
   tv.classList.add("tv-floor-only", "tv-paged", "tv-individual");
@@ -8425,7 +8435,7 @@ function paintTvIndividual(animate = false){
   if(card){
     const clinicName = card.querySelector(".queue-clinic-name");
     const roomBadge = card.querySelector(".room-badge");
-    if(clinicName) clinicName.textContent = "عيادة " + room.place.replace(/^حجرة\s*/, "");
+    if(clinicName) clinicName.textContent = card.dataset.clinicName || "عيادة " + room.place.replace(/^حجرة\s*/, "");
     if(roomBadge) roomBadge.textContent = "حجرة " + room.id;
   }
   $("#tvSlogan").textContent = room.floor === "third" ? "متابعة عيادات الدور الثالث" : "متابعة عيادات الدور الأرضي";
@@ -8476,7 +8486,7 @@ function setTvDisplayMode(mode = "all"){
       if(!card) return;
       const clinicName = card.querySelector(".queue-clinic-name");
       const roomBadge = card.querySelector(".room-badge");
-      if(clinicName) clinicName.textContent = room.place;
+      if(clinicName) clinicName.textContent = card.dataset.clinicName || room.place;
       if(roomBadge) roomBadge.textContent = "غرفة " + room.id;
     });
     tv.querySelector(".third-floor .floor-title").textContent = "عيادات الدور الثالث";
@@ -8728,6 +8738,7 @@ function updateQueueCard(room, data){
   const clinicName = data.clinicName || data.specialty || room.place;
   const doctor = doctorDisplayFromData(data);
 
+  card.dataset.clinicName = clinicName;
   card.dataset.status = status;
   card.dataset.recall = recallMode ? "true" : "false";
   card.querySelector(".queue-clinic-name").textContent = clinicName;
@@ -8794,8 +8805,58 @@ function updateQueueCard(room, data){
     void card.offsetWidth;
     card.classList.add("calling");
   }
+  scheduleTvTextFit();
   return numberChanged;
 }
+
+let tvTextFitFrame = 0;
+function scheduleTvTextFit(){
+  cancelAnimationFrame(tvTextFitFrame);
+  tvTextFitFrame = requestAnimationFrame(fitTvText);
+}
+function fitTvText(){
+  const tv = $("#view-tv");
+  if(!tv || tv.classList.contains("hidden-view")) return;
+  tv.querySelectorAll(".queue-card").forEach(card=>{
+    if(!card.getClientRects().length) return;
+    const title = card.querySelector(".queue-card-title");
+    const badge = card.querySelector(".room-badge");
+    const name = card.querySelector(".queue-clinic-name");
+    const doctor = card.querySelector(".queue-doctor");
+    const status = card.querySelector(".queue-status");
+    // Symmetric clearance keeps the specialty centered and clear of the badge.
+    name.style.removeProperty("max-width");
+    const clearance = badge.getBoundingClientRect().width + 16;
+    name.style.setProperty("max-width", Math.max(1,title.clientWidth - clearance * 2) + "px", "important");
+    [name,doctor,card.querySelector(".queue-number-label"),card.querySelector(".queue-number")].forEach(el=>{
+      el.style.removeProperty("font-size");
+      const original = parseFloat(getComputedStyle(el).fontSize);
+      let availableWidth = el.clientWidth;
+      if(el === doctor){
+        const dr = el.getBoundingClientRect(), sr = status.getBoundingClientRect();
+        if(dr.top < sr.bottom && dr.bottom > sr.top){
+          availableWidth = Math.min(availableWidth, Math.max(dr.right-sr.right,sr.left-dr.left)-16);
+        }
+      }
+      const availableHeight = el === name
+        ? title.clientHeight - 8
+        : el === card.querySelector(".queue-number")
+          ? Math.max(1,el.parentElement.clientHeight - card.querySelector(".queue-number-label").offsetHeight - 24)
+          : el.clientHeight;
+      let low = 1, high = original;
+      for(let i=0;i<12;i++){
+        const size = (low+high)/2;
+        el.style.setProperty("font-size",size+"px","important");
+        if(el.scrollWidth <= availableWidth+1 && el.scrollHeight <= availableHeight+1) low=size;
+        else high=size;
+      }
+      el.style.setProperty("font-size",low+"px","important");
+    });
+  });
+}
+window.addEventListener("resize",scheduleTvTextFit);
+if(document.fonts) document.fonts.ready.then(scheduleTvTextFit);
+new ResizeObserver(scheduleTvTextFit).observe($("#view-tv"));
 
 buildTvDashboard();
 renderTvActivityPanel(false);
@@ -10211,7 +10272,7 @@ $("#saveSetupBtn").addEventListener("click", async ()=>{
   const msg = $("#setupMsg");
 
   if(!clinic) return void (msg.textContent = "اختر اسم العيادة");
-  if(!doctor) return void (msg.textContent = "اختر الطبيب من قائمة أطباء التخصص");
+  if(!doctor || !selectableDoctorNames(clinicId).includes(doctor)) return void (msg.textContent = "اختر الطبيب من قائمة أطباء التخصص");
   if(!nurse)  return void (msg.textContent = "اختر اسم التمريض من القائمة");
 
   const button = $("#saveSetupBtn");
@@ -10230,7 +10291,11 @@ $("#saveSetupBtn").addEventListener("click", async ()=>{
   };
 
   try{
-    await clinicRef.update({
+    const existing = (await clinicRef.once("value")).val() || {};
+    const previousTimestamp = Number(existing.sessionStart || existing.updatedAt || 0);
+    const previousDay = existing.operationalDayKey || (previousTimestamp ? operationalDayKey(previousTimestamp) : "");
+    const newDay = previousDay !== operationalDayKey();
+    const payload = {
       clinicName:clinic.name,
       specialty:clinic.name,
       doctor,
@@ -10241,7 +10306,13 @@ $("#saveSetupBtn").addEventListener("click", async ()=>{
       location:"عيادة رقم " + DISPLAY_SLOT_ID + " — " + CURRENT_ROOM.floorName,
       status:"active",
       updatedAt:firebase.database.ServerValue.TIMESTAMP
-    });
+    };
+    if(newDay){
+      clearTimeout(writeTimer);
+      await resetCurrentClinic(payload);
+    }else{
+      await clinicRef.update(payload);
+    }
     writeAuditLog({
       action:"clinic_setup",
       roomId:DISPLAY_SLOT_ID,
@@ -12683,37 +12754,60 @@ function stepNumber(d){
 /* ==========================================================
    ⑦  أزرار التمريض
    ========================================================== */
-$("#startSessionBtn").addEventListener("click", ()=>{
+/* Replace only this room's operational state and reopen its booking atomically. */
+function resetCurrentClinic(payload){
+  const fresh = {
+    ...payload,
+    operationalDayKey:operationalDayKey(),
+    period:"",
+    current:0,
+    maxReached:0,
+    displayCurrent:0,
+    status:"active",
+    sessionStart:firebase.database.ServerValue.TIMESTAMP,
+    updatedAt:firebase.database.ServerValue.TIMESTAMP
+  };
+  return firebase.database().ref().update({
+    ["clinics/" + DISPLAY_SLOT_ID]:fresh,
+    ["bookingStatus/" + DISPLAY_SLOT_ID]:null
+  });
+}
+
+$("#startSessionBtn").addEventListener("click", async ()=>{
   if(!canControlCurrentRoom()) return void alert("هذا الحساب غير مصرح له بالتحكم في هذه الحجرة");
   if(!setupData) return void (location.hash = "#/setup");
-  if(!confirm("سيبدأ عداد الأدوار من رقم ١ من جديد. متابعة؟")) return;
-
-  clinicRef.update({
-    clinicName:setupData.clinicName,
-    specialty:setupData.clinicName,
-    doctor:setupData.doctor,
-    nurse:setupData.nurse,
-    period:"",
-    roomNumber:DISPLAY_SLOT_ID,
-    floor:CURRENT_ROOM.floorName,
-    location:"عيادة رقم " + DISPLAY_SLOT_ID + " — " + CURRENT_ROOM.floorName,
-    current:1,
-    maxReached:1,
-    displayCurrent:1,
-    previousDisplay:null,
-    recallMode:false,
-    recallNumber:null,
-    missedTurns:null,
-    status:"active",
-    sessionStart: firebase.database.ServerValue.TIMESTAMP,
-    updatedAt:    firebase.database.ServerValue.TIMESTAMP
-  }).then(()=>writeAuditLog({
-    action:"session_start",
-    roomId:DISPLAY_SLOT_ID,
-    clinicName:setupData.clinicName,
-    nurseName:setupData.nurse,
-    summary:"بدء فترة العيادة وبدء الأدوار من رقم ١"
-  }));
+  if(!selectableDoctorNames(setupData.clinicId).includes(setupData.doctor)){
+    alert("راجع بيانات التخصص والطبيب قبل بدء الجلسة");
+    location.hash = "#/setup";
+    return;
+  }
+  if(!confirm("بدء جلسة جديدة وتصفير الأدوار وحذف الفائت وإعادة الاستدعاء وفتح الحجز؟")) return;
+  const button = $("#startSessionBtn");
+  button.disabled = true;
+  clearTimeout(writeTimer);
+  try{
+    await resetCurrentClinic({
+      clinicName:setupData.clinicName,
+      specialty:setupData.clinicName,
+      doctor:setupData.doctor,
+      doctorDisplayName:doctorDisplayName(setupData.doctor),
+      nurse:setupData.nurse,
+      roomNumber:DISPLAY_SLOT_ID,
+      floor:CURRENT_ROOM.floorName,
+      location:"عيادة رقم " + DISPLAY_SLOT_ID + " — " + CURRENT_ROOM.floorName
+    });
+    writeAuditLog({
+      action:"session_start",
+      roomId:DISPLAY_SLOT_ID,
+      clinicName:setupData.clinicName,
+      nurseName:setupData.nurse,
+      summary:"بدء جلسة جديدة وتصفير الأدوار والفائت وإعادة فتح الحجز"
+    });
+  }catch(e){
+    flashSync("تعذر بدء الجلسة الجديدة", false);
+  }finally{
+    button.disabled = false;
+  }
 });
 
 document.querySelectorAll(".statusBtn").forEach(btn=>{
