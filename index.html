@@ -6015,7 +6015,7 @@
 #view-tv #tvPageProgress{position:absolute;top:0;left:0;right:0;height:4px;z-index:50;background:#fce5e5;pointer-events:none}
 #view-tv #tvPageProgress[hidden]{display:none}
 #view-tv #tvPageProgress span{display:block;height:100%;background:#fe6565;transform-origin:right}
-#view-tv #tvPageProgress.running span{animation:tvPageCountdown 15s linear forwards}
+#view-tv #tvPageProgress.running span{animation:tvPageCountdown 10s linear forwards}
 #view-tv .tv-page-enter{animation:tvPageEntrance .45s ease-out both}
 @keyframes tvPageCountdown{from{transform:scaleX(1)}to{transform:scaleX(0)}}
 @keyframes tvPageEntrance{from{opacity:.3;transform:translateX(-35px)}to{opacity:1;transform:translateX(0)}}
@@ -6811,7 +6811,7 @@
     max-width:100%!important;
     padding:clamp(34px,3.5vh,76px) 3vw 1vh!important;
     transform:none!important;
-    animation:tvInstructionsVisibility 12s ease-in-out infinite!important;
+    animation:tvInstructionsVisibility 5s ease-in-out infinite!important;
   }
   #view-tv.tv-paged .tv-footer-ticker::before,
   #view-tv.tv-individual .tv-footer-ticker::before{
@@ -6903,7 +6903,7 @@
         </summary>
         <div class="portal-tv-options" role="menu" aria-label="اختيار شاشة العرض">
           <a href="#/tv" class="portal-tv-option" role="menuitem"><strong>عرض جميع العيادات</strong><small>12 عيادة</small></a>
-          <a href="#/tv-slideshow" class="portal-tv-option" role="menuitem"><strong>العرض المتتابع للعيادات</strong><small>٣ صفحات — كل ١٥ ثانية</small></a>
+          <a href="#/tv-slideshow" class="portal-tv-option" role="menuitem"><strong>العرض المتتابع للعيادات</strong><small>٣ صفحات — كل ١٠ ثوانٍ</small></a>
           <a href="#/tv-individual" class="portal-tv-option" role="menuitem"><strong>العرض الفردي للعيادات</strong><small>12 عيادة — كل 5 ثوانٍ</small></a>
           <a href="#/tv-third" class="portal-tv-option" role="menuitem"><strong>عيادات الدور الثالث</strong><small>8 عيادات</small></a>
           <a href="#/tv-ground" class="portal-tv-option" role="menuitem"><strong>عيادات الدور الأرضي</strong><small>4 عيادات</small></a>
@@ -8347,7 +8347,7 @@ function tvRoomsForDisplay(){
   return ROOM_OPTIONS;
 }
 
-const TV_PAGE_MS = 15000;
+const TV_PAGE_MS = 10000;
 const TV_INDIVIDUAL_MS = 5000;
 const TV_PAGES = [
   {floor:"third", title:"الدور الثالث — صفحة ١", rooms:["301","303","307","308"]},
