@@ -7202,7 +7202,7 @@
   <header class="text-white px-5 py-4 flex items-center justify-between" style="background:var(--navy)">
     <div>
       <h1 id="nurseRoomTitle" class="font-bold text-lg leading-tight">لوحة التمريض</h1>
-      <p class="text-white/75 text-xs" id="nurseClinicName">—</p>
+      <p class="text-white/75 text-xs" id="nurseClinicName" style="display:none">—</p>
     </div>
     <div class="flex items-center gap-2">
       <button id="adminSwitchRoomBtn" type="button" class="hidden-view text-xs bg-white/15 px-3 py-2 rounded-lg">تغيير الحجرة</button>
@@ -7211,22 +7211,20 @@
   </header>
 
   <div class="p-4">
-    <div id="nursingRoomSwitch" class="bg-white rounded-2xl p-3 mb-4"></div>
-    <details class="bg-white rounded-2xl shadow-sm p-4 mb-4"><summary class="font-bold cursor-pointer mb-3">بيانات الفترة الحالية</summary>
-      <div class="flex items-start justify-between gap-3 mb-4">
-        <div>
-          <p class="text-xs text-slate-500">بيانات الفترة الحالية</p>
-          <h2 id="panelClinic" class="font-bold text-lg mt-1">—</h2>
-          <p id="panelDoctor" class="text-sky-700 font-bold">—</p>
-          <p class="text-sm text-slate-500 mt-1">التمريض: <span id="panelNurse">—</span></p>
+    <div id="nursingCurrentPeriod" class="bg-white rounded-2xl shadow-sm p-3 mb-3" style="min-width:0;overflow-wrap:anywhere">
+      <h2 id="panelClinic" class="font-bold text-base">—</h2>
+      <p id="panelDoctor" class="text-sky-700 font-bold text-base mt-1">—</p>
+      <p class="text-sm text-slate-500 mt-1">التمريض: <span id="panelNurse">—</span></p>
+      <div id="nursingRoomSwitch" class="flex flex-wrap gap-2 mt-2" style="display:none"></div>
+      <details class="mt-2 border-t border-slate-100 pt-2">
+        <summary class="text-sm font-bold cursor-pointer text-slate-600">خيارات العيادة</summary>
+        <div class="flex flex-wrap gap-2 mt-2">
+          <button id="editSetupBtn" class="text-sm px-3 py-2 rounded-lg bg-slate-100 text-slate-600 font-bold">تعديل البيانات الحالية</button>
+          <button id="startSessionBtn" class="text-sm px-3 py-2 rounded-lg text-white font-bold" style="background:var(--teal)">بدء فترة جديدة</button>
+          <button id="nursingAddRoomBtn" type="button" class="text-sm px-3 py-2 rounded-lg bg-slate-100 text-slate-600 font-bold" style="display:none">إضافة حجرة ثانية (اختياري)</button>
         </div>
-        <button id="editSetupBtn" class="shrink-0 text-xs px-3 py-2 rounded-lg bg-slate-100 text-slate-600 font-bold">تعديل بيانات العيادة</button>
-      </div>
-
-      <button id="startSessionBtn" class="w-full py-3 rounded-xl text-white font-bold" style="background:var(--teal)">
-        بدء فترة جديدة
-      </button>
-    </details>
+      </details>
+    </div>
 
     <!-- البكرة -->
     <div class="bg-white rounded-2xl shadow-sm p-4 mb-4">
@@ -10162,25 +10160,22 @@ function renderNursingRoomSwitch(){
   const wrap = $("#nursingRoomSwitch");
   wrap.replaceChildren();
   const entry = currentNursingIdentity();
-  const title = document.createElement("p");
-  title.className = "font-bold mb-2";
-  title.textContent = "تتحكم الآن في حجرة " + DISPLAY_SLOT_ID + " — " + doctorDisplayFromData(state) + " — التمريض: " + (entry?.nurse || "—");
-  wrap.appendChild(title);
+  if(entry) $("#panelNurse").textContent = entry.nurse;
   const rooms = Object.entries(nursingRooms).filter(([id,value])=>value.uid === auth.currentUser?.uid && value.day === operationalDayKey());
-  rooms.forEach(([id,value])=>{
+  wrap.style.display = rooms.length > 1 ? "flex" : "none";
+  if(rooms.length > 1) rooms.forEach(([id,value])=>{
     const button = document.createElement("button");
-    button.type = "button"; button.className = "px-3 py-3 rounded-xl m-1 font-bold " + (id === DISPLAY_SLOT_ID ? "bg-sky-100 text-sky-800" : "bg-slate-100");
+    button.type = "button";
+    button.className = "px-3 py-2 rounded-xl text-sm font-bold " + (id === DISPLAY_SLOT_ID ? "bg-sky-100 text-sky-800" : "bg-slate-100");
+    button.style.cssText = "min-width:0;white-space:normal;overflow-wrap:anywhere";
     button.textContent = "حجرة " + id + " — " + doctorDisplayName(value.doctor);
+    button.setAttribute("aria-pressed",String(id === DISPLAY_SLOT_ID));
     button.onclick = ()=>openAuthorizedRoom(id,"#/nurse");
     wrap.appendChild(button);
   });
-  if(rooms.length < 2 && (auth.currentUser?.isAnonymous || isAdminUser())){
-    const add = document.createElement("button");
-    add.type = "button";add.className = "px-3 py-3 rounded-xl m-1 bg-slate-100 font-bold";
-    add.textContent = "إضافة حجرة للتحكم (اختياري)";
-    add.onclick = ()=>{ sessionStorage.removeItem(SETUP_ROOM_STEP_KEY); nursingSetupMode = "enter";location.hash = "#/setup"; };
-    wrap.appendChild(add);
-  }
+  const add = $("#nursingAddRoomBtn");
+  add.style.display = rooms.length < 2 && (auth.currentUser?.isAnonymous || isAdminUser()) ? "" : "none";
+  add.onclick = ()=>{ sessionStorage.removeItem(SETUP_ROOM_STEP_KEY); nursingSetupMode = "enter";location.hash = "#/setup"; };
 }
 function renderNursingSetup(){
   const selected = $("#setupRoomSelect").value === DISPLAY_SLOT_ID;
