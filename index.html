@@ -6954,6 +6954,15 @@
   #view-tv.tv-individual .tv-footer-message{font-size:clamp(17px,4.4vw,26px)!important}
 }
 </style>
+<style>
+/* Separate the doctor's name from the clinic status. */
+#view-tv.tv-paged .queue-card-body,
+#view-tv.tv-individual .queue-card-body{grid-template-columns:minmax(0,1fr) auto!important}
+#view-tv.tv-paged .queue-doctor,
+#view-tv.tv-individual .queue-doctor{grid-column:1!important;grid-row:1!important;width:100%!important;justify-content:center!important}
+#view-tv.tv-paged .queue-status,
+#view-tv.tv-individual .queue-status{grid-column:2!important;grid-row:1!important;justify-self:end!important}
+</style>
 </head>
 <body>
 <div id="networkStatusIndicator" class="network-status-indicator" role="status" aria-live="polite">
