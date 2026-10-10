@@ -6932,6 +6932,28 @@
   #view-nurse>.p-4>.grid{margin-top:8px}
 }
 </style>
+<style>
+/* Requested control spacing and persistent missed-turn strip. */
+#view-setup .setup-logo-frame{padding:0!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important}
+#view-nurse #nurseDisplayedNumber{font-size:clamp(24px,6vw,38px);line-height:1.2;text-align:center;overflow-wrap:anywhere}
+#view-nurse #nursingCurrentPeriod details>div{align-items:center;gap:10px}
+#view-nurse #missedTurnsCard{margin-bottom:12px}
+#view-nurse #nurseQueueControls>.grid{gap:10px}
+#view-tv.tv-paged .queue-card[data-has-missed="false"] .queue-card-body{grid-template-rows:auto minmax(0,1fr) auto!important}
+#view-tv.tv-paged .queue-card .queue-missed-summary,
+#view-tv.tv-individual .queue-card .queue-missed-summary{display:flex!important;visibility:visible!important}
+#view-tv.tv-paged .queue-card .queue-number-box{grid-row:2!important}
+#view-tv.tv-paged .queue-card .queue-missed-summary{grid-row:3!important}
+#view-tv.tv-paged .queue-card-body{row-gap:.45vh!important}
+@media(min-width:901px){
+  #view-tv.tv-paged .tv-footer-message,
+  #view-tv.tv-individual .tv-footer-message{font-size:clamp(22px,2.9vh,68px)!important}
+}
+@media(max-width:900px){
+  #view-tv.tv-paged .tv-footer-message,
+  #view-tv.tv-individual .tv-footer-message{font-size:clamp(17px,4.4vw,26px)!important}
+}
+</style>
 </head>
 <body>
 <div id="networkStatusIndicator" class="network-status-indicator" role="status" aria-live="polite">
@@ -7294,11 +7316,12 @@
       <p id="panelDoctor" class="text-sky-700 font-bold text-base mt-1">—</p>
       <p class="text-sm text-slate-500 mt-1">التمريض: <span id="panelNurse">—</span></p>
       <div id="nursingRoomSwitch" class="flex flex-wrap gap-2 mt-2" style="display:none"></div>
-      <details class="mt-2 border-t border-slate-100 pt-2">
+      <details open class="mt-2 border-t border-slate-100 pt-2">
         <summary class="text-sm font-bold cursor-pointer text-slate-600">خيارات العيادة</summary>
         <div class="flex flex-wrap gap-2 mt-2">
           <button title="تغيير البيانات مع الاحتفاظ بالأدوار والفائت وحالة الحجز" id="editSetupBtn" class="text-sm px-3 py-2 rounded-lg bg-slate-100 text-slate-600 font-bold">تعديل البيانات الحالية</button>
           <button title="بدء فترة جديدة وتصفير الأدوار والفائت وإلغاء قفل الحجز" id="startSessionBtn" class="text-sm px-3 py-2 rounded-lg text-white font-bold" style="background:var(--teal)">بدء فترة جديدة</button>
+          <button id="resetSameClinicBtn" type="button" class="text-sm px-3 py-2 rounded-lg bg-slate-100 text-slate-600 font-bold">تصفير العيادة بنفس البيانات</button>
           <button id="nursingAddRoomBtn" type="button" class="text-sm px-3 py-2 rounded-lg bg-slate-100 text-slate-600 font-bold" style="display:none">إضافة حجرة ثانية (اختياري)</button>
         </div>
         <p class="nursing-period-help">تعديل البيانات: يحافظ على الأدوار والفائت والحجز.<br>فترة جديدة: يصفّر الأدوار والفائت ويلغي قفل الحجز.</p>
@@ -7317,6 +7340,7 @@
         <strong id="nurseDisplayedNumber" class="num text-2xl font-bold text-sky-700">—</strong>
       </div>
 
+      <button id="startPreparedClinicBtn" type="button" class="hidden-view w-full mb-3 px-3 py-3 rounded-xl text-white font-bold" style="background:var(--teal)">بدء العيادة</button>
       <div id="nurseQueueLock" class="nurse-queue-lock hidden-view" data-lock-status=""></div>
 
       <!-- الأدوار الفائتة -->
@@ -7328,7 +7352,7 @@
           </div>
           <span id="missedTurnsCount" class="shrink-0 min-w-8 h-8 px-2 rounded-full bg-orange-100 text-orange-700 font-bold flex items-center justify-center num">٠</span>
         </div>
-        <div id="missedTurnsEmpty" class="text-sm text-slate-400 text-center py-3">لا توجد أدوار فائتة</div>
+        <div id="missedTurnsEmpty" class="text-sm text-slate-400 text-center py-3">لا يوجد أدوار فائتة</div>
         <div id="missedTurnsList" class="missed-turns-list"></div>
       </div>
 
@@ -7968,7 +7992,7 @@
           <span class="block text-[10px] text-slate-500 mt-1">متبقي</span>
         </div>
       </div>
-      <div id="ptMissedEmpty" class="text-sm text-slate-400 text-center py-3">لا توجد أدوار فائتة حاليًا</div>
+      <div id="ptMissedEmpty" class="text-sm text-slate-400 text-center py-3">لا يوجد أدوار فائتة حاليًا</div>
       <div id="ptMissedTurnsList" class="patient-missed-list"></div>
     </div>
 
@@ -8822,7 +8846,7 @@ function createQueueCard(room){
       '</div>' +
       '<div class="queue-missed-summary">' +
         '<div class="queue-missed-summary-head"><span>الأدوار الفائتة</span><span class="queue-missed-count num">٠</span></div>' +
-        '<div class="queue-missed-public-list"><span class="queue-missed-empty">لا توجد أدوار فائتة</span></div>' +
+        '<div class="queue-missed-public-list"><span class="queue-missed-empty">لا يوجد أدوار فائتة</span></div>' +
       '</div>' +
     '</div>';
   return card;
@@ -8887,7 +8911,7 @@ function updateQueueCard(room, data){
   missedCountEl.textContent = ar(publicPending.length);
   missedListEl.innerHTML = "";
   if(!publicMissed.length){
-    missedListEl.innerHTML = '<span class="queue-missed-empty">لا توجد أدوار فائتة</span>';
+    missedListEl.innerHTML = '<span class="queue-missed-empty">لا يوجد أدوار فائتة</span>';
   }else{
     visiblePublicTurns.forEach(item=>{
       const chip = document.createElement("span");
@@ -8945,7 +8969,7 @@ function fitTvText(){
       el.style.removeProperty("font-size");
       // Keep the queue number at its responsive CSS size.
       if(el === card.querySelector(".queue-number")){
-        if(tv.classList.contains("tv-paged") && card.dataset.hasMissed === "true"){
+        if(tv.classList.contains("tv-paged")){
           const box = el.parentElement;
           const label = card.querySelector(".queue-number-label");
           const badge = box.querySelector(".booking-badge");
@@ -10242,7 +10266,7 @@ function currentNursingIdentity(){
 function periodIsCurrent(data){
   const ts = Number(data.sessionStart || data.updatedAt || 0);
   const day = data.operationalDayKey || (ts ? operationalDayKey(ts) : "");
-  return day === operationalDayKey() && Boolean(data.clinicName || data.specialty) && Boolean(data.doctor) && data.status !== "idle";
+  return day === operationalDayKey() && Boolean(data.clinicName || data.specialty) && Boolean(data.doctor) && (data.status !== "idle" || data.prepared === true);
 }
 function nursingPeriodMatches(a,b){
   return Boolean(a && b && Number(a.sessionStart || 0) === Number(b.sessionStart || 0) && a.clinicName === b.clinicName && a.specialty === b.specialty && a.doctor === b.doctor && a.operationalDayKey === b.operationalDayKey);
@@ -10313,7 +10337,7 @@ function renderNursingSetup(){
   }
   $("#saveSetupBtn").hidden = !ready || setupWizardStep !== 4;
   $("#saveSetupBtn").disabled = !auth.currentUser || !ready;
-  $("#saveSetupBtn").textContent = takeover ? "تأكيد والدخول للتحكم" : nursingSetupMode === "edit" ? "حفظ التعديل والعودة للتحكم" : "تأكيد بدء الفترة الجديدة";
+  $("#saveSetupBtn").textContent = takeover ? "تأكيد والدخول للتحكم" : nursingSetupMode === "edit" ? "حفظ التعديل والعودة للتحكم" : "حفظ وتجهيز العيادة";
   $("#nursingNewPeriod").hidden = !takeover || setupWizardStep !== 3;
   $("#setupStepBack").hidden = !currentNursingIdentity();
   $("#setupStepBack").textContent = "العودة للتحكم دون تغيير";
@@ -10613,7 +10637,7 @@ $("#saveSetupBtn").addEventListener("click", async ()=>{
   const clinic = findSpecialtyById($("#setupClinic").value);
   const doctor = $("#setupDoctor").value.trim();
   if(!takeover && (!clinic || !selectableDoctorNames(clinic.id).includes(doctor))) return void (msg.textContent = "اختر العيادة والطبيب من قائمة أطباء التخصص");
-  if(!takeover && !edit && !confirm("بدء فترة جديدة في حجرة " + DISPLAY_SLOT_ID + " وتصفير الأدوار والفائت وإلغاء القفل والحجز القديم؟")) return;
+  if(!takeover && !edit && !confirm("تجهيز فترة جديدة في حجرة " + DISPLAY_SLOT_ID + " وتصفير الأدوار والفائت وإلغاء القفل والحجز القديم؟")) return;
   const button = $("#saveSetupBtn");button.disabled = true;msg.textContent = "جاري الحفظ...";
   const before = nursingPeriod;
   try{
@@ -10630,11 +10654,11 @@ $("#saveSetupBtn").addEventListener("click", async ()=>{
       const latest = (await clinicRef.once("value")).val() || {};
       if(!nursingPeriodMatches(before,latest)) throw new Error("period-changed");
       clearTimeout(writeTimer);
-      await resetCurrentClinic({clinicName:clinic.name,specialty:clinic.name,doctor,doctorDisplayName:doctorDisplayName(doctor),nurse,roomNumber:DISPLAY_SLOT_ID,floor:CURRENT_ROOM.floorName,location:"عيادة رقم " + DISPLAY_SLOT_ID + " — " + CURRENT_ROOM.floorName});
+      await resetCurrentClinic({prepared:true,status:"idle",clinicName:clinic.name,specialty:clinic.name,doctor,doctorDisplayName:doctorDisplayName(doctor),nurse,roomNumber:DISPLAY_SLOT_ID,floor:CURRENT_ROOM.floorName,location:"عيادة رقم " + DISPLAY_SLOT_ID + " — " + CURRENT_ROOM.floorName});
       saved = (await clinicRef.once("value")).val();
     }
     rememberNursingRoom(saved,nurse);
-    const logged = await writeAuditLog({action:takeover ? "nurse_control_enter" : edit ? "clinic_setup" : "session_start",roomId:DISPLAY_SLOT_ID,clinicName:saved.clinicName,nurseName:nurse,summary:takeover ? nurse + " بدأ التحكم في حجرة " + DISPLAY_SLOT_ID : edit ? "تعديل بيانات الفترة دون تصفير" : "بدء فترة جديدة وتصفير الأدوار والفائت وإلغاء القفل",details:{previousNurse:before.nurse || "",sessionStart:saved.sessionStart || 0}});
+    const logged = await writeAuditLog({action:takeover ? "nurse_control_enter" : edit ? "clinic_setup" : "clinic_prepared",roomId:DISPLAY_SLOT_ID,clinicName:saved.clinicName,nurseName:nurse,summary:takeover ? nurse + " بدأ التحكم في حجرة " + DISPLAY_SLOT_ID : edit ? "تعديل بيانات الفترة دون تصفير" : "تجهيز فترة جديدة في انتظار بدء العيادة وتصفير الأدوار والفائت وإلغاء القفل",details:{previousNurse:before.nurse || "",sessionStart:saved.sessionStart || 0}});
     if(logged === false) alert("تم حفظ البيانات، لكن تعذر تسجيل الخطوة. راجع اتصال الإنترنت وصلاحية سجل الخطوات.");
     nursingSetupMode = "enter";location.hash = "#/nurse";route();
   }catch(e){
@@ -12556,7 +12580,7 @@ $("#staffManagerLogout").addEventListener("click", async ()=>{
 let state = {
   clinicName:"", doctor:"", doctorDisplayName:"", nurse:"", period:"", location:"",
   current:0, maxReached:0, displayCurrent:0, previousDisplay:null, recallMode:false, recallNumber:null,
-  missedTurns:{}, status:"idle", updatedAt:0
+  missedTurns:{}, status:"idle", prepared:false, updatedAt:0
 };
 let lastSeen = null;
 
@@ -12579,6 +12603,7 @@ clinicRef.on("value", (snap) => {
     recallNumber: typeof d.recallNumber === "number" ? d.recallNumber : null,
     missedTurns: d.missedTurns || {},
     status:   d.status   || "idle",
+    prepared: d.prepared === true,
     updatedAt:d.updatedAt || 0
   };
   const changed = lastSeen !== null && lastSeen !== state.current;
@@ -12594,7 +12619,7 @@ clinicRef.on("value", (snap) => {
 });
 
 function isNurseQueueLocked(){
-  return state.status === "break" || state.status === "finished";
+  return state.prepared || state.status === "break" || state.status === "finished";
 }
 
 function updateNurseQueueLock(){
@@ -12605,14 +12630,20 @@ function updateNurseQueueLock(){
   if(notice){
     notice.classList.toggle("hidden-view", !locked);
     notice.dataset.lockStatus = locked ? state.status : "";
-    notice.textContent = state.status === "break"
+    notice.textContent = state.prepared
+      ? "في انتظار بدء العيادة — اضغط «بدء العيادة» لتشغيلها."
+      : state.status === "break"
       ? "العيادة في استراحة — تم إيقاف التحكم بالأدوار مؤقتًا. اضغط «تعمل» لاستكمال الأدوار."
       : state.status === "finished"
         ? "انتهت العيادة — تم إيقاف التحكم بالأدوار."
         : "";
   }
 
-  if(controls) controls.classList.toggle("nurse-queue-locked", locked);
+  if(controls){
+    controls.classList.toggle("nurse-queue-locked", locked);
+    controls.classList.toggle("hidden-view", state.prepared);
+  }
+  $("#startPreparedClinicBtn").classList.toggle("hidden-view", !state.prepared);
 
   const blocked = locked || state.recallMode;
   wheel.style.pointerEvents = blocked ? "none" : "auto";
@@ -12649,7 +12680,9 @@ function renderAll(numberChanged){
   const displayedDoctor = doctorDisplayFromData(state);
   $("#panelDoctor").textContent = displayedDoctor;
   $("#panelNurse").textContent = state.nurse;
-  $("#nurseDisplayedNumber").textContent = state.status === "finished"
+  $("#nurseDisplayedNumber").textContent = state.prepared
+    ? "في انتظار بدء العيادة"
+    : state.status === "finished"
     ? "انتهت"
     : closed
       ? "—"
@@ -13084,11 +13117,12 @@ function resetCurrentClinic(payload){
   const fresh = {
     ...payload,
     operationalDayKey:operationalDayKey(),
-    period:"",
+    period:payload.period || "",
     current:0,
     maxReached:0,
     displayCurrent:0,
-    status:"active",
+    status:payload.status || "active",
+    prepared:payload.prepared === true,
     sessionStart:firebase.database.ServerValue.TIMESTAMP,
     updatedAt:firebase.database.ServerValue.TIMESTAMP
   };
@@ -13100,6 +13134,35 @@ function resetCurrentClinic(payload){
 
 $("#startSessionBtn").addEventListener("click",()=>openNursingData("new"));
 
+$("#startPreparedClinicBtn").addEventListener("click",()=>{
+  document.querySelector('.statusBtn[data-status="active"]').click();
+});
+$("#resetSameClinicBtn").addEventListener("click", async ()=>{
+  if(!canControlCurrentRoom()) return void alert("هذا الحساب غير مصرح له بالتحكم في هذه الحجرة");
+  if(!confirm("تصفير العيادة بنفس بيانات الطبيب والتخصص والتمريض؟ سيتم مسح الأدوار والفائت وإلغاء قفل الحجز والاستراحة والإنهاء.")) return;
+  const button = $("#resetSameClinicBtn");
+  const roomId = DISPLAY_SLOT_ID;
+  const ref = clinicRef;
+  const sessionStart = nursingLiveSessionStart;
+  button.disabled = true;
+  try{
+    const latest = (await ref.once("value")).val() || {};
+    if(DISPLAY_SLOT_ID !== roomId || !canControlCurrentRoom() || Number(latest.sessionStart || 0) !== sessionStart) throw new Error("period-changed");
+    clearTimeout(writeTimer);
+    await resetCurrentClinic({clinicName:latest.clinicName,specialty:latest.specialty || latest.clinicName,doctor:latest.doctor,doctorDisplayName:latest.doctorDisplayName || doctorDisplayName(latest.doctor),nurse:latest.nurse,period:latest.period || "",roomNumber:roomId,floor:latest.floor || CURRENT_ROOM.floorName,location:latest.location || "عيادة رقم " + roomId + " — " + CURRENT_ROOM.floorName,prepared:latest.prepared === true,status:latest.prepared === true ? "idle" : "active"});
+    const saved = (await ref.once("value")).val();
+    if(DISPLAY_SLOT_ID === roomId){
+      rememberNursingRoom(saved,currentNursingIdentity()?.nurse || saved.nurse);
+      nursingSetupMode = "enter"; location.hash = "#/nurse"; route();
+    }
+    const logged = await writeAuditLog({action:"clinic_reset",roomId,clinicName:saved.clinicName,nurseName:saved.nurse,summary:"تصفير العيادة بنفس البيانات ومسح الأدوار والفائت وإلغاء قفل الحجز والاستراحة والإنهاء"});
+    if(logged === false) alert("تم التصفير، لكن تعذر تسجيل الخطوة. راجع الاتصال وصلاحية سجل الخطوات.");
+  }catch(e){
+    alert(e.message === "period-changed" ? "تغيرت الحجرة أو الفترة. راجع بياناتها قبل التصفير." : "تعذر التصفير. تحقق من الاتصال وصلاحيات Firebase.");
+  }finally{ button.disabled = false; }
+});
+
+
 document.querySelectorAll(".statusBtn").forEach(btn=>{
   btn.addEventListener("click", ()=>{
     if(!canControlCurrentRoom()) return void alert("هذا الحساب غير مصرح له بالتحكم في هذه الحجرة");
@@ -13109,6 +13172,7 @@ document.querySelectorAll(".statusBtn").forEach(btn=>{
       if(!confirm("سيتم إنهاء العيادة وتصفير جميع الأدوار الفائتة وإخفائها من شاشة المرضى. متابعة؟")) return;
       clinicRef.update({
         status:"finished",
+        prepared:false,
         missedTurns:null,
         recallMode:false,
         recallNumber:null,
@@ -13125,7 +13189,7 @@ document.querySelectorAll(".statusBtn").forEach(btn=>{
       return;
     }
 
-    clinicRef.update({ status:s, updatedAt: firebase.database.ServerValue.TIMESTAMP })
+    clinicRef.update({ status:s, prepared:false, updatedAt: firebase.database.ServerValue.TIMESTAMP })
       .then(()=>writeAuditLog({
         action:"clinic_status",
         roomId:DISPLAY_SLOT_ID,
