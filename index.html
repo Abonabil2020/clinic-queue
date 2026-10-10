@@ -10339,6 +10339,28 @@ let nursingLoadSerial = 0;
 let nursingAuthPending = false;
 let nursingAuthError = false;
 let nursingAuthReady = false;
+let pendingSetupRoom = "";
+let nursingAuthWaitTimer = null;
+const nursingAuthWaitMessage = "جاري تجهيز الدخول...";
+const nursingAuthSlowMessage = "تجهيز الدخول يستغرق وقتًا أطول من المعتاد. تحقق من اتصال الإنترنت، وسنكمل تلقائيًا عند نجاح الدخول.";
+function showNursingAuthWait(){
+  if(nursingAuthError) return;
+  const msg = $("#setupMsg");
+  if(msg.textContent !== nursingAuthSlowMessage) msg.textContent = nursingAuthWaitMessage;
+  if(nursingAuthWaitTimer !== null) return;
+  nursingAuthWaitTimer = setTimeout(()=>{
+    nursingAuthWaitTimer = null;
+    if(!auth.currentUser && !nursingAuthError && ["setup","nursing-control"].includes((location.hash || "").replace("#/",""))){
+      msg.textContent = nursingAuthSlowMessage;
+    }
+  },10000);
+}
+function clearNursingAuthWait(){
+  clearTimeout(nursingAuthWaitTimer);
+  nursingAuthWaitTimer = null;
+  const msg = $("#setupMsg");
+  if(msg.textContent === nursingAuthWaitMessage || msg.textContent === nursingAuthSlowMessage) msg.textContent = "";
+}
 let nursingRoomLoaded = false;
 let nursingLiveSessionStart = 0;
 let nursingRooms = {};
@@ -10449,7 +10471,7 @@ function renderNursingRoomSwitch(){
 }
 function renderNursingSetup(){
   const selected = $("#setupRoomSelect").value === DISPLAY_SLOT_ID;
-  const ready = selected && nursingPeriod !== null;
+  const ready = Boolean(auth.currentUser) && selected && nursingPeriod !== null;
   const existing = ready && periodIsCurrent(nursingPeriod);
   const takeover = existing && nursingSetupMode === "enter";
   if(!ready) setupWizardStep = 0;
@@ -10540,7 +10562,7 @@ async function migrateNursingLogin(){
 async function ensureNursingAuth(){
   if(!nursingAuthReady || auth.currentUser || nursingAuthPending || nursingAuthError) return;
   nursingAuthPending = true;
-  $("#setupMsg").textContent = "جاري تجهيز الدخول...";
+  showNursingAuthWait();
   try{
     await auth.signInAnonymously();
     if(["nursing-control","setup","nurse"].includes((location.hash || "").replace("#/",""))) route();
@@ -10548,13 +10570,13 @@ async function ensureNursingAuth(){
     nursingAuthError = true;
     $("#setupMsg").textContent = e.code === "auth/operation-not-allowed" ? "يلزم تفعيل الدخول Anonymous في Firebase لتشغيل الدخول المباشر." : "تعذر تجهيز الدخول. تحقق من الاتصال وإعدادات Firebase.";
     $("#nursingRetry").hidden = false;
-  }finally{ nursingAuthPending = false; }
+  }finally{ nursingAuthPending = false; clearNursingAuthWait(); }
 }
 
 let setupWizardStep = 0;
 const SETUP_ROOM_STEP_KEY = "islahSetupRoomStep";
 function setupWizardRooms(){
-  return isAdminUser() || auth.currentUser?.isAnonymous ? ROOM_OPTIONS : ROOM_OPTIONS.filter(room=>room.id === authorizedRoomForUser(auth.currentUser));
+  return !auth.currentUser || isAdminUser() || auth.currentUser.isAnonymous ? ROOM_OPTIONS : ROOM_OPTIONS.filter(room=>room.id === authorizedRoomForUser(auth.currentUser));
 }
 function setSetupWizardStep(step){
   closeClinicMenu();closeDoctorMenu();closeNurseMenu();
@@ -10581,13 +10603,22 @@ function prepareSetupWizard(){
     select.appendChild(option);
   });
   const selected = sessionStorage.getItem(SETUP_ROOM_STEP_KEY) === DISPLAY_SLOT_ID;
-  select.value = selected ? DISPLAY_SLOT_ID : "";
-  select.disabled = !auth.currentUser;
+  select.value = pendingSetupRoom || (selected ? DISPLAY_SLOT_ID : "");
+  select.disabled = false;
+  if(!auth.currentUser) showNursingAuthWait();
   renderNursingSetup();
 }
 $("#setupRoomSelect").addEventListener("change",()=>{
   const roomId = $("#setupRoomSelect").value;
+  if(!roomId){ pendingSetupRoom = ""; return; }
   if(!setupWizardRooms().some(room=>room.id === roomId)) return;
+  if(!auth.currentUser){
+    pendingSetupRoom = roomId;
+    showNursingAuthWait();
+    ensureNursingAuth();
+    return;
+  }
+  pendingSetupRoom = "";
   sessionStorage.setItem(SETUP_ROOM_STEP_KEY,roomId);
   if(roomId !== DISPLAY_SLOT_ID){ openAuthorizedRoom(roomId,"#/setup"); return; }
   nursingSetupMode = "enter";
@@ -10595,6 +10626,18 @@ $("#setupRoomSelect").addEventListener("change",()=>{
 });
 $("#setupStepBack").addEventListener("click",()=>{ location.hash = "#/nurse"; });
 function prefillSetup(){
+  if(auth.currentUser){
+    clearNursingAuthWait();
+    if(pendingSetupRoom){
+      const roomId = pendingSetupRoom;
+      pendingSetupRoom = "";
+      if(setupWizardRooms().some(room=>room.id === roomId)){
+        sessionStorage.setItem(SETUP_ROOM_STEP_KEY,roomId);
+        nursingSetupMode = "enter";
+        if(roomId !== DISPLAY_SLOT_ID){ openAuthorizedRoom(roomId,"#/setup"); return; }
+      }
+    }
+  }
   prepareSetupWizard();
   if($("#setupRoomSelect").value) loadNursingPeriod();
 }
@@ -13529,6 +13572,7 @@ $("#receptionLogout").addEventListener("click", async ()=>{
 });
 auth.onAuthStateChanged(user=>{
   nursingAuthReady = true;
+  if(user) clearNursingAuthWait();
   renderBookingStatus();
 
   if(!user){
