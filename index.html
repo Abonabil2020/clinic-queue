@@ -6869,6 +6869,67 @@
 #view-setup .clinic-option,#view-setup .doctor-option,#view-setup .nurse-option{min-height:48px;font-size:17px}
 #view-setup #nursingPeriodPreview{line-height:1.8;overflow-wrap:anywhere}
 #view-setup #setupRoomChange{border:0;border-radius:10px;padding:7px 12px;background:#fff1f2;color:#b91c1c;font-weight:700;margin-bottom:12px}
+
+/* Requested compact nursing/setup layout and TV missed/recall presentation only. */
+#view-setup .setup-entry-head{padding:18px 20px 10px;text-align:center;color:#fe6565}
+#view-setup .setup-logo-frame{width:min(220px,80%);margin:0 auto 12px;padding:12px;background:#fff;border:1px solid #e2e8f0;border-radius:18px;box-shadow:0 4px 14px rgba(15,23,42,.06)}
+#view-setup .setup-logo-frame img{width:100%;max-height:64px;margin:0;object-fit:contain}
+#view-setup .setup-entry-head h1{font-size:22px;line-height:1.3}
+#view-setup .setup-entry-head p{color:#717171;font-size:13px}
+.nursing-period-help{font-size:12px;color:#717171;line-height:1.65;margin-top:8px}
+#view-tv.tv-paged .queue-card-body{align-content:stretch!important}
+#view-tv.tv-paged .queue-number-box{height:100%!important;min-height:0!important;max-height:100%!important;box-sizing:border-box!important}
+#view-tv.tv-paged .queue-missed-summary{grid-row:3!important;position:relative!important;align-self:end!important;min-height:0!important;max-height:clamp(44px,8vh,150px)!important;overflow:auto!important;margin-top:.25vh!important;padding:.65vh .7vw!important;gap:.4vw!important}
+#view-tv.tv-paged .queue-missed-summary-head{font-size:clamp(16px,2.05vh,45px)!important}
+#view-tv.tv-paged .queue-missed-count{min-width:clamp(25px,2.9vh,54px)!important;height:clamp(24px,2.8vh,52px)!important;font-size:clamp(16px,1.95vh,43px)!important}
+#view-tv.tv-paged .queue-missed-public-list{min-height:0!important;margin-top:.25vh!important}
+#view-tv.tv-paged .queue-public-chip{min-width:clamp(35px,4vh,69px)!important;height:clamp(27px,3.6vh,63px)!important;font-size:clamp(18px,2.45vh,52px)!important}
+#view-tv .queue-card[data-recall="true"] .queue-number,
+#view-tv .queue-card[data-recall="true"] .queue-number-label{color:#0369a1!important}
+#view-tv .queue-card[data-recall="true"] .queue-number-box{background:#e0f2fe!important;border-color:#7dd3fc!important}
+#view-patient #ptNumber.is-recalled-number{color:#0369a1!important}
+@media(max-width:640px){
+  #view-setup{padding:12px;align-items:flex-start}
+  #view-setup>.max-w-lg>.p-6{padding:14px 18px}
+  #view-setup .setup-entry-head{padding:14px 18px 6px}
+  #view-setup .setup-logo-frame{width:190px;margin-bottom:9px;padding:9px}
+  #view-setup .setup-logo-frame img{max-height:52px}
+  #view-setup .setup-entry-head h1{font-size:20px}
+  #view-setup .setup-wizard-progress{margin-bottom:12px}
+  #view-setup #setupStepCaption{font-size:14px;margin-bottom:8px}
+  #view-setup [data-setup-step]>label{font-size:16px;margin-bottom:8px}
+  #view-setup input[type="text"],#view-setup select{min-height:46px;padding-top:10px;padding-bottom:10px}
+  #view-setup .clinic-menu,#view-setup .doctor-menu,#view-setup .nurse-menu{max-height:min(280px,35dvh);margin-top:8px}
+  #view-setup .clinic-option,#view-setup .doctor-option,#view-setup .nurse-option{font-size:16px;min-height:44px;padding:8px 10px}
+  #view-setup #setupRoomChange{font-size:13px;padding:6px 10px;margin-bottom:8px}
+  #view-nurse{padding-bottom:12px}
+  #view-nurse>header{padding:10px 12px}
+  #view-nurse>header h1{font-size:16px}
+  #view-nurse>.p-4{padding:10px}
+  #view-nurse>.p-4>.bg-white{padding:10px;margin-bottom:8px}
+  #view-nurse #nursingCurrentPeriod{padding:10px;margin-bottom:8px}
+  #view-nurse #panelClinic,#view-nurse #panelDoctor{font-size:15px}
+  #view-nurse #nursingCurrentPeriod>p{font-size:12px}
+  #view-nurse #wheel{height:160px;overflow-anchor:none}
+  #view-nurse .wheel-control-row{grid-template-columns:minmax(0,1fr) 92px;gap:8px}
+  #view-nurse .wheel-no-show-btn{min-height:64px;padding:8px}
+  #view-nurse #nurseQueueControls>.grid{margin-top:8px;gap:8px}
+  #view-nurse #plusBtn,#view-nurse #minusBtn{padding:9px;font-size:26px;min-height:48px}
+  #view-nurse #missedTurnsCard{padding:8px;margin-bottom:8px}
+  #view-nurse #missedTurnsCard>div:first-child{margin-bottom:5px}
+  #view-nurse #missedTurnsCard h2{font-size:14px}
+  #view-nurse #missedTurnsCard p{font-size:11px;line-height:1.4}
+  #view-nurse #missedTurnsEmpty{padding:5px;font-size:12px}
+  #view-nurse #missedTurnsList{max-height:88px;overflow-y:auto;overscroll-behavior:contain}
+  #view-nurse #recallPanel{padding:8px;margin-bottom:8px}
+  #view-nurse #recallPanel button{padding:9px;min-height:44px;font-size:13px}
+  #view-nurse #nurseBookingStatus{padding:6px 10px;font-size:13px}
+  #view-nurse #nurseBookingClose{margin-top:6px;padding:10px;font-size:14px;min-height:44px}
+  #view-nurse .statusBtn{padding:7px;font-size:13px;min-height:48px}
+  #view-nurse #nurseMeta{font-size:10px;margin-top:6px}
+  #view-nurse>.p-4>.bg-white>h2{font-size:14px;margin-bottom:6px}
+  #view-nurse>.p-4>.grid{margin-top:8px}
+}
 </style>
 </head>
 <body>
@@ -7106,8 +7167,8 @@
 ============================================================ -->
 <section id="view-setup" class="hidden-view min-h-screen flex items-center justify-center p-5">
   <div class="w-full max-w-lg bg-white rounded-3xl shadow-xl shadow-slate-300/40">
-    <div class="text-white px-6 py-5 rounded-t-3xl" style="background:var(--navy)">
-<img src="logo.png" alt="مجمع الإصلاح الطبي" class="setup-entry-logo" onerror="this.style.display='none'">
+    <div class="setup-entry-head">
+<div class="setup-logo-frame"><img src="logo.png" alt="مجمع الإصلاح الطبي" class="site-login-logo" onerror="this.style.display='none'"></div>
             <h1 class="text-2xl font-bold">غرفة تحكم التمريض</h1><p class="mt-1 text-sm">بيانات الفترة الحالية</p>
     </div>
 
@@ -7235,10 +7296,11 @@
       <details class="mt-2 border-t border-slate-100 pt-2">
         <summary class="text-sm font-bold cursor-pointer text-slate-600">خيارات العيادة</summary>
         <div class="flex flex-wrap gap-2 mt-2">
-          <button id="editSetupBtn" class="text-sm px-3 py-2 rounded-lg bg-slate-100 text-slate-600 font-bold">تعديل البيانات الحالية</button>
-          <button id="startSessionBtn" class="text-sm px-3 py-2 rounded-lg text-white font-bold" style="background:var(--teal)">بدء فترة جديدة</button>
+          <button title="تغيير البيانات مع الاحتفاظ بالأدوار والفائت وحالة الحجز" id="editSetupBtn" class="text-sm px-3 py-2 rounded-lg bg-slate-100 text-slate-600 font-bold">تعديل البيانات الحالية</button>
+          <button title="بدء فترة جديدة وتصفير الأدوار والفائت وإلغاء قفل الحجز" id="startSessionBtn" class="text-sm px-3 py-2 rounded-lg text-white font-bold" style="background:var(--teal)">بدء فترة جديدة</button>
           <button id="nursingAddRoomBtn" type="button" class="text-sm px-3 py-2 rounded-lg bg-slate-100 text-slate-600 font-bold" style="display:none">إضافة حجرة ثانية (اختياري)</button>
         </div>
+        <p class="nursing-period-help">تعديل البيانات: يحافظ على الأدوار والفائت والحجز.<br>فترة جديدة: يصفّر الأدوار والفائت ويلغي قفل الحجز.</p>
       </details>
     </div>
 
@@ -8380,7 +8442,15 @@ function renderBookingStatus(){
   const nurseButton = $("#nurseBookingClose");
   if(nurseButton){
     const nurseClosed = bookingStateForToday(DISPLAY_SLOT_ID).closed === true;
-    nurseButton.disabled = nurseClosed || bookingBusy || !bookingLoaded || !firebaseConnected || !canControlCurrentRoom();
+    const controlReady = canControlCurrentRoom();
+    nurseButton.disabled = nurseClosed || bookingBusy || !bookingLoaded || !firebaseConnected || !controlReady;
+    const reason = !firebaseConnected ? "لا يوجد اتصال بالخادم؛ سيُتاح قفل الحجز عند عودة الاتصال." : !bookingLoaded ? "جارٍ تحميل حالة الحجز؛ انتظر قليلًا." : !controlReady ? "يلزم اكتمال استلام الفترة باسمك قبل قفل الحجز." : "";
+    const message = $("#nurseBookingMessage");
+    if(message && !bookingBusy && !nurseClosed){
+      if(reason){ message.textContent = reason;message.dataset.bookingReason = "true"; }
+      else if(message.dataset.bookingReason === "true"){ message.textContent = "";delete message.dataset.bookingReason; }
+    }
+    nurseButton.title = reason;
     nurseButton.textContent = bookingBusy
       ? "جارٍ حفظ حالة الحجز..."
       : nurseClosed
@@ -8873,7 +8943,17 @@ function fitTvText(){
     [name,doctor,card.querySelector(".queue-number-label"),card.querySelector(".queue-number")].forEach(el=>{
       el.style.removeProperty("font-size");
       // Keep the queue number at its responsive CSS size.
-      if(el === card.querySelector(".queue-number")) return;
+      if(el === card.querySelector(".queue-number")){
+        if(tv.classList.contains("tv-paged") && card.dataset.hasMissed === "true"){
+          const box = el.parentElement;
+          const label = card.querySelector(".queue-number-label");
+          const badge = box.querySelector(".booking-badge");
+          const space = box.clientHeight - label.offsetHeight - (badge && badge.getClientRects().length ? badge.offsetHeight : 0) - 12;
+          const size = parseFloat(getComputedStyle(el).fontSize);
+          if(space > 0 && el.scrollHeight > space) el.style.setProperty("font-size",Math.max(32,size*space/el.scrollHeight) + "px","important");
+        }
+        return;
+      }
       const original = parseFloat(getComputedStyle(el).fontSize);
       let availableWidth = el.clientWidth;
       if(el === doctor){
@@ -10175,6 +10255,7 @@ function rememberNursingRoom(data,nurse){
   const clinic = directorySpecialties().find(item=>item.name === (data.clinicName || data.specialty));
   setupData = {clinicId:clinic?.id || "",clinicName:data.clinicName || data.specialty,doctor:data.doctor,nurse,operationalDayKey:operationalDayKey()};
   sessionStorage.setItem(SETUP_KEY,JSON.stringify(setupData));
+  renderBookingStatus();
 }
 function renderNursingRoomSwitch(){
   const wrap = $("#nursingRoomSwitch");
@@ -12502,6 +12583,7 @@ clinicRef.on("value", (snap) => {
   const changed = lastSeen !== null && lastSeen !== state.current;
   lastSeen = state.current;
   renderAll(changed);
+  renderBookingStatus();
   if((location.hash || "") === "#/nurse") {
     const entry = currentNursingIdentity();
     if(entry && (Number(d.sessionStart || 0) !== entry.sessionStart || !periodIsCurrent(d))){
@@ -12551,6 +12633,7 @@ function renderAll(numberChanged){
   $("#ptLocation").textContent = state.location;
   $("#ptDoctor").textContent   = doctorDisplayFromData(state);
   $("#ptNumber").textContent   = state.status === "finished" ? "انتهت" : closed ? "—" : ar(state.displayCurrent);
+  $("#ptNumber").classList.toggle("is-recalled-number", state.recallMode && !closed);
   $("#ptNumber").classList.toggle("text-8xl", state.status !== "finished");
   $("#ptNumber").classList.toggle("text-4xl", state.status === "finished");
   paintStatus($("#ptStatus"), state.status, false);
@@ -12752,7 +12835,7 @@ const ITEM_H = 80;
 let wheelReady = false, suppressWrite = false, writeTimer = null, settleTimer = null;
 
 (function buildWheel(){
-  const pad = (240 - ITEM_H) / 2;
+  const pad = Math.max(0, ((wheel.clientHeight || 240) - ITEM_H) / 2);
   let html = '<div style="height:' + pad + 'px"></div>';
   for(let i = 0; i <= MAX_NUMBER; i++) html += '<div class="wheel-item" data-n="' + i + '">' + ar(i) + '</div>';
   html += '<div style="height:' + pad + 'px"></div>';
@@ -12760,6 +12843,11 @@ let wheelReady = false, suppressWrite = false, writeTimer = null, settleTimer = 
   wheelReady = true;
 })();
 
+new ResizeObserver(()=>{
+  const pad = Math.max(0,(wheel.clientHeight - ITEM_H)/2);
+  if(wheel.firstElementChild) wheel.firstElementChild.style.height = pad + "px";
+  if(wheel.lastElementChild) wheel.lastElementChild.style.height = pad + "px";
+}).observe(wheel);
 function wheelValue(){ return Math.round(wheel.scrollTop / ITEM_H); }
 
 function highlight(){
