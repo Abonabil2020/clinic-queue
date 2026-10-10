@@ -6963,6 +6963,32 @@
 #view-tv.tv-paged .queue-status,
 #view-tv.tv-individual .queue-status{grid-column:2!important;grid-row:1!important;justify-self:end!important}
 </style>
+<style>
+/* Only compact the nursing control layout on mobile; keep the wheel behavior and numeral size. */
+#view-nurse .nursing-status-booking-group{display:contents}
+@media(max-width:640px){
+  #view-nurse .nursing-queue-card{padding:8px!important;margin-bottom:8px!important}
+  #view-nurse .nursing-queue-card>div:first-child{margin-bottom:5px}
+  #view-nurse .nursing-displayed-turn{padding:5px 10px;margin-bottom:6px}
+  #view-nurse #wheel{height:128px}
+  #view-nurse #nurseQueueControls>.grid{margin-top:6px;gap:8px}
+  #view-nurse #missedTurnsCard{padding:6px 8px;margin-bottom:6px}
+  #view-nurse #missedTurnsCard>div:first-child{margin-bottom:4px}
+  #view-nurse #missedTurnsCount{min-width:26px;height:26px;padding-inline:6px}
+  #view-nurse #missedTurnsEmpty{padding:3px 0;line-height:1.4}
+  #view-nurse #missedTurnsList{max-height:98px;gap:6px}
+  #view-nurse #missedTurnsList .missed-turn-chip{min-width:50px;height:46px;font-size:19px}
+  #view-nurse .nursing-status-booking-group{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:10px;margin-bottom:8px;background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(15,23,42,.08);align-items:start}
+  #view-nurse .nursing-status-booking-group>div{min-width:0;padding:0;margin:0;background:transparent;box-shadow:none;border-radius:0}
+  #view-nurse .nursing-status-box>h2{font-size:14px;margin-bottom:6px}
+  #view-nurse .nursing-status-box>.grid{gap:4px}
+  #view-nurse .nursing-status-box .statusBtn{min-height:48px;padding:6px 3px;font-size:12px}
+  #view-nurse #nurseBookingStatus{min-height:28px;padding:4px 6px;font-size:12px}
+  #view-nurse #nurseBookingClose{min-height:48px;margin-top:6px;padding:6px 8px;font-size:13px;line-height:1.35}
+  #view-nurse #nurseBookingMessage:empty{display:none}
+  #view-nurse #nurseMeta{margin-top:5px;font-size:10px;line-height:1.4}
+}
+</style>
 </head>
 <body>
 <div id="networkStatusIndicator" class="network-status-indicator" role="status" aria-live="polite">
@@ -7325,7 +7351,7 @@
       <p id="panelDoctor" class="text-sky-700 font-bold text-base mt-1">—</p>
       <p class="text-sm text-slate-500 mt-1">التمريض: <span id="panelNurse">—</span></p>
       <div id="nursingRoomSwitch" class="flex flex-wrap gap-2 mt-2" style="display:none"></div>
-      <details open class="mt-2 border-t border-slate-100 pt-2">
+      <details class="mt-2 border-t border-slate-100 pt-2">
         <summary class="text-sm font-bold cursor-pointer text-slate-600">خيارات العيادة</summary>
         <div class="flex flex-wrap gap-2 mt-2">
           <button title="تغيير البيانات مع الاحتفاظ بالأدوار والفائت وحالة الحجز" id="editSetupBtn" class="text-sm px-3 py-2 rounded-lg bg-slate-100 text-slate-600 font-bold">تعديل البيانات الحالية</button>
@@ -7338,13 +7364,13 @@
     </div>
 
     <!-- البكرة -->
-    <div class="bg-white rounded-2xl shadow-sm p-4 mb-4">
+    <div class="nursing-queue-card bg-white rounded-2xl shadow-sm p-4 mb-4">
       <div class="flex items-center justify-between mb-2">
         <h2 class="font-bold">رقم الدور الحالي</h2>
         <span id="syncBadge" class="text-xs px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700">متصل</span>
       </div>
 
-      <div class="mb-3 px-3 py-2.5 rounded-xl bg-sky-50 border border-sky-100 flex items-center justify-between gap-3">
+      <div class="nursing-displayed-turn mb-3 px-3 py-2.5 rounded-xl bg-sky-50 border border-sky-100 flex items-center justify-between gap-3">
         <span class="text-xs font-bold text-slate-600">المعروض الآن على الشاشات</span>
         <strong id="nurseDisplayedNumber" class="num text-2xl font-bold text-sky-700">—</strong>
       </div>
@@ -7357,7 +7383,6 @@
         <div class="flex items-center justify-between gap-3 mb-3">
           <div>
             <h2 class="font-bold">الأدوار الفائتة</h2>
-            <p class="text-xs text-slate-500 mt-1">تظهر هنا الأرقام التي سجّلها التمريض «لم يحضر» — اضغط على الرقم لإعادة استدعائه</p>
           </div>
           <span id="missedTurnsCount" class="shrink-0 min-w-8 h-8 px-2 rounded-full bg-orange-100 text-orange-700 font-bold flex items-center justify-center num">٠</span>
         </div>
@@ -7403,15 +7428,16 @@
       </div>
     </div>
 
+    <div class="nursing-status-booking-group">
     <!-- قفل الحجز -->
-    <div class="bg-white rounded-2xl shadow-sm p-4 mb-4">
+    <div class="nursing-booking-box bg-white rounded-2xl shadow-sm p-4 mb-4">
       <div id="nurseBookingStatus" class="booking-badge" aria-live="polite"></div>
       <button id="nurseBookingClose" type="button" class="booking-button" disabled>جارٍ تحميل حالة الحجز...</button>
       <p id="nurseBookingMessage" class="text-xs mt-2" role="status"></p>
     </div>
 
     <!-- الحالة -->
-    <div class="bg-white rounded-2xl shadow-sm p-4">
+    <div class="nursing-status-box bg-white rounded-2xl shadow-sm p-4">
       <h2 class="font-bold mb-3">حالة العيادة</h2>
       <div class="grid grid-cols-3 gap-2">
         <button data-status="active"   class="statusBtn py-3 rounded-xl bg-slate-100 text-sm font-bold">🟢<br>تعمل</button>
@@ -7419,6 +7445,7 @@
         <button data-status="finished" class="statusBtn py-3 rounded-xl bg-slate-100 text-sm font-bold">🔴<br>إنهاء</button>
       </div>
       <p class="text-xs text-slate-500 mt-3" id="nurseMeta"></p>
+    </div>
     </div>
 
     <div class="grid grid-cols-2 gap-2 mt-4 text-center text-xs">
