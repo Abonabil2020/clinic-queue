@@ -7334,7 +7334,7 @@
 
         </div>
         <div id="nursingPeriodPreview" class="mb-4 p-3 rounded-xl bg-sky-50" hidden></div>
-        <div data-setup-step="4" hidden><p class="text-sm text-slate-600 mb-3">راجع بيانات العيادة قبل الدخول إلى لوحة الأدوار</p><div id="setupReview" class="setup-wizard-review"></div></div>
+        <div data-setup-step="4" hidden><p id="setupReviewTitle" class="mb-2" style="font-weight:700;color:#334155">البيانات الجديدة قبل الحفظ</p><p id="setupReviewHint" class="text-sm text-slate-600 mb-3">راجع البيانات التالية؛ لم يتم حفظها بعد.</p><div id="setupReview" class="setup-wizard-review"></div></div>
       </div>
       <p id="setupMsg" class="text-red-600 text-sm mb-3 min-h-[20px]"></p>
 
@@ -10486,10 +10486,31 @@ function renderNursingSetup(){
   $("#setupRoomChange").textContent = "حجرة " + DISPLAY_SLOT_ID + " — تغيير الحجرة";
   $("#setupWizardBack").hidden = !ready || setupWizardStep <= (takeover ? 3 : 1);
   const preview = $("#nursingPeriodPreview");preview.hidden = !existing;
-  preview.textContent = existing ? "حجرة " + DISPLAY_SLOT_ID + " — " + (nursingPeriod.clinicName || nursingPeriod.specialty) + " — " + doctorDisplayFromData(nursingPeriod) + " — التمريض الحالي: " + (nursingPeriod.nurse || "—") + " — الدور: " + ar(nursingPeriod.displayCurrent ?? nursingPeriod.current ?? 0) + " — الحالة: " + ({active:"تعمل",break:"استراحة",finished:"انتهت"}[nursingPeriod.status] || nursingPeriod.status) : "";
+  preview.replaceChildren();
+  if(existing){
+    const heading = document.createElement("div");
+    heading.textContent = "بيانات العيادة الحالية المسجلة";
+    heading.style.cssText = "font-weight:700;color:#334155;margin-bottom:8px";
+    preview.appendChild(heading);
+    const currentEntries = [
+      "الحجرة: " + DISPLAY_SLOT_ID,
+      "التخصص: " + (nursingPeriod.clinicName || nursingPeriod.specialty || "—"),
+      "الطبيب: " + doctorDisplayFromData(nursingPeriod),
+      "التمريض الحالي: " + (nursingPeriod.nurse || "—"),
+      "الدور الحالي: " + ar(nursingPeriod.displayCurrent ?? nursingPeriod.current ?? 0) + " — الحالة: " + ({active:"تعمل",break:"استراحة",finished:"انتهت"}[nursingPeriod.status] || nursingPeriod.status)
+    ];
+    currentEntries.forEach(text=>{
+      const row = document.createElement("div");
+      row.textContent = text;
+      row.style.color = "#475569";
+      preview.appendChild(row);
+    });
+  }
   const captions = {1:"١ من ٤ — اختر التخصص",2:"٢ من ٤ — اختر الطبيب",3:"٣ من ٤ — اختر اسمك",4:"٤ من ٤ — راجع البيانات وأكد الدخول"};
   $("#setupStepCaption").textContent = !selected ? "اختر الحجرة أولًا" : !ready ? "جاري قراءة بيانات الحجرة..." : takeover ? (setupWizardStep === 3 ? "اختر اسمك لاستلام الفترة الحالية" : "راجع الفترة الحالية وأكد الدخول") : captions[setupWizardStep];
   if(setupWizardStep === 4){
+    $("#setupReviewTitle").textContent = takeover ? "بيانات استلام العيادة قبل التأكيد" : nursingSetupMode === "edit" ? "البيانات المعدلة قبل الحفظ" : "بيانات الفترة الجديدة قبل الحفظ";
+    $("#setupReviewHint").textContent = takeover ? "راجع بيانات العيادة واسم التمريض الذي سيستلمها قبل الضغط على تأكيد." : existing ? "البيانات التالية لم تحفظ بعد. ستعتمد بدل البيانات الحالية بالأعلى عند الضغط على الحفظ." : "راجع البيانات التالية؛ لم يتم حفظها بعد.";
     const review = $("#setupReview");review.replaceChildren();
     const entries = ["الحجرة: " + DISPLAY_SLOT_ID,"التخصص: " + (takeover ? nursingPeriod.clinicName || nursingPeriod.specialty : $("#setupClinicSearch").value),"الطبيب: " + (takeover ? doctorDisplayFromData(nursingPeriod) : $("#setupDoctorSearch").value),"التمريض: " + $("#setupNurse").value];
     entries.forEach(text=>{const row=document.createElement("div");row.textContent=text;review.appendChild(row);});
