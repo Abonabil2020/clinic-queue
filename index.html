@@ -6995,6 +6995,7 @@
 #view-tv .queue-card[data-waiting="true"] .queue-number{font-size:clamp(18px,2.8vh,64px)!important;line-height:1.3!important;white-space:normal!important;overflow-wrap:anywhere!important;max-width:100%;text-align:center}
 #view-tv.tv-individual .queue-card[data-waiting="true"] .queue-number{font-size:clamp(24px,4vh,80px)!important}
 /* Waiting and finished presentation only; preserve the existing card geometry. */
+#view-tv .queue-card[data-has-doctor="true"] .queue-card-title{background:linear-gradient(135deg,#991b1b,#dc2626)!important}
 #view-tv .queue-card[data-waiting="true"] .queue-number-box{background:#fff3f3!important;border-color:#efd0d2!important;justify-content:center!important;gap:clamp(4px,.6vh,12px)!important}
 #view-tv .queue-card[data-waiting="true"] .queue-number-label{display:none!important}
 #view-tv .queue-card[data-waiting="true"] .queue-number{color:#b15b61!important;margin:0!important;padding:clamp(6px,.8vh,14px)!important;box-sizing:border-box!important}
@@ -7003,10 +7004,10 @@
 #view-tv .queue-card[data-waiting="true"] .queue-status-dot{background:#bd777c!important;animation:none!important}
 #view-tv .queue-card[data-status="idle"][data-waiting="false"] .queue-number{font-size:clamp(18px,2.8vh,64px)!important;line-height:1.3!important;color:#64748b!important;text-align:center!important;white-space:normal!important}
 #view-tv .queue-card[data-status="idle"][data-waiting="false"] .queue-number-label{display:none!important}
-#view-tv .queue-card[data-status="finished"] .queue-number-box{background:#a85f65!important;border-color:#98545a!important;justify-content:center!important}
+#view-tv .queue-card[data-status="finished"] .queue-number-box{background:#fbe7e8!important;border-color:#ebc3c6!important;justify-content:center!important}
 #view-tv .queue-card[data-status="finished"] .queue-number-label{display:none!important}
-#view-tv .queue-card[data-status="finished"] .queue-number{color:#fff!important;font-size:clamp(20px,3.2vh,72px)!important;line-height:1.25!important;text-align:center!important;white-space:normal!important;padding:clamp(8px,1vh,18px)!important;margin:0!important;box-sizing:border-box!important}
-#view-tv .queue-card[data-status="finished"] .queue-number::before{content:"";display:block;width:1.4em;height:1.4em;margin:0 auto .2em;background:url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIyLjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHBhdGggZD0iTTkgMjhWNGgxN3YyNE03IDI4aDIxIi8+PHBhdGggZD0iTTEyIDdoMTF2MjFIMTJ6Ii8+PGNpcmNsZSBjeD0iMjAiIGN5PSIxOCIgcj0iMSIgZmlsbD0id2hpdGUiIHN0cm9rZT0ibm9uZSIvPjxwYXRoIGQ9Ik0yIDE3aDdNNSAxM2w0IDQtNCA0Ii8+PC9zdmc+") center/contain no-repeat}
+#view-tv .queue-card[data-status="finished"] .queue-number{color:#b15b61!important;font-size:clamp(20px,3.2vh,72px)!important;line-height:1.25!important;text-align:center!important;white-space:normal!important;padding:clamp(8px,1vh,18px)!important;margin:0!important;box-sizing:border-box!important}
+#view-tv .queue-card[data-status="finished"] .queue-number::before{content:"";display:block;width:1.4em;height:1.4em;margin:0 auto .2em;background:url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYjE1YjYxIiBzdHJva2Utd2lkdGg9IjIuMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNOSAyOFY0aDE3djI0TTcgMjhoMjEiLz48cGF0aCBkPSJNMTIgN2gxMXYyMUgxMnoiLz48Y2lyY2xlIGN4PSIyMCIgY3k9IjE4IiByPSIxIiBmaWxsPSIjYjE1YjYxIiBzdHJva2U9Im5vbmUiLz48cGF0aCBkPSJNMiAxN2g3TTUgMTNsNCA0LTQgNCIvPjwvc3ZnPg==") center/contain no-repeat}
 #view-tv.tv-individual .queue-card[data-status="finished"] .queue-number{font-size:clamp(28px,4.5vh,90px)!important}
 #view-nurse #wheel .wheel-item[data-waiting="true"],#view-nurse #nurseDisplayedNumber[data-waiting="true"]{color:#b15b61!important}
 
@@ -8942,6 +8943,7 @@ function updateQueueCard(room, data){
   const doctor = doctorDisplayFromData(data);
 
   card.dataset.clinicName = clinicName;
+  card.dataset.hasDoctor = doctor && doctor !== "—" && doctor !== "لا يوجد طبيب مسجل" ? "true" : "false";
   card.dataset.status = status;
   card.dataset.recall = recallMode ? "true" : "false";
   card.dataset.waiting = waitingAtZero ? "true" : "false";
