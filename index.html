@@ -6959,7 +6959,7 @@
 #view-tv.tv-paged .queue-card-body,
 #view-tv.tv-individual .queue-card-body{grid-template-columns:minmax(0,1fr) auto!important}
 #view-tv.tv-paged .queue-doctor,
-#view-tv.tv-individual .queue-doctor{grid-column:1!important;grid-row:1!important;width:100%!important;justify-content:center!important;min-height:1.25em!important}
+#view-tv.tv-individual .queue-doctor{grid-column:1 / -1!important;grid-row:1!important;width:100%!important;max-width:calc(100% - 2 * var(--doctor-edge-clearance,16px))!important;justify-self:center!important;justify-content:center!important;text-align:center!important;padding-inline:clamp(10px,.8vw,22px)!important;box-sizing:border-box!important;min-height:1.25em!important}
 #view-tv.tv-paged .queue-status,
 #view-tv.tv-individual .queue-status{grid-column:2!important;grid-row:1!important;justify-self:end!important}
 </style>
@@ -8990,6 +8990,13 @@ function fitTvText(){
         return;
       }
       const original = parseFloat(getComputedStyle(el).fontSize);
+      if(el === doctor){
+        // Reserve equal space on both sides so the name stays at the card's center.
+        const dr = doctor.getBoundingClientRect(), sr = status.getBoundingClientRect();
+        const overlapsRow = dr.top < sr.bottom && dr.bottom > sr.top;
+        const clearance = overlapsRow ? Math.max(16, Math.ceil(sr.width + 12)) : 16;
+        doctor.style.setProperty("--doctor-edge-clearance", clearance + "px");
+      }
       let availableWidth = el.clientWidth;
       if(el === doctor){
         // Fit the doctor's name by its own width; an auto-sized grid row is not a height limit.
