@@ -6959,7 +6959,7 @@
 #view-tv.tv-paged .queue-card-body,
 #view-tv.tv-individual .queue-card-body{grid-template-columns:minmax(0,1fr) auto!important}
 #view-tv.tv-paged .queue-doctor,
-#view-tv.tv-individual .queue-doctor{grid-column:1!important;grid-row:1!important;width:100%!important;justify-content:center!important}
+#view-tv.tv-individual .queue-doctor{grid-column:1!important;grid-row:1!important;width:100%!important;justify-content:center!important;min-height:1.25em!important}
 #view-tv.tv-paged .queue-status,
 #view-tv.tv-individual .queue-status{grid-column:2!important;grid-row:1!important;justify-self:end!important}
 </style>
@@ -8976,6 +8976,7 @@ function fitTvText(){
     name.style.setProperty("max-width", Math.max(1,title.clientWidth - clearance * 2) + "px", "important");
     [name,doctor,card.querySelector(".queue-number-label"),card.querySelector(".queue-number")].forEach(el=>{
       el.style.removeProperty("font-size");
+      if(el === doctor) el.style.removeProperty("white-space");
       // Keep the queue number at its responsive CSS size.
       if(el === card.querySelector(".queue-number")){
         if(tv.classList.contains("tv-paged")){
@@ -8991,10 +8992,18 @@ function fitTvText(){
       const original = parseFloat(getComputedStyle(el).fontSize);
       let availableWidth = el.clientWidth;
       if(el === doctor){
-        const dr = el.getBoundingClientRect(), sr = status.getBoundingClientRect();
-        if(dr.top < sr.bottom && dr.bottom > sr.top){
-          availableWidth = Math.min(availableWidth, Math.max(dr.right-sr.right,sr.left-dr.left)-16);
+        // Fit the doctor's name by its own width; an auto-sized grid row is not a height limit.
+        if(availableWidth <= 0 || !Number.isFinite(original) || original <= 0) return;
+        let low = Math.min(original, Math.max(16, original * .65)), high = original;
+        for(let i=0;i<12;i++){
+          const size = (low + high) / 2;
+          el.style.setProperty("font-size", size + "px", "important");
+          if(el.scrollWidth <= availableWidth + 1) low = size;
+          else high = size;
         }
+        el.style.setProperty("font-size", low + "px", "important");
+        el.style.setProperty("white-space", el.scrollWidth > availableWidth + 1 ? "normal" : "nowrap", "important");
+        return;
       }
       const availableHeight = el === name
         ? title.clientHeight - 8
