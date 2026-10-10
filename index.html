@@ -6989,6 +6989,12 @@
   #view-nurse #nurseMeta{margin-top:5px;font-size:10px;line-height:1.4}
 }
 </style>
+<style>
+/* Waiting at zero only: readable text in the existing number areas. */
+#view-nurse #wheel .wheel-item[data-waiting="true"]{font-size:clamp(15px,4vw,22px)!important;line-height:1.3;padding-inline:10px;box-sizing:border-box;text-align:center}
+#view-tv .queue-card[data-waiting="true"] .queue-number{font-size:clamp(18px,2.8vh,64px)!important;line-height:1.3!important;white-space:normal!important;overflow-wrap:anywhere!important;max-width:100%;text-align:center}
+#view-tv.tv-individual .queue-card[data-waiting="true"] .queue-number{font-size:clamp(24px,4vh,80px)!important}
+</style>
 </head>
 <body>
 <div id="networkStatusIndicator" class="network-status-indicator" role="status" aria-live="polite">
@@ -8114,7 +8120,12 @@ const ROOM_ACCOUNTS = [
   { roomId:"109", username:"109", email:"room109@islah.clinic" }
 ];
 
-const requestedRoom = new URLSearchParams(location.search).get("room");
+const NURSING_RESUME_KEY = "islahNursingResume:" + location.pathname;
+let nursingResume = null;
+try { nursingResume = JSON.parse(localStorage.getItem(NURSING_RESUME_KEY) || "null"); } catch(e) {}
+const explicitRoom = new URLSearchParams(location.search).get("room");
+let nursingResumePending = Boolean(nursingResume && nursingResume.view === "nurse" && ["", "#/home", "#/nurse"].includes(location.hash) && (!explicitRoom || explicitRoom === nursingResume.roomId));
+const requestedRoom = explicitRoom || (nursingResumePending ? nursingResume.roomId : null);
 const DISPLAY_SLOT_ID = ROOM_OPTIONS.some(room=>room.id === requestedRoom) ? requestedRoom : "311";
 const CURRENT_ROOM = ROOM_OPTIONS.find(room=>room.id === DISPLAY_SLOT_ID);
 
@@ -8908,12 +8919,14 @@ function updateQueueCard(room, data){
   const displayCurrent = typeof data.displayCurrent === "number" ? data.displayCurrent : current;
   const recallMode = Boolean(data.recallMode && typeof data.recallNumber === "number");
   const closed = status === "finished" || status === "idle";
+  const waitingAtZero = displayCurrent === 0 && status !== "finished" && status !== "break";
   const clinicName = data.clinicName || data.specialty || room.place;
   const doctor = doctorDisplayFromData(data);
 
   card.dataset.clinicName = clinicName;
   card.dataset.status = status;
   card.dataset.recall = recallMode ? "true" : "false";
+  card.dataset.waiting = waitingAtZero ? "true" : "false";
   card.querySelector(".queue-clinic-name").textContent = clinicName;
   card.querySelector(".queue-doctor").textContent = doctor;
   const finished = status === "finished";
@@ -8929,7 +8942,7 @@ function updateQueueCard(room, data){
     : recallMode
       ? "إعادة نداء دور فائت"
       : "الكشف الحالي بالداخل";
-  card.querySelector(".queue-number").textContent = finished ? "انتهت العيادة" : closed ? "—" : ar(displayCurrent);
+  card.querySelector(".queue-number").textContent = finished ? "انتهت العيادة" : waitingAtZero ? "في انتظار بدء العيادة" : closed ? "—" : ar(displayCurrent);
 
   /* ملخص الأدوار الفائتة داخل كارت العيادة على شاشة العرض */
   const publicMissed = Object.entries(data.missedTurns || {})
@@ -9800,12 +9813,14 @@ function show(v){
   $("#view-" + v).classList.remove("hidden-view");
   document.title = pageTitleForView(v);
   syncAllClinicsListenerForView(v);
+  if(v === "nurse") saveNursingResume();
 
   if(v === "tv" && Object.keys(receptionClinicsData).length){
     renderTvDashboardFromClinics(receptionClinicsData, false);
   }
 }
 function route(){
+  if(restoreNursingResume()) return;
   const h = (location.hash || "#/home").replace("#/","");
   syncAdminRoomControls();
   if(h === "home")      { show("home"); }
@@ -9866,7 +9881,10 @@ function route(){
   else if(h === "setup" || !setupData){ show("setup"); prefillSetup(); }
   else { show("nurse"); }
 }
-window.addEventListener("hashchange", route);
+window.addEventListener("hashchange", ()=>{
+  if(location.hash === "#/home") clearNursingResume();
+  route();
+});
 
 /* ==========================================================
    ④  صفحة إعداد اسم العيادة والطبيب والتمريض
@@ -10301,6 +10319,63 @@ let nursingRoomLoaded = false;
 let nursingLiveSessionStart = 0;
 let nursingRooms = {};
 try { nursingRooms = JSON.parse(sessionStorage.getItem(NURSING_ROOMS_KEY) || "{}"); } catch(e) {}
+function clearNursingResume(){
+  nursingResumePending = false;
+  nursingResume = null;
+  try { localStorage.removeItem(NURSING_RESUME_KEY); } catch(e) {}
+}
+function saveNursingResume(){
+  if(nursingResumePending || (location.hash || "") !== "#/nurse" || !canControlCurrentRoom() || !setupData) return;
+  const identity = currentNursingIdentity();
+  if(!identity) return;
+  nursingResume = {view:"nurse",roomId:DISPLAY_SLOT_ID,uid:auth.currentUser.uid,day:operationalDayKey(),sessionStart:identity.sessionStart,rooms:nursingRooms,setup:setupData,scrollY:window.scrollY,optionsOpen:$("#nursingCurrentPeriod details").open};
+  try { localStorage.setItem(NURSING_RESUME_KEY,JSON.stringify(nursingResume)); } catch(e) {}
+}
+function restoreNursingResume(){
+  if(!nursingResumePending) return false;
+  // Wait for Firebase's restored account before touching the saved nursing identity.
+  if(!nursingAuthReady) return true;
+  const saved = nursingResume;
+  const user = auth.currentUser;
+  if(!user || !saved || saved.uid !== user.uid || saved.day !== operationalDayKey() || saved.roomId !== DISPLAY_SLOT_ID || !nursingRoomAccess()){
+    clearNursingResume(); return false;
+  }
+  const identity = saved.rooms?.[DISPLAY_SLOT_ID];
+  if(!identity || identity.uid !== user.uid || identity.day !== saved.day || identity.sessionStart !== saved.sessionStart || !saved.setup){
+    clearNursingResume(); return false;
+  }
+  if(!nursingRoomLoaded){ show("nurse"); return true; }
+  if(nursingLiveSessionStart !== saved.sessionStart || !periodIsCurrent({...state,sessionStart:nursingLiveSessionStart})){
+    clearNursingResume();
+    sessionStorage.setItem(SETUP_ROOM_STEP_KEY,DISPLAY_SLOT_ID);
+    nursingSetupMode = "enter";
+    location.hash = "#/setup";
+    return false;
+  }
+  nursingRooms = Object.fromEntries(Object.entries(saved.rooms).filter(([id,entry])=>ROOM_OPTIONS.some(room=>room.id === id) && entry.uid === user.uid && entry.day === saved.day));
+  setupData = saved.setup;
+  sessionStorage.setItem(NURSING_ROOMS_KEY,JSON.stringify(nursingRooms));
+  sessionStorage.setItem(SETUP_KEY,JSON.stringify(setupData));
+  sessionStorage.setItem(SETUP_ROOM_STEP_KEY,DISPLAY_SLOT_ID);
+  nursingResumePending = false;
+  const url = new URL(location.href);
+  url.searchParams.set("room",DISPLAY_SLOT_ID); url.hash = "#/nurse";
+  history.replaceState(history.state,"",url.toString());
+  $("#nursingCurrentPeriod details").open = saved.optionsOpen === true;
+  show("nurse"); renderNursingRoomSwitch(); renderBookingStatus();
+  requestAnimationFrame(()=>{
+    if(location.hash === "#/nurse") window.scrollTo(0,Math.max(0,Number(saved.scrollY) || 0));
+    saveNursingResume();
+  });
+  return true;
+}
+document.addEventListener("visibilitychange",()=>{
+  if(document.visibilityState === "hidden") saveNursingResume();
+  else if(nursingResumePending) route();
+});
+window.addEventListener("pagehide",saveNursingResume);
+window.addEventListener("pageshow",()=>{ if(nursingResumePending) route(); });
+
 function nursingRoomAccess(){
   return Boolean(auth.currentUser && (isAdminUser() || auth.currentUser.isAnonymous || authorizedRoomForUser(auth.currentUser) === DISPLAY_SLOT_ID));
 }
@@ -10425,7 +10500,7 @@ async function migrateNursingLogin(){
   if(nursingAuthPending) return;
   nursingAuthPending = true;
   sessionStorage.removeItem(SETUP_ROOM_STEP_KEY);
-  nursingRooms = {}; sessionStorage.removeItem(NURSING_ROOMS_KEY);
+  nursingRooms = {}; sessionStorage.removeItem(NURSING_ROOMS_KEY); clearNursingResume();
   location.hash = "#/setup";
   show("setup");prepareSetupWizard();
   try{
@@ -10728,7 +10803,7 @@ $("#adminSwitchRoomBtn").addEventListener("click", ()=>{
 $("#setupLogoutBtn").addEventListener("click", async ()=>{
   if(!confirm("تسجيل الخروج؟")) return;
   location.hash = "#/home";
-  nursingRooms = {}; sessionStorage.removeItem(NURSING_ROOMS_KEY);
+  nursingRooms = {}; sessionStorage.removeItem(NURSING_ROOMS_KEY); clearNursingResume();
   await auth.signOut();
   route();
 });
@@ -12655,6 +12730,7 @@ clinicRef.on("value", (snap) => {
   lastSeen = state.current;
   renderAll(changed);
   renderBookingStatus();
+  if(nursingResumePending){ route(); return; }
   if((location.hash || "") === "#/nurse") {
     const entry = currentNursingIdentity();
     if(entry && (Number(d.sessionStart || 0) !== entry.sessionStart || !periodIsCurrent(d))){
@@ -12725,7 +12801,7 @@ function renderAll(numberChanged){
   const displayedDoctor = doctorDisplayFromData(state);
   $("#panelDoctor").textContent = displayedDoctor;
   $("#panelNurse").textContent = state.nurse;
-  $("#nurseDisplayedNumber").textContent = state.prepared
+  $("#nurseDisplayedNumber").textContent = state.prepared || (state.displayCurrent === 0 && state.status !== "finished" && state.status !== "break")
     ? "في انتظار بدء العيادة"
     : state.status === "finished"
     ? "انتهت"
@@ -12916,7 +12992,7 @@ let wheelReady = false, suppressWrite = false, writeTimer = null, settleTimer = 
 (function buildWheel(){
   const pad = Math.max(0, ((wheel.clientHeight || 240) - ITEM_H) / 2);
   let html = '<div style="height:' + pad + 'px"></div>';
-  for(let i = 0; i <= MAX_NUMBER; i++) html += '<div class="wheel-item" data-n="' + i + '">' + ar(i) + '</div>';
+  for(let i = 0; i <= MAX_NUMBER; i++) html += '<div class="wheel-item" data-n="' + i + '">' + (i === 0 ? 'في انتظار بدء العيادة' : ar(i)) + '</div>';
   html += '<div style="height:' + pad + 'px"></div>';
   wheel.innerHTML = html;
   wheelReady = true;
@@ -12931,6 +13007,8 @@ function wheelValue(){ return Math.round(wheel.scrollTop / ITEM_H); }
 
 function highlight(){
   const v = wheelValue();
+  const zero = wheel.querySelector('.wheel-item[data-n="0"]');
+  if(zero){ zero.dataset.waiting = state.status === "break" || state.status === "finished" ? "false" : "true"; zero.textContent = zero.dataset.waiting === "true" ? "في انتظار بدء العيادة" : ar(0); }
   wheel.querySelectorAll(".wheel-item").forEach(el=>{
     el.classList.toggle("active", Number(el.dataset.n) === v);
   });
@@ -13286,7 +13364,7 @@ function authorizedRoomForUser(user){
 }
 
 function canControlCurrentRoom(){
-  return isAdminUser() || (nursingRoomAccess() && nursingRoomLoaded && Boolean(currentNursingIdentity()) && currentNursingIdentity().sessionStart === nursingLiveSessionStart);
+  return !nursingResumePending && (isAdminUser() || (nursingRoomAccess() && nursingRoomLoaded && Boolean(currentNursingIdentity()) && currentNursingIdentity().sessionStart === nursingLiveSessionStart));
 }
 
 function openAuthorizedRoom(roomId, hash = "#/setup"){
@@ -13339,7 +13417,7 @@ $("#logoutBtn").addEventListener("click", async ()=>{
   const message = isAdminUser() ? "تسجيل الخروج من حساب الأدمن؟" : "تسجيل الخروج وتسليم الوردية؟";
   if(!confirm(message)) return;
   location.hash = "#/home";
-  nursingRooms = {}; sessionStorage.removeItem(NURSING_ROOMS_KEY);
+  nursingRooms = {}; sessionStorage.removeItem(NURSING_ROOMS_KEY); clearNursingResume();
   await auth.signOut();
   route();
 });
