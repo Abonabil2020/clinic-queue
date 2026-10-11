@@ -1815,6 +1815,16 @@
   }
   #view-staff-manager #staffQuickCloseBtn:disabled{opacity:.45;cursor:not-allowed}
 
+
+  /* Manager list search and scrolling only. */
+  #view-staff-manager .staff-list-search{margin-top:14px;display:grid;gap:6px}
+  #view-staff-manager .staff-list-search label{font-size:13px;font-weight:700;color:#475569}
+  #view-staff-manager .staff-list-search input{font-size:16px}
+  #view-staff-manager .staff-admin-list{max-height:clamp(220px,45vh,440px);max-height:clamp(220px,45dvh,440px);overflow-y:auto;overflow-x:hidden;overscroll-behavior-y:auto;touch-action:pan-y;scrollbar-gutter:stable;padding-inline-end:5px}
+  #view-staff-manager .staff-admin-row{flex-shrink:0}
+  #view-staff-manager .staff-admin-row[hidden],#view-staff-manager .staff-list-search-empty[hidden]{display:none!important}
+  #view-staff-manager .staff-list-search-empty{padding:14px;text-align:center;color:#64748b;font-size:14px}
+
   /* ===== فصل صلاحيات مسؤول العيادات ومسؤول التمريض ===== */
   #view-staff-manager[data-manager-role="clinics_manager"] [data-manager-only="nursing"],
   #view-staff-manager[data-manager-role="nursing_manager"] [data-manager-only="clinics"]{
@@ -7721,7 +7731,12 @@
               <button id="staffSpecialtyCancel" type="button" class="py-2.5 rounded-xl bg-slate-100 text-slate-600 font-bold">إلغاء</button>
             </div>
           </form>
-          <div id="staffSpecialtyList" class="staff-admin-list"></div>
+          <div class="staff-list-search">
+            <label for="staffSpecialtySearch">بحث في التخصصات</label>
+            <input id="staffSpecialtySearch" type="search" class="staff-admin-input" placeholder="اكتب الاسم للبحث…" autocomplete="off" aria-controls="staffSpecialtyList">
+          </div>
+          <div id="staffSpecialtyList" class="staff-admin-list" tabindex="0" aria-label="قائمة التخصصات"></div>
+          <p id="staffSpecialtySearchEmpty" class="staff-list-search-empty" hidden>لا توجد نتائج مطابقة</p>
         </div>
       </section>
 
@@ -7743,7 +7758,12 @@
               <button id="staffDoctorCancel" type="button" class="py-2.5 rounded-xl bg-slate-100 text-slate-600 font-bold">إلغاء</button>
             </div>
           </form>
-          <div id="staffDoctorList" class="staff-admin-list"></div>
+          <div class="staff-list-search">
+            <label for="staffDoctorSearch">بحث في الأطباء</label>
+            <input id="staffDoctorSearch" type="search" class="staff-admin-input" placeholder="اكتب الاسم للبحث…" autocomplete="off" aria-controls="staffDoctorList">
+          </div>
+          <div id="staffDoctorList" class="staff-admin-list" tabindex="0" aria-label="قائمة الأطباء"></div>
+          <p id="staffDoctorSearchEmpty" class="staff-list-search-empty" hidden>لا توجد نتائج مطابقة</p>
         </div>
       </section>
 
@@ -7761,7 +7781,12 @@
               <button id="staffNurseCancel" type="button" class="py-2.5 rounded-xl bg-slate-100 text-slate-600 font-bold">إلغاء</button>
             </div>
           </form>
-          <div id="staffNurseList" class="staff-admin-list"></div>
+          <div class="staff-list-search">
+            <label for="staffNurseSearch">بحث في التمريض</label>
+            <input id="staffNurseSearch" type="search" class="staff-admin-input" placeholder="اكتب الاسم للبحث…" autocomplete="off" aria-controls="staffNurseList">
+          </div>
+          <div id="staffNurseList" class="staff-admin-list" tabindex="0" aria-label="قائمة التمريض"></div>
+          <p id="staffNurseSearchEmpty" class="staff-list-search-empty" hidden>لا توجد نتائج مطابقة</p>
         </div>
       </section>
         </div>
@@ -7773,7 +7798,7 @@
   </div>
   <button id="staffManagerTopBtn" type="button" class="hidden-view" aria-label="العودة إلى أعلى صفحة الإدارة">↑ أعلى الصفحة</button>
   <div id="staffManagerQuickBar" class="hidden-view" aria-label="تحكم سريع في قسم الإدارة">
-    <button id="staffQuickTopBtn" type="button">↑ أعلى</button>
+    <button id="staffQuickTopBtn" type="button">↑ أعلى الصفحة</button>
     <button id="staffQuickCloseBtn" type="button">إغلاق القسم</button>
     <button id="staffQuickApproveBtn" type="button" class="hidden-view" disabled>اعتماد التعديلات</button>
     <span id="staffQuickPendingCount" class="hidden-view num">٠</span>
@@ -11099,6 +11124,8 @@ function staffManagerScrollPosition(){
   );
 }
 function scrollStaffManagerToTop(){
+  const focused = document.activeElement;
+  if(focused && $("#view-staff-manager").contains(focused) && focused.matches("input,select,textarea")) focused.blur();
   /* الرجوع لأول صفحة مسؤول العيادات/التمريض فعليًا، وليس لأول القسم المفتوح فقط */
   document.querySelectorAll(
     "#view-staff-manager .staff-admin-list, #view-staff-manager .staff-manual-pending-list, #view-staff-manager .staff-directory-search-results"
@@ -11109,7 +11136,12 @@ function scrollStaffManagerToTop(){
 
   /* بعض إصدارات Safari داخل التطبيق المستقل لا تستجيب لـ smooth وحده؛
      نحرّك كل حاويات التمرير ثم نؤكد الموضع في الإطارات التالية. */
-  if(view) view.scrollIntoView({behavior:"auto",block:"start"});
+  if(view){
+    for(let container = view; container && container !== document.body; container = container.parentElement){
+      container.scrollTop = 0;
+    }
+    view.scrollIntoView({behavior:"auto",block:"start"});
+  }
   if(scrollingElement?.scrollTo) scrollingElement.scrollTo({top:0,left:0,behavior:"auto"});
   window.scrollTo(0,0);
   document.documentElement.scrollTop = 0;
@@ -12433,6 +12465,26 @@ function createStaffAdminRow(name, meta, active, onEdit, onToggle){
   return row;
 }
 
+function filterStaffAdminList(key, resetScroll = false){
+  const input = $("#staff" + key + "Search");
+  const list = $("#staff" + key + "List");
+  const empty = $("#staff" + key + "SearchEmpty");
+  if(!input || !list || !empty) return;
+  const query = normalizeArabicSearch(input.value.trim());
+  let matches = 0;
+  list.querySelectorAll(".staff-admin-row").forEach(row=>{
+    const text = row.querySelector(".staff-admin-row-main")?.textContent || "";
+    const visible = !query || normalizeArabicSearch(text).includes(query);
+    row.hidden = !visible;
+    if(visible) matches++;
+  });
+  empty.hidden = !query || matches > 0;
+  if(resetScroll) list.scrollTop = 0;
+}
+["Specialty","Doctor","Nurse"].forEach(key=>{
+  $("#staff" + key + "Search").addEventListener("input",()=>filterStaffAdminList(key,true));
+});
+
 function renderStaffManager(){
   if(!$("#staffDirectoryStatus")) return;
   if(typeof updateStaffManagerTopButton === "function") updateStaffManagerTopButton();
@@ -12555,6 +12607,7 @@ function renderStaffManager(){
         }
       ));
     });
+  ["Specialty","Doctor","Nurse"].forEach(key=>filterStaffAdminList(key));
 }
 
 $("#staffSpecialtyForm").addEventListener("submit", event=>{
