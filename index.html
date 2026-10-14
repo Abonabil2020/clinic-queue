@@ -13026,10 +13026,92 @@ function renderMissedTurns(){
     btn.title = item.status === "done" ? "تم الانتهاء من هذا الدور" : (item.status === "recalling" ? "يتم استدعاؤه الآن" : "إعادة استدعاء الدور");
     btn.innerHTML = (item.status === "done" ? "✓ " : item.status === "recalling" ? "↻ " : "") + ar(item.number);
     btn.disabled = isNurseQueueLocked() || item.status === "done" || (state.recallMode && state.recallNumber !== item.number);
-    btn.addEventListener("click", ()=> recallMissedTurn(item.number));
+    btn.addEventListener("click", ()=> openMissedTurnActions(item.number));
     list.appendChild(btn);
   });
   updateNoShowButton(wheelValue());
+}
+
+// اختيارات الرقم الفائت: نافذة مؤقتة للتمريض فقط.
+function openMissedTurnActions(number){
+  if(!canControlCurrentRoom() || isNurseQueueLocked()) return;
+  const item = (state.missedTurns || {})[String(number)];
+  if(!item || item.status === "done") return;
+  if(document.getElementById("missedTurnActions")) return;
+  const roomId = DISPLAY_SLOT_ID;
+  const period = nursingLiveSessionStart;
+  const dialog = document.createElement("dialog");
+  dialog.id = "missedTurnActions";
+  dialog.dir = "rtl";
+  dialog.setAttribute("aria-labelledby", "missedTurnActionsTitle");
+  dialog.style.cssText = "position:fixed;inset:0;margin:auto;width:calc(100% - 32px);max-width:360px;padding:20px;border:1px solid #fed7aa;border-radius:16px;background:white;color:#334155;box-shadow:0 16px 60px #0004;font-family:inherit;text-align:center";
+  const title = document.createElement("h2");
+  title.id = "missedTurnActionsTitle";
+  title.textContent = "الدور رقم " + ar(number);
+  title.style.cssText = "font-size:20px;font-weight:700;margin:0 0 16px";
+  dialog.appendChild(title);
+  const close = ()=> dialog.close();
+  const stillValid = ()=> roomId === DISPLAY_SLOT_ID && period === nursingLiveSessionStart && canControlCurrentRoom() && !isNurseQueueLocked();
+  function addAction(label, background, color, action){
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = label;
+    button.style.cssText = "display:block;width:100%;padding:12px;margin-top:10px;border:0;border-radius:12px;font:inherit;font-weight:700;cursor:pointer;background:" + background + ";color:" + color;
+    button.addEventListener("click", action);
+    dialog.appendChild(button);
+  }
+  addAction("إعادة النداء", "#e0f2fe", "#075985", ()=>{
+    const valid = stillValid();
+    close();
+    if(valid) recallMissedTurn(number);
+  });
+  addAction("إلغاء التسجيل بالغلط", "#fff7ed", "#9a3412", ()=>{
+    const valid = stillValid();
+    close();
+    if(valid) cancelMissedTurn(number);
+  });
+  addAction("إغلاق", "#f1f5f9", "#334155", close);
+  const onRouteChange = ()=> close();
+  dialog.addEventListener("close", ()=>{
+    window.removeEventListener("hashchange", onRouteChange);
+    dialog.remove();
+  }, {once:true});
+  window.addEventListener("hashchange", onRouteChange);
+  document.body.appendChild(dialog);
+  dialog.showModal();
+}
+
+async function cancelMissedTurn(number){
+  if(!canControlCurrentRoom() || isNurseQueueLocked()) return;
+  const item = (state.missedTurns || {})[String(number)];
+  if(!item || item.status === "done") return;
+  const ref = clinicRef;
+  const roomId = DISPLAY_SLOT_ID;
+  const clinicName = state.clinicName;
+  const nurseName = state.nurse;
+  const period = nursingLiveSessionStart;
+  try{
+    const result = await ref.transaction(data=>{
+      if(!data || Number(data.sessionStart || 0) !== period || data.status === "break" || data.status === "finished") return;
+      const saved = (data.missedTurns || {})[String(number)];
+      if(!saved || saved.status === "done" || saved.missedAt !== item.missedAt) return;
+      delete data.missedTurns[String(number)];
+      if(data.recallMode && data.recallNumber === number){
+        data.displayCurrent = typeof data.previousDisplay === "number" ? data.previousDisplay : data.current;
+        data.previousDisplay = null;
+        data.recallMode = false;
+        data.recallNumber = null;
+      }
+      data.updatedAt = firebase.database.ServerValue.TIMESTAMP;
+      return data;
+    }, undefined, false);
+    if(!result.committed) return void flashSync("تغيرت حالة الدور؛ راجع القائمة وحاول مرة أخرى", false);
+    writeAuditLog({action:"cancel_missed", roomId, clinicName, nurseName,
+      summary:"إلغاء تسجيل الدور " + ar(number) + " من الأدوار الفائتة لتسجيله بالغلط"});
+    flashSync("تم إلغاء تسجيل " + ar(number) + " من الفائتة", true);
+  }catch(e){
+    flashSync("تعذّر إلغاء التسجيل، حاول مرة أخرى", false);
+  }
 }
 
 function renderRecallPanel(){
