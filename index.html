@@ -446,8 +446,8 @@
 
 
   /* ===== شاشة الاستقبال — متابعة 12 عيادة ===== */
-  #view-reception{ background:#f1f5f9; }
-  .reception-shell{ max-width:1500px; margin:0 auto; }
+  #view-reception{ background:linear-gradient(145deg,#f5f8fc 0%,#edf3f9 100%); }
+  .reception-shell{ max-width:1700px; margin:0 auto; }
   .reception-toolbar{
     display:flex; flex-wrap:wrap; align-items:center; gap:10px;
     padding:12px; border:1px solid #e2e8f0; border-radius:16px; background:#fff;
@@ -470,39 +470,46 @@
     display:inline-flex; align-items:center; gap:6px; padding:7px 10px; border-radius:999px;
     background:#fff; border:1px solid #e2e8f0; color:#475569; font-size:12px; font-weight:700;
   }
-  .reception-grid{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
+  .reception-grid{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; }
   .reception-clinic-card{
-    width:100%; text-align:right; border:1px solid #e2e8f0; border-radius:16px; background:#fff;
-    overflow:hidden; box-shadow:0 4px 14px rgba(15,23,42,.05); transition:.16s ease;
+    --rc-accent:#64748b; --rc-soft:#f1f5f9; --rc-border:#cbd5e1;
+    position:relative; width:100%; text-align:right; border:1px solid var(--rc-border);
+    border-right:5px solid var(--rc-accent); border-radius:17px; background:#fff;
+    overflow:hidden; box-shadow:0 5px 16px rgba(15,23,42,.065);
+    cursor:pointer; transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease,background .2s ease;
   }
-  .reception-clinic-card:hover{ transform:translateY(-1px); box-shadow:0 7px 20px rgba(15,23,42,.09); }
-  .reception-clinic-card.selected{ border-color:#fb7185; box-shadow:0 0 0 2px rgba(244,63,94,.10),0 7px 20px rgba(15,23,42,.08); }
+  .reception-clinic-card[data-status="active"]{ --rc-accent:#059669; --rc-soft:#e8f8f1; --rc-border:#a7e5c9; }
+  .reception-clinic-card[data-status="break"]{ --rc-accent:#d97706; --rc-soft:#fff6df; --rc-border:#f3d18c; }
+  .reception-clinic-card[data-status="finished"]{ --rc-accent:#e04752; --rc-soft:#fff0f1; --rc-border:#f2b9be; }
+  .reception-clinic-card[data-status="idle"]{ --rc-accent:#64748b; --rc-soft:#f1f5f9; --rc-border:#cbd5e1; }
+  .reception-clinic-card[data-recall="true"]{ --rc-accent:#0284c7; --rc-soft:#eaf7ff; --rc-border:#a8dcf7; }
+  .reception-clinic-card:hover{ transform:translateY(-3px); box-shadow:0 12px 26px rgba(15,23,42,.13); }
+  .reception-clinic-card:focus-visible{ outline:3px solid #38bdf8; outline-offset:3px; }
+  .reception-clinic-card.selected{
+    border-color:var(--rc-accent); border-right-width:7px;
+    box-shadow:0 0 0 3px color-mix(in srgb,var(--rc-accent) 18%,transparent),0 10px 24px rgba(15,23,42,.12);
+    transform:translateY(-2px);
+  }
   .reception-card-head{
     padding:9px 11px; display:flex; align-items:flex-start; justify-content:space-between; gap:8px;
-    background:#f8fafc; border-bottom:1px solid #eef2f7;
+    background:linear-gradient(110deg,#fff 0%,var(--rc-soft) 100%); border-bottom:1px solid var(--rc-border);
   }
   .reception-card-name{ min-width:0; color:#0f172a; font-size:15px; line-height:1.3; font-weight:700; }
-  .reception-room-badge{ flex:0 0 auto; padding:3px 7px; border-radius:7px; background:#e2e8f0; color:#475569; font-size:10px; font-weight:700; }
+  .reception-room-badge{ flex:0 0 auto; padding:4px 8px; border-radius:8px; background:#fff; color:var(--rc-accent); border:1px solid var(--rc-border); font-size:10px; font-weight:700; }
   .reception-card-body{ padding:11px; }
   .reception-doctor{ color:#0f172a; font-size:15px; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .reception-nurse{ margin-top:3px; color:#64748b; font-size:11px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .reception-nurse{ margin-top:6px; padding:6px 9px; border-radius:9px; color:#075985; background:#eff8ff; border:1px solid #d6edfc; font-size:12px; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .reception-card-row{ margin-top:10px; display:grid; grid-template-columns:92px minmax(0,1fr); gap:9px; align-items:center; }
   .reception-current{
     min-height:72px; display:flex; flex-direction:column; align-items:center; justify-content:center;
-    border-radius:12px; background:#f8fafc; border:1px solid #e2e8f0;
+    border-radius:13px; background:var(--rc-soft); border:1px solid var(--rc-border);
   }
-  .reception-current-label{ color:#64748b; font-size:10px; font-weight:700; }
-  .reception-current-number{ margin-top:2px; color:#dc2626; font-size:35px; line-height:1; font-weight:700; }
+  .reception-current-label{ color:#475569; font-size:10px; font-weight:700; }
+  .reception-current-number{ margin-top:2px; color:var(--rc-accent); font-size:37px; line-height:1; font-weight:700; }
   .reception-card-meta{ min-width:0; display:flex; flex-direction:column; align-items:flex-start; gap:6px; }
-  .reception-status-pill{ display:inline-flex; align-items:center; gap:5px; padding:4px 8px; border-radius:999px; font-size:10px; font-weight:700; }
+  .reception-status-pill{ display:inline-flex; align-items:center; gap:5px; padding:5px 9px; border-radius:999px; font-size:11px; font-weight:700; }
   .reception-small-meta{ color:#64748b; font-size:10px; line-height:1.4; }
-  .reception-clinic-card[data-status="active"] .reception-status-pill{ background:#dcfce7; color:#166534; }
-  .reception-clinic-card[data-status="break"] .reception-status-pill{ background:#fef3c7; color:#92400e; }
-  .reception-clinic-card[data-status="finished"] .reception-status-pill{ background:#fee2e2; color:#991b1b; }
-  .reception-clinic-card[data-status="idle"] .reception-status-pill{ background:#f1f5f9; color:#64748b; }
-  .reception-clinic-card[data-recall="true"] .reception-status-pill{ background:#e0f2fe; color:#075985; }
-  .reception-clinic-card[data-recall="true"] .reception-current{ background:#eff6ff; border-color:#bae6fd; }
-  .reception-clinic-card[data-recall="true"] .reception-current-number{ color:#0369a1; }
+  .reception-clinic-card .reception-status-pill{ background:var(--rc-soft); color:var(--rc-accent); }
   .reception-detail{
     position:sticky; top:16px; border:1px solid #e2e8f0; border-radius:18px; background:#fff;
     box-shadow:0 5px 18px rgba(15,23,42,.06); overflow:hidden;
