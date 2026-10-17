@@ -7154,18 +7154,32 @@
 /* Reception dashboard: compact floor groups and clearer clinic cards. */
 #view-reception{padding:12px!important}
 #view-reception{height:auto!important;min-height:100vh;overflow:visible!important;overscroll-behavior-y:auto!important}
-#view-reception{overflow-x:hidden!important;touch-action:pan-y}
+#view-reception{overflow-x:hidden!important;touch-action:auto;-webkit-overflow-scrolling:touch;scroll-behavior:smooth}
 #view-reception .reception-shell{max-width:1480px;min-width:0;overflow:visible!important}
-#view-reception .reception-updates-panel{margin:6px 0 8px;padding:7px 9px;border-radius:12px}
-#view-reception .reception-updates-head{margin-bottom:5px;gap:7px}
-#view-reception .reception-updates-title{font-family:'RB',sans-serif;font-size:13px;line-height:1.5}
-#view-reception .reception-updates-hint{font-family:'RB',sans-serif;font-size:10px;line-height:1.5}
+#view-reception .reception-updates-panel{margin:5px 0 7px;padding:4px 8px;border-radius:12px}
+#view-reception .reception-updates-head{margin:0;gap:6px}
+#view-reception .reception-updates-toggle{width:100%;min-width:0;min-height:34px;display:flex;align-items:center;gap:8px;padding:4px 3px;border:0;background:transparent;color:#174c6a;text-align:right;cursor:pointer}
+#view-reception .reception-updates-title{display:inline-flex;align-items:center;gap:7px;flex:0 0 auto;font-family:'RB',sans-serif;font-size:13px;line-height:1.5;font-weight:800}
+#view-reception .reception-updates-title::before{content:"";width:4px;height:17px;border-radius:99px;background:linear-gradient(180deg,#38bdf8,#087c9b)}
+#view-reception .reception-updates-count{min-width:22px;height:22px;display:grid;place-items:center;padding:0 5px;border-radius:8px;background:#e8f6ff;color:#087c9b;font-family:'RB',sans-serif;font-size:10px;font-weight:800}
+#view-reception .reception-updates-preview{min-width:0;flex:1;overflow:hidden;color:#5d7280;font-family:'RB',sans-serif;font-size:11px;line-height:1.5;text-overflow:ellipsis;white-space:nowrap}
+#view-reception .reception-updates-chevron{flex:0 0 auto;color:#087c9b;font-size:18px;line-height:1;transition:transform .18s ease}
+#view-reception .reception-updates-toggle[aria-expanded="true"] .reception-updates-chevron{transform:rotate(180deg)}
+#view-reception .reception-updates-content{padding:3px 0 4px}
+#view-reception .reception-updates-hint{margin:0 2px 4px;color:#718096;font-family:'RB',sans-serif;font-size:10px;line-height:1.5}
 #view-reception .reception-updates-list{gap:6px}
 #view-reception .reception-update-item{align-items:center;min-width:0;padding:6px 8px;gap:7px;border-radius:10px}
 #view-reception .reception-update-icon{width:27px;height:27px;flex-basis:27px;border-radius:8px;font-size:13px}
 #view-reception .reception-update-copy{display:flex;flex-direction:column;gap:1px;min-width:0;line-height:1.55}
 #view-reception .reception-update-clinic{font-family:'RB',sans-serif;font-size:12px;line-height:1.55;font-weight:800;white-space:normal;overflow-wrap:anywhere}
 #view-reception .reception-update-detail{margin-top:0;font-family:'RB',sans-serif;font-size:11px;line-height:1.55;white-space:normal;overflow-wrap:anywhere}
+#view-reception .reception-update-toast{position:fixed;z-index:125;top:12px;inset-inline:12px;width:min(480px,calc(100% - 24px));margin-inline:auto;display:flex;align-items:center;gap:9px;padding:10px 12px;border:1px solid #cfe4f4;border-radius:14px;background:rgba(255,255,255,.97);color:#1e293b;text-align:right;box-shadow:0 10px 30px rgba(15,75,110,.2);animation:receptionToastIn .22s ease-out both;cursor:pointer}
+#view-reception .reception-update-toast-mark{width:28px;height:28px;flex:0 0 28px;display:grid;place-items:center;border-radius:9px;background:#e8f6ff;color:#087c9b}
+#view-reception .reception-update-toast-copy{min-width:0;flex:1;display:flex;flex-direction:column;gap:2px;font-family:'RB',sans-serif;line-height:1.5}
+#view-reception .reception-update-toast-copy strong{font-size:12px}
+#view-reception .reception-update-toast-copy span{overflow:hidden;color:#475569;font-size:11px;text-overflow:ellipsis;white-space:nowrap}
+#view-reception .reception-update-toast-hint{flex:0 0 auto;color:#087c9b;font-family:'RB',sans-serif;font-size:10px;font-weight:800}
+@keyframes receptionToastIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
 #view-reception .reception-back-to-top{position:fixed;z-index:120;inset-inline-end:16px;bottom:16px;width:44px;height:44px;display:grid;place-items:center;border:1px solid #cfe4f4;border-radius:14px;background:#fff;color:#087c9b;font-family:'RB',sans-serif;font-size:25px;font-weight:800;line-height:1;box-shadow:0 6px 20px rgba(15,75,110,.18);opacity:0;visibility:hidden;transform:translateY(8px);transition:opacity .2s ease,visibility .2s ease,transform .2s ease;cursor:pointer}
 #view-reception .reception-back-to-top.is-visible{opacity:1;visibility:visible;transform:translateY(0)}
 #view-reception .reception-back-to-top:focus-visible{outline:3px solid rgba(8,124,155,.3);outline-offset:2px}
@@ -7193,33 +7207,44 @@
 #view-reception .reception-room-name{display:block;margin-top:2px;color:#687487;font-size:11px;line-height:1.2;font-weight:700}
 #view-reception .reception-floor-badge{display:none!important}
 #view-reception .reception-room-badge{min-width:58px;min-height:42px;padding:4px 7px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;border-radius:10px;background:var(--rc-soft);font-size:15px;font-weight:900}
-#view-reception .reception-room-label{font-size:9px;line-height:1.1;font-weight:700;opacity:.78}
+#view-reception .reception-room-badge{min-width:46px;min-height:32px;padding:3px 7px;flex-direction:row}
 #view-reception .reception-room-badge strong{font-size:16px;line-height:1.1;font-weight:900}
 #view-reception .reception-card-body{padding:8px 9px 9px}
 #view-reception .reception-nurse{margin-top:5px;padding:5px 8px}
 #view-reception .reception-card-row{margin-top:7px;gap:7px}
 @media(max-width:600px){
-  #view-reception{padding:7px!important;overflow-x:hidden!important;overflow-y:visible!important;min-height:100vh}
+  #view-reception{padding:7px!important;overflow-x:hidden!important;overflow-y:visible!important;min-height:100vh;touch-action:auto;-webkit-overflow-scrolling:touch}
   #view-reception .reception-shell{width:100%;max-width:100%;min-width:0}
   #view-reception .reception-topbar{padding:9px 10px;margin-bottom:7px}
   #view-reception .reception-toolbar{grid-template-columns:minmax(0,1fr);padding:7px;gap:7px}
   #view-reception .reception-search{width:100%;min-width:0;height:40px;padding-inline:11px;font-family:'RB',sans-serif;font-size:12px}
   #view-reception .reception-filter-group{justify-content:flex-start;gap:5px}
   #view-reception .reception-filter-btn{min-height:33px;padding:0 9px;font-family:'RB',sans-serif;font-size:11px}
-  #view-reception .reception-updates-panel{margin:5px 0 7px;padding:6px 7px}
-  #view-reception .reception-updates-head{align-items:flex-start;flex-direction:column;gap:1px;margin-bottom:4px}
+  #view-reception .reception-updates-panel{margin:4px 0 6px;padding:3px 6px}
+  #view-reception .reception-updates-toggle{min-height:32px;gap:6px}
   #view-reception .reception-updates-title{font-size:12px}
+  #view-reception .reception-updates-count{min-width:20px;height:20px}
+  #view-reception .reception-updates-preview{font-size:10px}
   #view-reception .reception-updates-hint{font-size:9px}
   #view-reception .reception-updates-list{grid-template-columns:minmax(0,1fr);gap:5px}
   #view-reception .reception-update-item{padding:5px 7px;gap:7px}
   #view-reception .reception-update-clinic{font-size:12px;line-height:1.55}
   #view-reception .reception-update-detail{font-size:11px;line-height:1.55}
+  #view-reception .reception-update-toast{top:8px;inset-inline:8px;width:calc(100% - 16px);padding:9px 10px}
   #view-reception .reception-back-to-top{inset-inline-end:12px;bottom:12px;width:42px;height:42px;border-radius:13px}
+  #view-reception .reception-closed-panel{padding:8px 9px}
+  #view-reception .reception-closed-head{margin-bottom:6px}
+  #view-reception .reception-closed-list{display:flex;flex-wrap:nowrap;gap:7px;overflow-x:auto;overflow-y:hidden;padding:1px 1px 6px;direction:rtl;touch-action:pan-x pan-y;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity;scrollbar-width:thin}
+  #view-reception .reception-closed-item{flex:0 0 148px;min-height:43px;padding:7px 8px;border-radius:11px;scroll-snap-align:start}
+  #view-reception .reception-closed-clinic{font-family:'RB',sans-serif;font-size:11px;line-height:1.5}
+  #view-reception .reception-closed-room{display:none}
   #view-reception .reception-floor-section{padding:7px;border-radius:13px}
   #view-reception .reception-floor-heading{margin-bottom:6px;padding-bottom:6px}
   #view-reception .reception-floor-heading h2{font-size:14px}
   #view-reception .reception-floor-clinic-grid{gap:7px}
   #view-reception .reception-card-name{font-size:16px}
+  #view-reception .reception-room-badge{min-width:43px;min-height:30px;padding:2px 6px;border-radius:9px}
+  #view-reception .reception-room-badge strong{font-size:15px}
 }
 </style>
 </head>
@@ -8150,11 +8175,26 @@
 
     <section id="receptionUpdatesPanel" class="reception-updates-panel hidden-view" aria-live="polite" aria-label="آخر تعديلات العيادات">
       <div class="reception-updates-head">
-        <h2 class="reception-updates-title">آخر التعديلات</h2>
-        <span class="reception-updates-hint">اضغط على التعديل للانتقال إلى العيادة</span>
+        <button id="receptionUpdatesToggle" class="reception-updates-toggle" type="button" aria-expanded="false" aria-controls="receptionUpdatesContent">
+          <span class="reception-updates-title">آخر التعديلات</span>
+          <span id="receptionUpdatesCount" class="reception-updates-count num">٠</span>
+          <span id="receptionUpdatesPreview" class="reception-updates-preview">اضغط لعرض التغييرات</span>
+          <span class="reception-updates-chevron" aria-hidden="true">⌄</span>
+        </button>
       </div>
-      <div id="receptionUpdatesList" class="reception-updates-list"></div>
+      <div id="receptionUpdatesContent" class="reception-updates-content hidden-view">
+        <p class="reception-updates-hint">اضغط على التعديل للانتقال إلى العيادة</p>
+        <div id="receptionUpdatesList" class="reception-updates-list"></div>
+      </div>
     </section>
+    <button id="receptionUpdateToast" class="reception-update-toast hidden-view" type="button" aria-live="polite">
+      <span class="reception-update-toast-mark" aria-hidden="true">●</span>
+      <span class="reception-update-toast-copy">
+        <strong id="receptionUpdateToastClinic"></strong>
+        <span id="receptionUpdateToastDetail"></span>
+      </span>
+      <span class="reception-update-toast-hint">عرض</span>
+    </button>
 
     <div class="reception-toolbar">
       <input id="receptionSearch" class="reception-search" type="search" autocomplete="off"
@@ -9700,7 +9740,7 @@ function renderReceptionDashboard(){
           '<div class="reception-card-name">' + clinicName + '</div>' +
           (roomName !== clinicName ? '<span class="reception-room-name">' + roomName + '</span>' : '') +
         '</div>' +
-        '<span class="reception-room-badge"><span class="reception-room-label">رقم الغرفة</span><strong class="num">' + room.id + '</strong></span>' +
+        '<span class="reception-room-badge"><strong class="num">' + room.id + '</strong></span>' +
       '</div>' +
       '<div class="reception-card-body">' + bookingBadge(room.id) +
         '<div class="reception-doctor">' + doctor + '</div>' +
@@ -10059,6 +10099,8 @@ let receptionPreviousClinics = null;
 let receptionPreviousBooking = null;
 let receptionRecentUpdates = [];
 let receptionUpdateSequence = 0;
+let receptionUpdatesExpanded = false;
+let receptionUpdateToastTimer = null;
 
 function receptionClinicLabel(roomId, data){
   const room = ROOM_OPTIONS.find(item=>item.id === String(roomId));
@@ -10077,8 +10119,19 @@ function receptionClinicLabel(roomId, data){
 function renderReceptionUpdates(){
   const panel = $("#receptionUpdatesPanel");
   const list = $("#receptionUpdatesList");
+  const toggle = $("#receptionUpdatesToggle");
+  const content = $("#receptionUpdatesContent");
+  const count = $("#receptionUpdatesCount");
+  const preview = $("#receptionUpdatesPreview");
   if(!panel || !list) return;
   panel.classList.toggle("hidden-view", receptionRecentUpdates.length === 0);
+  if(count) count.textContent = ar(receptionRecentUpdates.length);
+  if(preview){
+    const latest = receptionRecentUpdates[0];
+    preview.textContent = latest ? latest.clinicName + " · " + latest.detail : "اضغط لعرض التغييرات";
+  }
+  if(toggle) toggle.setAttribute("aria-expanded", receptionUpdatesExpanded ? "true" : "false");
+  content?.classList.toggle("hidden-view", !receptionUpdatesExpanded);
   list.innerHTML = "";
   receptionRecentUpdates.slice(0,3).forEach(update=>{
     const item = document.createElement("button");
@@ -10105,6 +10158,23 @@ function renderReceptionUpdates(){
   });
 }
 
+function showReceptionUpdateToast(update){
+  const toast = $("#receptionUpdateToast");
+  const clinic = $("#receptionUpdateToastClinic");
+  const detail = $("#receptionUpdateToastDetail");
+  if(!toast || !clinic || !detail) return;
+  clinic.textContent = update.clinicName;
+  detail.textContent = update.detail;
+  toast.classList.remove("hidden-view");
+  clearTimeout(receptionUpdateToastTimer);
+  receptionUpdateToastTimer = setTimeout(()=>toast.classList.add("hidden-view"),5000);
+}
+
+function setReceptionUpdatesExpanded(expanded){
+  receptionUpdatesExpanded = Boolean(expanded);
+  renderReceptionUpdates();
+}
+
 function addReceptionUpdate(room, data, detail, kind="queue"){
   if(!room) return;
   const labels = receptionClinicLabel(room.id,data);
@@ -10118,6 +10188,7 @@ function addReceptionUpdate(room, data, detail, kind="queue"){
   });
   receptionRecentUpdates = receptionRecentUpdates.slice(0,3);
   renderReceptionUpdates();
+  showReceptionUpdateToast(receptionRecentUpdates[0]);
 }
 
 function focusReceptionClinic(roomId){
@@ -14304,11 +14375,39 @@ $("#fsBtn").addEventListener("click", ()=>{
 const receptionBackToTop = $("#receptionBackToTop");
 function syncReceptionBackToTop(){
   const isReceptionVisible = !$("#view-reception")?.classList.contains("hidden-view");
-  const pageScroll = window.scrollY || document.documentElement.scrollTop || 0;
+  const pageScroll = Math.max(window.scrollY || 0, document.documentElement.scrollTop || 0, document.body.scrollTop || 0, document.scrollingElement?.scrollTop || 0);
   receptionBackToTop?.classList.toggle("is-visible", isReceptionVisible && pageScroll > 240);
 }
+function scrollReceptionPageToTop(){
+  const scroller = document.scrollingElement || document.documentElement;
+  if(window.matchMedia?.("(prefers-reduced-motion: reduce)").matches){
+    window.scrollTo(0,0);
+    scroller.scrollTop = 0;
+    document.body.scrollTop = 0;
+    return;
+  }
+  window.scrollTo({top:0,behavior:"smooth"});
+  scroller.scrollTo?.({top:0,behavior:"smooth"});
+  clearTimeout(scrollReceptionPageToTop.fallback);
+  scrollReceptionPageToTop.fallback = setTimeout(()=>{
+    if((window.scrollY || scroller.scrollTop || document.body.scrollTop || 0) > 2){
+      window.scrollTo(0,0);
+      scroller.scrollTop = 0;
+      document.body.scrollTop = 0;
+    }
+  },1100);
+}
 window.addEventListener("scroll", syncReceptionBackToTop, {passive:true});
-receptionBackToTop?.addEventListener("click", ()=>window.scrollTo({top:0,behavior:"smooth"}));
+receptionBackToTop?.addEventListener("click", scrollReceptionPageToTop);
+$("#receptionUpdatesToggle")?.addEventListener("click", ()=>setReceptionUpdatesExpanded(!receptionUpdatesExpanded));
+$("#receptionUpdateToast")?.addEventListener("click", ()=>{
+  clearTimeout(receptionUpdateToastTimer);
+  $("#receptionUpdateToast")?.classList.add("hidden-view");
+  setReceptionUpdatesExpanded(true);
+  const panel = $("#receptionUpdatesPanel");
+  const top = panel ? panel.getBoundingClientRect().top + (window.scrollY || 0) : 0;
+  window.scrollTo({top:Math.max(0,top-12),behavior:"smooth"});
+});
 $("#receptionSearch")?.addEventListener("input", renderReceptionDashboard);
 $("#receptionFilters")?.addEventListener("click", e=>{
   const btn = e.target.closest("[data-rc-filter]");
