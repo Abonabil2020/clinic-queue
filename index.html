@@ -483,31 +483,20 @@
     color:#475569; font-size:13px; font-weight:700; border:1px solid transparent;
   }
   .reception-filter-btn.active{ background:#fff1f2; color:#be123c; border-color:#fecdd3; }
-  .reception-booking-bar{
-    position:relative; display:flex; align-items:center; justify-content:space-between; gap:14px;
-    margin:12px 0; padding:13px 15px; overflow:hidden; border:1px solid #f0d8dc; border-radius:18px;
-    background:radial-gradient(circle at 0% 100%,rgba(243,81,76,.10),transparent 32%),linear-gradient(115deg,#fff 0%,#fff8f7 100%);
+  .reception-closed-panel{
+    margin:12px 0; padding:14px; border:1px solid #f1c9ce; border-radius:19px;
+    background:radial-gradient(circle at 0% 100%,rgba(243,81,76,.10),transparent 30%),linear-gradient(125deg,#fff 0%,#fff7f6 100%);
     box-shadow:0 7px 19px rgba(127,29,53,.07);
   }
-  .reception-booking-copy{ min-width:0; display:flex; flex-wrap:wrap; align-items:center; gap:7px 11px; }
-  .reception-booking-kicker{ color:#9f3345; font-size:11px; font-weight:800; }
-  .reception-booking-clinic{ color:#172033; font-size:14px; font-weight:800; }
-  .reception-booking-state{ padding:5px 9px; border:1px solid #b7e4cf; border-radius:999px; background:#e9f8ef; color:#117347; font-size:11px; font-weight:800; }
-  .reception-booking-state[data-booking="closed"]{ border-color:#fecaca; background:#fff0f0; color:#b42332; }
-  .reception-booking-state[data-booking="unknown"]{ border-color:#dbe3ed; background:#f1f5f9; color:#64748b; }
-  .reception-quick-booking-btn{ min-height:42px; flex:0 0 auto; padding:0 15px; border:1px solid #df4251; border-radius:12px; background:linear-gradient(135deg,#e44854,#bd3048); color:#fff; font-size:12px; font-weight:800; box-shadow:0 5px 12px rgba(190,48,72,.18); transition:transform .18s ease,box-shadow .18s ease; }
-  .reception-quick-booking-btn:hover:not(:disabled){ transform:translateY(-1px); box-shadow:0 8px 16px rgba(190,48,72,.24); }
-  .reception-quick-booking-btn[data-closed="true"]{ border-color:#15915d; background:linear-gradient(135deg,#20a66d,#118454); box-shadow:0 5px 12px rgba(17,132,84,.17); }
-  .reception-quick-booking-btn:disabled{ opacity:.55; cursor:not-allowed; box-shadow:none; }
-  .reception-clinic-card{ border-radius:20px; background:linear-gradient(145deg,#fff 0%,#fff 54%,var(--rc-soft) 100%); box-shadow:0 7px 20px rgba(15,23,42,.075),inset 0 1px 0 rgba(255,255,255,.95); }
-  .reception-card-head{ padding:11px 13px; background:linear-gradient(115deg,var(--rc-soft) 0%,#fff 100%); }
-  .reception-room-badge{ min-width:38px; min-height:30px; display:inline-flex; align-items:center; justify-content:center; border-radius:10px; box-shadow:0 2px 6px rgba(15,23,42,.06); }
-  .reception-card-body{ padding:11px 13px 13px; }
-  .reception-nurse{ font-size:12px; }
-  .reception-current{ box-shadow:inset 0 1px 0 rgba(255,255,255,.8); }
-  .reception-clinic-card:hover{ border-color:color-mix(in srgb,var(--rc-accent) 60%,white); }
-  .reception-clinic-card.selected{ background:linear-gradient(145deg,#fff 0%,var(--rc-soft) 100%); }
-  .reception-grid{ gap:16px; }
+  .reception-closed-head{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; }
+  .reception-closed-title{ display:flex; align-items:center; gap:8px; color:#8f2336; font-size:14px; font-weight:800; }
+  .reception-closed-title::before{ content:""; width:5px; height:20px; border-radius:99px; background:linear-gradient(180deg,#fa7771,#c72f46); }
+  .reception-closed-count{ min-width:29px; height:29px; padding:0 8px; display:grid; place-items:center; border-radius:10px; background:#c93b4b; color:#fff; font-size:12px; font-weight:800; }
+  .reception-closed-list{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:9px; }
+  .reception-closed-item{ min-width:0; display:flex; align-items:center; justify-content:space-between; gap:9px; padding:10px 11px; border:1px solid #f3d5d8; border-radius:14px; background:rgba(255,255,255,.9); box-shadow:0 3px 9px rgba(127,29,53,.045); }
+  .reception-closed-clinic{ min-width:0; color:#293244; font-size:12px; font-weight:800; }
+  .reception-closed-room{ display:block; margin-top:3px; color:#7c8799; font-size:10px; font-weight:700; }
+  .reception-closed-empty{ grid-column:1/-1; padding:12px; border:1px dashed #e8c8cc; border-radius:13px; background:rgba(255,255,255,.65); color:#7b8797; font-size:12px; text-align:center; }
   .reception-grid{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; align-items:stretch; }
   .reception-clinic-card{
     --rc-accent:#64748b; --rc-soft:#f1f5f9; --rc-border:#cbd5e1;
@@ -516,11 +505,10 @@
     overflow:hidden; box-shadow:0 5px 16px rgba(15,23,42,.065);
     cursor:pointer; transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease,background .2s ease;
   }
-  .reception-clinic-card[data-status="active"]{ --rc-accent:#059669; --rc-soft:#e8f8f1; --rc-border:#a7e5c9; }
-  .reception-clinic-card[data-status="break"]{ --rc-accent:#d97706; --rc-soft:#fff6df; --rc-border:#f3d18c; }
-  .reception-clinic-card[data-status="finished"]{ --rc-accent:#e04752; --rc-soft:#fff0f1; --rc-border:#f2b9be; }
+  .reception-clinic-card[data-status="active"]{ --rc-accent:#07885c; --rc-soft:#e5f8ef; --rc-border:#9bdfbf; background:linear-gradient(145deg,#eafaf2 0%,#fff 58%,#daf3e6 100%); }
+  .reception-clinic-card[data-status="break"]{ --rc-accent:#bd7600; --rc-soft:#fff5d7; --rc-border:#f0cf75; background:linear-gradient(145deg,#fff8df 0%,#fff 58%,#ffefbd 100%); }
+  .reception-clinic-card[data-status="finished"]{ --rc-accent:#cf3548; --rc-soft:#fff0f1; --rc-border:#f1b4bc; background:linear-gradient(145deg,#fff0f1 0%,#fff 58%,#ffe0e4 100%); }
   .reception-clinic-card[data-status="idle"]{ --rc-accent:#64748b; --rc-soft:#f1f5f9; --rc-border:#cbd5e1; }
-  .reception-clinic-card[data-recall="true"]{ --rc-accent:#0284c7; --rc-soft:#eaf7ff; --rc-border:#a8dcf7; }
   .reception-clinic-card:hover{ transform:translateY(-3px); box-shadow:0 12px 26px rgba(15,23,42,.13); }
   .reception-clinic-card:focus-visible{ outline:3px solid #38bdf8; outline-offset:3px; }
   .reception-clinic-card.selected{
@@ -554,6 +542,11 @@
   .reception-card-head{ padding:11px 13px; background:linear-gradient(115deg,var(--rc-soft) 0%,#fff 100%); }
   .reception-room-badge{ min-width:38px; min-height:30px; display:inline-flex; align-items:center; justify-content:center; border-radius:10px; box-shadow:0 2px 6px rgba(15,23,42,.06); }
   .reception-card-body{ padding:11px 13px 13px; }
+  .reception-card-title-wrap{ min-width:0; display:flex; flex-direction:column; align-items:flex-start; gap:5px; }
+  .reception-card-name{ color:var(--rc-accent); font-weight:800; }
+  .reception-floor-badge{ padding:3px 8px; border-radius:999px; font-size:10px; font-weight:800; }
+  .reception-floor-badge[data-floor="third"]{ color:#4d51a5; background:#eeedff; border:1px solid #d7d4ff; }
+  .reception-floor-badge[data-floor="ground"]{ color:#087c79; background:#e2f8f5; border:1px solid #b7e9e2; }
   .reception-nurse{ font-size:12px; }
   .reception-current{ box-shadow:inset 0 1px 0 rgba(255,255,255,.8); }
   .reception-clinic-card:hover{ border-color:color-mix(in srgb,var(--rc-accent) 60%,white); }
@@ -614,10 +607,9 @@
     .reception-filter-group{ display:grid; width:100%; grid-template-columns:repeat(2,minmax(0,1fr)); gap:7px; }
     .reception-filter-btn{ padding:0 8px; font-size:12px; }
     .reception-filter-btn:first-child{ grid-column:1/-1; }
-    .reception-booking-bar{ align-items:stretch; flex-direction:column; gap:10px; padding:12px; }
-    .reception-booking-copy{ gap:6px 8px; }
-    .reception-booking-clinic{ font-size:13px; }
-    .reception-quick-booking-btn{ width:100%; }
+    .reception-closed-panel{ padding:11px; }
+    .reception-closed-list{ grid-template-columns:1fr; }
+    .reception-closed-item{ padding:9px; }
     .reception-grid{ grid-template-columns:1fr; gap:10px; }
     .reception-detail{ width:calc(100vw - 20px); max-height:92vh; border-radius:17px; }
     .reception-detail-body{ max-height:calc(92vh - 62px); padding:13px; }
@@ -8059,14 +8051,13 @@
       </div>
     </div>
 
-    <div id="receptionBookingBar" class="reception-booking-bar" aria-live="polite">
-      <div class="reception-booking-copy">
-        <span class="reception-booking-kicker">إدارة الحجز</span>
-        <strong id="receptionBookingClinic" class="reception-booking-clinic">—</strong>
-        <span id="receptionBookingState" class="reception-booking-state" data-booking="unknown">جارٍ تحميل الحالة...</span>
+    <section id="receptionClosedBookings" class="reception-closed-panel" aria-live="polite">
+      <div class="reception-closed-head">
+        <h2 class="reception-closed-title">العيادات المقفول حجزها</h2>
+        <span id="receptionClosedCount" class="reception-closed-count num">٠</span>
       </div>
-      <button id="receptionQuickBookingToggle" type="button" class="reception-quick-booking-btn" disabled>جارٍ تحميل حالة الحجز...</button>
-    </div>
+      <div id="receptionClosedList" class="reception-closed-list"></div>
+    </section>
 
     <div id="receptionClinicGrid" class="reception-grid"></div>
 
@@ -8662,21 +8653,39 @@ function bookingInfo(roomId){
     ? {key:"closed", label:"الحجز مغلق — اكتمل العدد"}
     : {key:"open", label:"الحجز مفتوح"};
 }
-function renderReceptionBookingBar(){
-  const room = ROOM_OPTIONS.find(item=>item.id === receptionSelectedRoom);
-  const data = room ? receptionDataForRoom(room) : {};
-  const clinic = $("#receptionBookingClinic");
-  const state = $("#receptionBookingState");
-  const button = $("#receptionQuickBookingToggle");
-  if(!room || !clinic || !state || !button) return;
-  clinic.textContent = (data.clinicName || data.specialty || room.place) + " — غرفة " + room.id;
-  const info = bookingInfo(room.id);
-  state.textContent = info.key === "closed" ? "الحجز مغلق" : info.key === "open" ? "الحجز مفتوح" : "جارٍ التحقق من الاتصال";
-  state.dataset.booking = info.key;
-  const closed = bookingStateForToday(room.id).closed === true;
-  button.dataset.closed = String(closed);
-  button.disabled = bookingBusy || !bookingLoaded || !firebaseConnected || !isReceptionUser();
-  button.textContent = bookingBusy ? "جارٍ حفظ حالة الحجز..." : closed ? "إعادة فتح الحجز" : "قفل حجز العيادة";
+function renderReceptionClosedBookings(){
+  const list = $("#receptionClosedList");
+  const count = $("#receptionClosedCount");
+  if(!list || !count) return;
+  list.innerHTML = "";
+  if(!bookingLoaded || !firebaseConnected){
+    count.textContent = "—";
+    list.innerHTML = '<div class="reception-closed-empty">جارٍ تحميل حالات الحجز من النظام</div>';
+    return;
+  }
+
+  const closedRooms = ROOM_OPTIONS.filter(room=>bookingStateForToday(room.id).closed === true);
+  count.textContent = ar(closedRooms.length);
+  if(!closedRooms.length){
+    list.innerHTML = '<div class="reception-closed-empty">لا توجد عيادات مقفول حجزها حاليًا</div>';
+    return;
+  }
+
+  closedRooms.forEach(room=>{
+    const data = receptionDataForRoom(room);
+    const item = document.createElement("div");
+    item.className = "reception-closed-item";
+    const clinicInfo = document.createElement("div");
+    clinicInfo.className = "reception-closed-clinic";
+    const clinicName = document.createElement("span");
+    clinicName.textContent = data.clinicName || data.specialty || room.place;
+    const roomLabel = document.createElement("span");
+    roomLabel.className = "reception-closed-room";
+    roomLabel.textContent = "غرفة " + room.id + " • " + room.floorName;
+    clinicInfo.append(clinicName,roomLabel);
+    item.append(clinicInfo);
+    list.appendChild(item);
+  });
 }
 function bookingBadge(roomId){
   const info = bookingInfo(roomId);
@@ -8712,7 +8721,7 @@ function renderBookingStatus(){
         ? "فتح الحجز من جديد"
         : "قفل الحجز لاكتمال العدد";
   }
-  renderReceptionBookingBar();
+  renderReceptionClosedBookings();
 
   const nurseButton = $("#nurseBookingClose");
   if(nurseButton){
@@ -9502,7 +9511,7 @@ function renderReceptionDashboard(){
     return normalized.includes(query);
   });
 
-  renderReceptionBookingBar();
+  renderReceptionClosedBookings();
 
   grid.innerHTML = "";
   if(!rows.length){
@@ -9526,10 +9535,14 @@ function renderReceptionDashboard(){
     card.type = "button";
     card.className = "reception-clinic-card" + (room.id === receptionSelectedRoom ? " selected" : "");
     card.dataset.status = status.key;
+    card.dataset.floor = room.floor;
     card.dataset.recall = data.recallMode ? "true" : "false";
     card.innerHTML =
       '<div class="reception-card-head">' +
-        '<div class="reception-card-name">' + clinicName + '</div>' +
+        '<div class="reception-card-title-wrap">' +
+          '<div class="reception-card-name">' + clinicName + '</div>' +
+          '<span class="reception-floor-badge" data-floor="' + room.floor + '">' + room.floorName + '</span>' +
+        '</div>' +
         '<span class="reception-room-badge num">' + room.id + '</span>' +
       '</div>' +
       '<div class="reception-card-body">' + bookingBadge(room.id) +
@@ -9542,7 +9555,6 @@ function renderReceptionDashboard(){
           '</div>' +
           '<div class="reception-card-meta">' +
             '<span class="reception-status-pill"><span class="dot ' + status.dot + '" style="width:7px;height:7px"></span>' + status.label + '</span>' +
-            '<span class="reception-small-meta">' + room.floorName + '</span>' +
             '<span class="reception-small-meta">فائتة: <b class="num">' + ar(pendingMissed) + '</b> • آخر نداء: <b class="num">' + timeStr(data.updatedAt) + '</b></span>' +
           '</div>' +
         '</div>' +
@@ -14043,7 +14055,6 @@ $("#rcCloseDetail")?.addEventListener("click", ()=>$("#receptionDetail")?.close(
 $("#receptionDetail")?.addEventListener("click", e=>{
   if(e.target === e.currentTarget) e.currentTarget.close();
 });
-$("#receptionQuickBookingToggle")?.addEventListener("click", ()=>$("#rcBookingToggle")?.click());
 
 $("#rcCopyPatient")?.addEventListener("click", async ()=>{
   const url = receptionPatientUrl(receptionSelectedRoom);
