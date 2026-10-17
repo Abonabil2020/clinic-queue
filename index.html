@@ -497,7 +497,36 @@
   .reception-closed-clinic{ min-width:0; color:#293244; font-size:12px; font-weight:800; }
   .reception-closed-room{ display:block; margin-top:3px; color:#7c8799; font-size:10px; font-weight:700; }
   .reception-closed-empty{ grid-column:1/-1; padding:12px; border:1px dashed #e8c8cc; border-radius:13px; background:rgba(255,255,255,.65); color:#7b8797; font-size:12px; text-align:center; }
-  .reception-grid{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; align-items:stretch; }
+  .reception-updates-panel{ margin:12px 0; padding:12px 14px; border:1px solid #cfe4f4; border-radius:17px; background:linear-gradient(125deg,#f5fbff 0%,#fff 72%); box-shadow:0 5px 15px rgba(15,75,110,.055); }
+  .reception-updates-head{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:9px; }
+  .reception-updates-title{ display:flex; align-items:center; gap:8px; color:#174c6a; font-size:14px; font-weight:800; }
+  .reception-updates-title::before{ content:""; width:5px; height:19px; border-radius:99px; background:linear-gradient(180deg,#38bdf8,#087c9b); }
+  .reception-updates-hint{ color:#718096; font-size:11px; font-weight:600; }
+  .reception-updates-list{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
+  .reception-update-item{ min-width:0; display:flex; align-items:center; gap:9px; padding:9px 10px; border:1px solid #dbeaf4; border-radius:13px; background:#fff; color:#334155; text-align:right; box-shadow:0 2px 7px rgba(15,23,42,.035); cursor:pointer; transition:border-color .18s ease,transform .18s ease,box-shadow .18s ease; }
+  .reception-update-item:hover{ border-color:#7dd3fc; transform:translateY(-1px); box-shadow:0 5px 12px rgba(15,75,110,.09); }
+  .reception-update-icon{ width:32px; height:32px; flex:0 0 32px; display:grid; place-items:center; border-radius:10px; background:#e8f6ff; color:#087c9b; font-size:16px; font-weight:800; }
+  .reception-update-item[data-kind="booking"] .reception-update-icon{ background:#fff0f1; color:#c53a4a; }
+  .reception-update-copy{ min-width:0; flex:1; }
+  .reception-update-clinic{ overflow:hidden; color:#1e293b; font-size:12px; font-weight:800; text-overflow:ellipsis; white-space:nowrap; }
+  .reception-update-detail{ margin-top:3px; color:#475569; font-size:11px; line-height:1.35; }
+  .reception-update-location{ margin-top:3px; color:#8290a2; font-size:10px; font-weight:700; }
+  .reception-update-item.is-new{ animation:receptionUpdateIn .35s ease-out both; }
+  .reception-clinic-card.recently-updated{ animation:receptionCardFlash 1.1s ease-in-out 3; }
+  @keyframes receptionUpdateIn{ from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes receptionCardFlash{ 0%,100%{box-shadow:0 7px 20px rgba(15,23,42,.075),inset 0 1px 0 rgba(255,255,255,.95)} 50%{box-shadow:0 0 0 4px rgba(14,165,233,.28),0 10px 25px rgba(14,116,144,.18)} }
+  .reception-floor-groups{ display:flex; flex-direction:column; gap:16px; }
+  .reception-floor-section{ min-width:0; padding:13px; border:1px solid var(--rf-border); border-radius:20px; background:linear-gradient(135deg,var(--rf-bg),#fff 76%); box-shadow:0 5px 16px rgba(15,23,42,.045); }
+  .reception-floor-section[data-reception-floor-section="third"]{ --rf-accent:#5146a5; --rf-bg:#f3f1ff; --rf-border:#d8d3ff; }
+  .reception-floor-section[data-reception-floor-section="ground"]{ --rf-accent:#087c79; --rf-bg:#eaf9f7; --rf-border:#c4e8e3; }
+  .reception-floor-heading{ display:flex; align-items:center; gap:11px; margin-bottom:12px; padding:2px 2px 12px; border-bottom:1px solid var(--rf-border); }
+  .reception-floor-icon{ width:40px; height:40px; flex:0 0 40px; display:grid; place-items:center; border-radius:13px; background:var(--rf-accent); color:#fff; font-size:17px; font-weight:900; box-shadow:0 5px 12px color-mix(in srgb,var(--rf-accent) 22%,transparent); }
+  .reception-floor-heading-copy{ min-width:0; flex:1; }
+  .reception-floor-heading h2{ margin:0; color:var(--rf-accent); font-size:16px; line-height:1.3; font-weight:900; }
+  .reception-floor-heading p{ margin:3px 0 0; color:#64748b; font-size:11px; }
+  .reception-floor-count{ min-width:36px; height:32px; padding:0 9px; display:inline-flex; align-items:center; justify-content:center; border:1px solid var(--rf-border); border-radius:10px; background:#fff; color:var(--rf-accent); font-size:12px; font-weight:900; }
+  .reception-floor-clinic-grid{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; align-items:stretch; }
+  .reception-empty{ width:100%; }
   .reception-clinic-card{
     --rc-accent:#64748b; --rc-soft:#f1f5f9; --rc-border:#cbd5e1;
     position:relative; width:100%; text-align:right; border:1px solid var(--rc-border);
@@ -537,7 +566,7 @@
   .reception-status-pill{ display:inline-flex; align-items:center; gap:5px; padding:5px 9px; border-radius:999px; font-size:11px; font-weight:700; }
   .reception-small-meta{ color:#64748b; font-size:11px; line-height:1.4; }
   .reception-clinic-card .reception-status-pill{ background:var(--rc-soft); color:var(--rc-accent); }
-  .reception-grid{ gap:16px; }
+  .reception-floor-clinic-grid{ gap:16px; }
   .reception-clinic-card{ border-radius:20px; background:linear-gradient(145deg,#fff 0%,#fff 54%,var(--rc-soft) 100%); box-shadow:0 7px 20px rgba(15,23,42,.075),inset 0 1px 0 rgba(255,255,255,.95); }
   .reception-card-head{ padding:11px 13px; background:linear-gradient(115deg,var(--rc-soft) 0%,#fff 100%); }
   .reception-room-badge{ min-width:38px; min-height:30px; display:inline-flex; align-items:center; justify-content:center; border-radius:10px; box-shadow:0 2px 6px rgba(15,23,42,.06); }
@@ -593,8 +622,8 @@
   .reception-actions{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; }
   .reception-action-btn{ padding:10px 8px; border-radius:10px; font-size:11px; font-weight:700; text-align:center; }
   .reception-empty{ grid-column:1/-1; padding:40px 20px; text-align:center; color:#94a3b8; background:#fff; border:1px dashed #cbd5e1; border-radius:16px; }
-  @media (max-width:1250px){ .reception-grid{ grid-template-columns:repeat(3,minmax(0,1fr)); } }
-  @media (max-width:1000px){ .reception-grid{ grid-template-columns:repeat(2,minmax(0,1fr)); } .reception-toolbar{ grid-template-columns:1fr; } .reception-filter-group{ justify-content:flex-start; } }
+  @media (max-width:1250px){ .reception-floor-clinic-grid{ grid-template-columns:repeat(3,minmax(0,1fr)); } }
+  @media (max-width:1000px){ .reception-floor-clinic-grid{ grid-template-columns:repeat(2,minmax(0,1fr)); } .reception-toolbar{ grid-template-columns:1fr; } .reception-filter-group{ justify-content:flex-start; } .reception-updates-list{ grid-template-columns:repeat(2,minmax(0,1fr)); } }
   @media (max-width:600px){
     #view-reception{ padding:10px!important; }
     .reception-topbar{ align-items:flex-start; flex-direction:column; gap:14px; padding:15px; border-radius:18px; }
@@ -608,9 +637,18 @@
     .reception-filter-btn{ padding:0 8px; font-size:12px; }
     .reception-filter-btn:first-child{ grid-column:1/-1; }
     .reception-closed-panel{ padding:11px; }
+    .reception-floor-section{ padding:10px; border-radius:16px; }
+    .reception-floor-heading{ gap:8px; margin-bottom:9px; padding-bottom:9px; }
+    .reception-floor-icon{ width:35px; height:35px; flex-basis:35px; border-radius:11px; font-size:15px; }
+    .reception-floor-heading h2{ font-size:14px; }
+    .reception-floor-heading p{ font-size:10px; }
+    .reception-updates-panel{ padding:10px; }
+    .reception-updates-head{ align-items:flex-start; flex-direction:column; gap:3px; }
+    .reception-updates-list{ grid-template-columns:1fr; }
+    .reception-update-item{ padding:9px; }
     .reception-closed-list{ grid-template-columns:1fr; }
     .reception-closed-item{ padding:9px; }
-    .reception-grid{ grid-template-columns:1fr; gap:10px; }
+    .reception-floor-clinic-grid{ grid-template-columns:1fr; gap:10px; }
     .reception-detail{ width:calc(100vw - 20px); max-height:92vh; border-radius:17px; }
     .reception-detail-body{ max-height:calc(92vh - 62px); padding:13px; }
     .reception-card-row{ grid-template-columns:84px minmax(0,1fr); }
@@ -8051,6 +8089,14 @@
       </div>
     </div>
 
+    <section id="receptionUpdatesPanel" class="reception-updates-panel hidden-view" aria-live="polite" aria-label="آخر تعديلات العيادات">
+      <div class="reception-updates-head">
+        <h2 class="reception-updates-title">آخر التعديلات</h2>
+        <span class="reception-updates-hint">اضغط على التعديل للانتقال إلى العيادة</span>
+      </div>
+      <div id="receptionUpdatesList" class="reception-updates-list"></div>
+    </section>
+
     <section id="receptionClosedBookings" class="reception-closed-panel" aria-live="polite">
       <div class="reception-closed-head">
         <h2 class="reception-closed-title">العيادات المقفول حجزها</h2>
@@ -8059,7 +8105,31 @@
       <div id="receptionClosedList" class="reception-closed-list"></div>
     </section>
 
-    <div id="receptionClinicGrid" class="reception-grid"></div>
+    <div id="receptionClinicGrid" class="reception-floor-groups">
+      <section class="reception-floor-section" data-reception-floor-section="third" aria-labelledby="receptionThirdHeading">
+        <header class="reception-floor-heading">
+          <span class="reception-floor-icon" aria-hidden="true">٣</span>
+          <div class="reception-floor-heading-copy">
+            <h2 id="receptionThirdHeading">عيادات الدور الثالث</h2>
+            <p>متابعة العيادات الموجودة في هذا الدور</p>
+          </div>
+          <span id="receptionThirdCount" class="reception-floor-count num">٠</span>
+        </header>
+        <div id="receptionThirdGrid" class="reception-floor-clinic-grid" data-reception-floor-grid="third"></div>
+      </section>
+      <section class="reception-floor-section" data-reception-floor-section="ground" aria-labelledby="receptionGroundHeading">
+        <header class="reception-floor-heading">
+          <span class="reception-floor-icon" aria-hidden="true">أ</span>
+          <div class="reception-floor-heading-copy">
+            <h2 id="receptionGroundHeading">عيادات الدور الأرضي</h2>
+            <p>متابعة العيادات الموجودة في هذا الدور</p>
+          </div>
+          <span id="receptionGroundCount" class="reception-floor-count num">٠</span>
+        </header>
+        <div id="receptionGroundGrid" class="reception-floor-clinic-grid" data-reception-floor-grid="ground"></div>
+      </section>
+      <div id="receptionEmpty" class="reception-empty hidden-view">لا توجد عيادات مطابقة للبحث أو الفلتر الحالي</div>
+    </div>
 
       <dialog id="receptionDetail" class="reception-detail" aria-labelledby="rcClinicName">
         <div class="reception-detail-head">
@@ -9487,6 +9557,10 @@ function renderReceptionDetail(){
 function renderReceptionDashboard(){
   const grid = $("#receptionClinicGrid");
   if(!grid) return;
+  const floorSections = [...grid.querySelectorAll("[data-reception-floor-section]")];
+  const floorGrids = {third:$("#receptionThirdGrid"),ground:$("#receptionGroundGrid")};
+  const emptyMessage = $("#receptionEmpty");
+  Object.values(floorGrids).forEach(floorGrid=>{ if(floorGrid) floorGrid.innerHTML = ""; });
   const normalizeReceptionDigits = value => String(value || "")
     .replace(/[٠-٩]/g, digit => String("٠١٢٣٤٥٦٧٨٩".indexOf(digit)))
     .replace(/[۰-۹]/g, digit => String("۰۱۲۳۴۵۶۷۸۹".indexOf(digit)));
@@ -9513,12 +9587,25 @@ function renderReceptionDashboard(){
 
   renderReceptionClosedBookings();
 
-  grid.innerHTML = "";
   if(!rows.length){
-    grid.innerHTML = '<div class="reception-empty">لا توجد عيادات مطابقة للبحث أو الفلتر الحالي</div>';
+    floorSections.forEach(section=>section.classList.add("hidden-view"));
+    if(emptyMessage){
+      emptyMessage.textContent = "لا توجد عيادات مطابقة للبحث أو الفلتر الحالي";
+      emptyMessage.classList.remove("hidden-view");
+    }
     renderReceptionDetail();
     return;
   }
+
+  if(emptyMessage) emptyMessage.classList.add("hidden-view");
+  const floorCounts = {third:0,ground:0};
+  rows.forEach(room=>{ if(floorCounts[room.floor] !== undefined) floorCounts[room.floor]++; });
+  floorSections.forEach(section=>{
+    const floor = section.dataset.receptionFloorSection;
+    section.classList.toggle("hidden-view",!floorCounts[floor]);
+  });
+  $("#receptionThirdCount").textContent = ar(floorCounts.third);
+  $("#receptionGroundCount").textContent = ar(floorCounts.ground);
 
   rows.forEach(room=>{
     const data = receptionDataForRoom(room);
@@ -9534,6 +9621,7 @@ function renderReceptionDashboard(){
     const card = document.createElement("button");
     card.type = "button";
     card.className = "reception-clinic-card" + (room.id === receptionSelectedRoom ? " selected" : "");
+    card.dataset.room = room.id;
     card.dataset.status = status.key;
     card.dataset.floor = room.floor;
     card.dataset.recall = data.recallMode ? "true" : "false";
@@ -9566,7 +9654,7 @@ function renderReceptionDashboard(){
       const detailDialog = $("#receptionDetail");
       if(detailDialog && !detailDialog.open) detailDialog.showModal();
     });
-    grid.appendChild(card);
+    floorGrids[room.floor]?.appendChild(card);
   });
 
   renderReceptionDetail();
@@ -9900,26 +9988,119 @@ function syncAdminRoomControls(){
 let allClinicsListening = false;
 let receptionPreviousClinics = null;
 let receptionPreviousBooking = null;
+let receptionRecentUpdates = [];
+let receptionUpdateSequence = 0;
+
+function receptionClinicLabel(roomId, data){
+  const room = ROOM_OPTIONS.find(item=>item.id === String(roomId));
+  return {
+    room,
+    clinicName:String(data?.clinicName || data?.specialty || room?.place || "العيادة").trim(),
+    location:room ? "غرفة " + room.id + " • " + room.floorName : ""
+  };
+}
+
+function renderReceptionUpdates(){
+  const panel = $("#receptionUpdatesPanel");
+  const list = $("#receptionUpdatesList");
+  if(!panel || !list) return;
+  panel.classList.toggle("hidden-view", receptionRecentUpdates.length === 0);
+  list.innerHTML = "";
+  receptionRecentUpdates.slice(0,3).forEach(update=>{
+    const item = document.createElement("button");
+    item.type = "button";
+    item.className = "reception-update-item" + (update.isNew ? " is-new" : "");
+    item.dataset.kind = update.kind;
+    item.setAttribute("aria-label", update.clinicName + ": " + update.detail + ". " + update.location);
+    const icon = document.createElement("span");
+    icon.className = "reception-update-icon";
+    icon.textContent = update.kind === "booking" ? "!" : "↻";
+    const copy = document.createElement("span");
+    copy.className = "reception-update-copy";
+    const clinic = document.createElement("span");
+    clinic.className = "reception-update-clinic";
+    clinic.textContent = update.clinicName;
+    const detail = document.createElement("span");
+    detail.className = "reception-update-detail";
+    detail.textContent = update.detail;
+    const location = document.createElement("span");
+    location.className = "reception-update-location";
+    location.textContent = update.location;
+    copy.append(clinic,detail,location);
+    item.append(icon,copy);
+    item.addEventListener("click", ()=>focusReceptionClinic(update.roomId));
+    list.appendChild(item);
+    update.isNew = false;
+  });
+}
+
+function addReceptionUpdate(room, data, detail, kind="queue"){
+  if(!room) return;
+  const labels = receptionClinicLabel(room.id,data);
+  receptionRecentUpdates.unshift({
+    id:++receptionUpdateSequence,
+    roomId:String(room.id),
+    clinicName:labels.clinicName,
+    location:labels.location,
+    detail,
+    kind,
+    isNew:true
+  });
+  receptionRecentUpdates = receptionRecentUpdates.slice(0,3);
+  renderReceptionUpdates();
+}
+
+function focusReceptionClinic(roomId){
+  const search = $("#receptionSearch");
+  if(search) search.value = "";
+  receptionFilter = "all";
+  $("#receptionFilters")?.querySelectorAll("[data-rc-filter]").forEach(button=>{
+    button.classList.toggle("active",button.dataset.rcFilter === "all");
+  });
+  receptionSelectedRoom = String(roomId);
+  renderReceptionDashboard();
+  const card = document.querySelector('.reception-clinic-card[data-room="' + CSS.escape(String(roomId)) + '"]');
+  if(!card) return;
+  card.scrollIntoView({behavior:"smooth",block:"center"});
+  card.classList.remove("recently-updated");
+  void card.offsetWidth;
+  card.classList.add("recently-updated");
+  setTimeout(()=>card.classList.remove("recently-updated"),3600);
+}
 
 function trackReceptionQueueChanges(clinics){
   if(!receptionPreviousClinics){ receptionPreviousClinics = clinics; return; }
   let numberChanged = false;
+  const receptionVisible = !$("#view-reception").classList.contains("hidden-view") && isReceptionUser();
   ROOM_OPTIONS.forEach(room=>{
     const previous = receptionPreviousClinics[room.id] || {};
     const current = clinics[room.id] || {};
     const previousNumber = typeof previous.displayCurrent === "number" ? previous.displayCurrent : previous.current;
     const currentNumber = typeof current.displayCurrent === "number" ? current.displayCurrent : current.current;
-    if(previous.status === "active" && current.status === "active" &&
-      (previousNumber !== currentNumber || (current.recallMode && previous.recallNumber !== current.recallNumber))) numberChanged = true;
+    const queueNumberChanged = previous.status === "active" && current.status === "active" && previousNumber !== currentNumber;
+    const recallChanged = previous.status === "active" && current.status === "active" && current.recallMode && previous.recallNumber !== current.recallNumber;
+    if(queueNumberChanged || recallChanged){
+      numberChanged = true;
+      if(receptionVisible){
+        const detail = recallChanged
+          ? "إعادة نداء الدور رقم " + ar(current.recallNumber)
+          : "تغيير رقم الكشف: " + ar(previousNumber ?? 0) + " ← " + ar(currentNumber ?? 0);
+        addReceptionUpdate(room,current,detail,"queue");
+      }
+    }
   });
-  if(numberChanged && !$("#view-reception").classList.contains("hidden-view") && isReceptionUser()) chime();
+  if(numberChanged && receptionVisible) chime();
   receptionPreviousClinics = clinics;
 }
 
 function trackReceptionBookingChanges(bookings){
   if(!receptionPreviousBooking){ receptionPreviousBooking = bookings || {}; return; }
-  const closedNow = ROOM_OPTIONS.some(room=>receptionPreviousBooking[room.id]?.closed !== true && bookings?.[room.id]?.closed === true);
-  if(closedNow && !$("#view-reception").classList.contains("hidden-view") && isReceptionUser()) bookingAlarm();
+  const closedRooms = ROOM_OPTIONS.filter(room=>receptionPreviousBooking[room.id]?.closed !== true && bookings?.[room.id]?.closed === true);
+  const receptionVisible = !$("#view-reception").classList.contains("hidden-view") && isReceptionUser();
+  if(closedRooms.length && receptionVisible){
+    bookingAlarm();
+    closedRooms.forEach(room=>addReceptionUpdate(room,receptionDataForRoom(room),"تم إغلاق الحجز لاكتمال العدد","booking"));
+  }
   receptionPreviousBooking = bookings || {};
 }
 
