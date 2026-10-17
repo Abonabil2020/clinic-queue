@@ -9799,14 +9799,14 @@ function renderReceptionDashboard(){
     card.innerHTML =
       '<div class="reception-card-head">' +
         '<div class="reception-card-title-wrap">' +
-          '<div class="reception-card-name">' + clinicName + '</div>' +
+          '<div class="reception-card-name">' + escapeHtml(clinicName) + '</div>' +
           (roomName !== clinicName ? '<span class="reception-room-name">' + roomName + '</span>' : '') +
         '</div>' +
         '<span class="reception-room-badge"><strong class="num">' + room.id + '</strong></span>' +
       '</div>' +
       '<div class="reception-card-body">' + bookingBadge(room.id) +
-        '<div class="reception-doctor">' + doctor + '</div>' +
-        '<div class="reception-nurse">التمريض: ' + nurse + '</div>' +
+        '<div class="reception-doctor">' + escapeHtml(doctor) + '</div>' +
+        '<div class="reception-nurse">التمريض: ' + escapeHtml(nurse) + '</div>' +
         '<div class="reception-card-row">' +
           '<div class="reception-current">' +
             '<span class="reception-current-label">' + (data.recallMode ? 'إعادة نداء' : 'كشف رقم') + '</span>' +
