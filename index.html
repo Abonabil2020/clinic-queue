@@ -7154,7 +7154,7 @@
 /* Reception dashboard: compact floor groups and clearer clinic cards. */
 #view-reception{padding:12px!important}
 #view-reception{height:auto!important;min-height:100vh;overflow:visible!important;overscroll-behavior-y:auto!important}
-#view-reception{overflow-x:hidden!important;touch-action:auto;-webkit-overflow-scrolling:touch;scroll-behavior:smooth}
+#view-reception{overflow-x:clip!important;overflow-y:visible!important;touch-action:auto;-webkit-overflow-scrolling:touch;scroll-behavior:smooth}
 #view-reception .reception-shell{max-width:1480px;min-width:0;overflow:visible!important}
 #view-reception .reception-updates-panel{margin:5px 0 7px;padding:4px 8px;border-radius:12px}
 #view-reception .reception-updates-head{margin:0;gap:6px}
@@ -7223,7 +7223,7 @@
 #view-reception .reception-nurse{margin-top:5px;padding:5px 8px}
 #view-reception .reception-card-row{margin-top:7px;gap:7px}
 @media(max-width:600px){
-  #view-reception{padding:7px!important;overflow-x:hidden!important;overflow-y:visible!important;min-height:100vh;touch-action:auto;-webkit-overflow-scrolling:touch}
+  #view-reception{padding:7px!important;overflow-x:clip!important;overflow-y:visible!important;min-height:100vh;touch-action:auto;-webkit-overflow-scrolling:touch}
   #view-reception .reception-shell{width:100%;max-width:100%;min-width:0}
   #view-reception .reception-topbar{padding:9px 10px;margin-bottom:7px}
   #view-reception .reception-toolbar{grid-template-columns:auto minmax(0,1fr);padding:7px;gap:7px}
@@ -7249,8 +7249,9 @@
   #view-reception .reception-closed-panel{padding:8px 9px}
   #view-reception .reception-closed-head{margin-bottom:6px}
   #view-reception .reception-closed-list{display:flex;flex-wrap:nowrap;gap:7px;overflow-x:auto;overflow-y:hidden;padding:1px 1px 6px;direction:rtl;touch-action:pan-x pan-y;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity;scrollbar-width:thin}
-  #view-reception .reception-closed-item{flex:0 0 148px;min-height:43px;padding:7px 8px;border-radius:11px;scroll-snap-align:start}
-  #view-reception .reception-closed-clinic{font-family:'RB',sans-serif;font-size:11px;line-height:1.5}
+  #view-reception .reception-closed-item{flex:0 0 148px;min-height:48px;padding:7px 9px;border-radius:11px;scroll-snap-align:start}
+  #view-reception .reception-closed-clinic{display:block;flex:1;min-width:0;color:#293244;font-family:'RB',sans-serif;font-size:12px;line-height:1.5;text-align:right;white-space:normal;overflow-wrap:anywhere}
+  #view-reception .reception-closed-clinic>span:first-child{display:block;white-space:normal;overflow-wrap:anywhere}
   #view-reception .reception-closed-room{display:none}
   #view-reception .reception-floor-section{padding:7px;border-radius:13px}
   #view-reception .reception-floor-heading{margin-bottom:6px;padding-bottom:6px}
