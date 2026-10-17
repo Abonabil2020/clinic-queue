@@ -508,9 +508,8 @@
   .reception-update-icon{ width:32px; height:32px; flex:0 0 32px; display:grid; place-items:center; border-radius:10px; background:#e8f6ff; color:#087c9b; font-size:16px; font-weight:800; }
   .reception-update-item[data-kind="booking"] .reception-update-icon{ background:#fff0f1; color:#c53a4a; }
   .reception-update-copy{ min-width:0; flex:1; }
-  .reception-update-clinic{ overflow:hidden; color:#1e293b; font-size:12px; font-weight:800; text-overflow:ellipsis; white-space:nowrap; }
+  .reception-update-clinic{ color:#1e293b; font-size:12px; font-weight:800; }
   .reception-update-detail{ margin-top:3px; color:#475569; font-size:11px; line-height:1.35; }
-  .reception-update-location{ margin-top:3px; color:#8290a2; font-size:10px; font-weight:700; }
   .reception-update-item.is-new{ animation:receptionUpdateIn .35s ease-out both; }
   .reception-clinic-card.recently-updated{ animation:receptionCardFlash 1.1s ease-in-out 3; }
   @keyframes receptionUpdateIn{ from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
@@ -7151,6 +7150,55 @@
 #view-tv .queue-card[data-status="idle"][data-waiting="false"] .queue-number-box{justify-content:center!important;align-items:center!important}
 #view-tv .queue-card[data-status="idle"][data-waiting="false"] .queue-number{margin:0!important}
 </style>
+<style>
+/* Reception dashboard: compact floor groups and clearer clinic cards. */
+#view-reception{padding:12px!important}
+#view-reception{height:auto!important;min-height:100vh;overflow:visible!important;overscroll-behavior-y:auto!important}
+#view-reception .reception-shell{overflow:visible!important}
+#view-reception .reception-update-item{align-items:flex-start;padding:10px 12px;gap:10px}
+#view-reception .reception-update-copy{display:flex;flex-direction:column;gap:2px;line-height:1.7}
+#view-reception .reception-update-clinic{font-family:'Tajawal','Segoe UI',sans-serif;font-size:14px;line-height:1.75;font-weight:800;white-space:normal;overflow-wrap:anywhere}
+#view-reception .reception-update-detail{margin-top:0;font-family:'Tajawal','Segoe UI',sans-serif;font-size:13px;line-height:1.75;white-space:normal;overflow-wrap:anywhere}
+#view-reception .reception-shell{max-width:1480px}
+#view-reception .reception-topbar{margin-bottom:10px;padding:12px 16px;border-radius:18px}
+#view-reception .reception-logo-wrap{width:50px;height:50px;flex-basis:50px;border-radius:14px}
+#view-reception .reception-toolbar{gap:9px;padding:9px;border-radius:14px}
+#view-reception .reception-search{height:42px}
+#view-reception .reception-filter-btn{min-height:38px}
+#view-reception .reception-updates-panel{margin:8px 0;padding:9px 11px;border-radius:14px}
+#view-reception .reception-update-item[data-kind="status"] .reception-update-icon{background:#edf3f8;color:#315f7a}
+#view-reception .reception-closed-panel{margin:8px 0;padding:10px 12px;border-radius:15px}
+#view-reception .reception-floor-groups{gap:9px}
+#view-reception .reception-floor-section{padding:8px 9px 9px;border-radius:15px}
+#view-reception .reception-floor-section[data-reception-floor-section="third"]{--rf-accent:#315f7a;--rf-bg:#f1f6f8;--rf-border:#d4e1e7}
+#view-reception .reception-floor-section[data-reception-floor-section="ground"]{--rf-accent:#68774f;--rf-bg:#f4f6ef;--rf-border:#dfe5d4}
+#view-reception .reception-floor-heading{gap:8px;margin-bottom:7px;padding:0 3px 7px}
+#view-reception .reception-floor-heading::before{content:"";width:4px;height:22px;flex:0 0 4px;border-radius:99px;background:var(--rf-accent)}
+#view-reception .reception-floor-heading h2{font-size:16px;line-height:1.2}
+#view-reception .reception-floor-heading p,#view-reception .reception-floor-icon{display:none}
+#view-reception .reception-floor-count{min-width:29px;height:26px;padding:0 7px;border-radius:8px;font-size:11px}
+#view-reception .reception-floor-clinic-grid{gap:9px}
+#view-reception .reception-clinic-card{border-radius:14px;box-shadow:0 3px 10px rgba(15,23,42,.055)}
+#view-reception .reception-card-head{align-items:center;gap:8px;padding:7px 9px}
+#view-reception .reception-card-title-wrap{gap:0}
+#view-reception .reception-card-name{font-size:17px;line-height:1.25;font-weight:900}
+#view-reception .reception-room-name{display:block;margin-top:2px;color:#687487;font-size:11px;line-height:1.2;font-weight:700}
+#view-reception .reception-floor-badge{display:none!important}
+#view-reception .reception-room-badge{min-width:58px;min-height:42px;padding:4px 7px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;border-radius:10px;background:var(--rc-soft);font-size:15px;font-weight:900}
+#view-reception .reception-room-label{font-size:9px;line-height:1.1;font-weight:700;opacity:.78}
+#view-reception .reception-room-badge strong{font-size:16px;line-height:1.1;font-weight:900}
+#view-reception .reception-card-body{padding:8px 9px 9px}
+#view-reception .reception-nurse{margin-top:5px;padding:5px 8px}
+#view-reception .reception-card-row{margin-top:7px;gap:7px}
+@media(max-width:600px){
+  #view-reception{padding:8px!important}
+  #view-reception .reception-floor-section{padding:7px;border-radius:13px}
+  #view-reception .reception-floor-heading{margin-bottom:6px;padding-bottom:6px}
+  #view-reception .reception-floor-heading h2{font-size:14px}
+  #view-reception .reception-floor-clinic-grid{gap:7px}
+  #view-reception .reception-card-name{font-size:16px}
+}
+</style>
 </head>
 <body>
 <div id="networkStatusIndicator" class="network-status-indicator" role="status" aria-live="polite">
@@ -8108,10 +8156,8 @@
     <div id="receptionClinicGrid" class="reception-floor-groups">
       <section class="reception-floor-section" data-reception-floor-section="third" aria-labelledby="receptionThirdHeading">
         <header class="reception-floor-heading">
-          <span class="reception-floor-icon" aria-hidden="true">٣</span>
           <div class="reception-floor-heading-copy">
             <h2 id="receptionThirdHeading">عيادات الدور الثالث</h2>
-            <p>متابعة العيادات الموجودة في هذا الدور</p>
           </div>
           <span id="receptionThirdCount" class="reception-floor-count num">٠</span>
         </header>
@@ -8119,10 +8165,8 @@
       </section>
       <section class="reception-floor-section" data-reception-floor-section="ground" aria-labelledby="receptionGroundHeading">
         <header class="reception-floor-heading">
-          <span class="reception-floor-icon" aria-hidden="true">أ</span>
           <div class="reception-floor-heading-copy">
             <h2 id="receptionGroundHeading">عيادات الدور الأرضي</h2>
-            <p>متابعة العيادات الموجودة في هذا الدور</p>
           </div>
           <span id="receptionGroundCount" class="reception-floor-count num">٠</span>
         </header>
@@ -9615,6 +9659,7 @@ function renderReceptionDashboard(){
     const closed = data.status === "finished" || data.status === "idle";
     const pendingMissed = receptionPendingMissed(data).length;
     const clinicName = data.clinicName || data.specialty || room.place;
+    const roomName = room.place || "غرفة " + room.id;
     const doctor = doctorDisplayFromData(data);
     const nurse = data.nurse && data.nurse !== "—" ? data.nurse : "لا يوجد تمريض مسجل";
 
@@ -9629,9 +9674,9 @@ function renderReceptionDashboard(){
       '<div class="reception-card-head">' +
         '<div class="reception-card-title-wrap">' +
           '<div class="reception-card-name">' + clinicName + '</div>' +
-          '<span class="reception-floor-badge" data-floor="' + room.floor + '">' + room.floorName + '</span>' +
+          (roomName !== clinicName ? '<span class="reception-room-name">' + roomName + '</span>' : '') +
         '</div>' +
-        '<span class="reception-room-badge num">' + room.id + '</span>' +
+        '<span class="reception-room-badge"><span class="reception-room-label">رقم الغرفة</span><strong class="num">' + room.id + '</strong></span>' +
       '</div>' +
       '<div class="reception-card-body">' + bookingBadge(room.id) +
         '<div class="reception-doctor">' + doctor + '</div>' +
@@ -9993,10 +10038,15 @@ let receptionUpdateSequence = 0;
 
 function receptionClinicLabel(roomId, data){
   const room = ROOM_OPTIONS.find(item=>item.id === String(roomId));
+  const rawName = String(data?.clinicName || data?.specialty || room?.place || "العيادة").trim();
+  const clinicName = /^(?:ال)?عيادة(?:\s|$)/.test(rawName)
+    ? rawName
+    : rawName.replace(/^حجرة\s*/, "").replace(/^غرفة\s*/, "")
+      ? "عيادة " + rawName.replace(/^(?:حجرة|غرفة)\s*/, "")
+      : "العيادة";
   return {
     room,
-    clinicName:String(data?.clinicName || data?.specialty || room?.place || "العيادة").trim(),
-    location:room ? "غرفة " + room.id + " • " + room.floorName : ""
+    clinicName
   };
 }
 
@@ -10011,10 +10061,10 @@ function renderReceptionUpdates(){
     item.type = "button";
     item.className = "reception-update-item" + (update.isNew ? " is-new" : "");
     item.dataset.kind = update.kind;
-    item.setAttribute("aria-label", update.clinicName + ": " + update.detail + ". " + update.location);
+    item.setAttribute("aria-label", update.clinicName + ": " + update.detail);
     const icon = document.createElement("span");
     icon.className = "reception-update-icon";
-    icon.textContent = update.kind === "booking" ? "!" : "↻";
+    icon.textContent = update.kind === "booking" ? "!" : update.kind === "status" ? "●" : "↻";
     const copy = document.createElement("span");
     copy.className = "reception-update-copy";
     const clinic = document.createElement("span");
@@ -10023,10 +10073,7 @@ function renderReceptionUpdates(){
     const detail = document.createElement("span");
     detail.className = "reception-update-detail";
     detail.textContent = update.detail;
-    const location = document.createElement("span");
-    location.className = "reception-update-location";
-    location.textContent = update.location;
-    copy.append(clinic,detail,location);
+    copy.append(clinic,detail);
     item.append(icon,copy);
     item.addEventListener("click", ()=>focusReceptionClinic(update.roomId));
     list.appendChild(item);
@@ -10041,7 +10088,6 @@ function addReceptionUpdate(room, data, detail, kind="queue"){
     id:++receptionUpdateSequence,
     roomId:String(room.id),
     clinicName:labels.clinicName,
-    location:labels.location,
     detail,
     kind,
     isNew:true
@@ -10061,7 +10107,8 @@ function focusReceptionClinic(roomId){
   renderReceptionDashboard();
   const card = document.querySelector('.reception-clinic-card[data-room="' + CSS.escape(String(roomId)) + '"]');
   if(!card) return;
-  card.scrollIntoView({behavior:"smooth",block:"center"});
+  const pageTop = card.getBoundingClientRect().top + (window.scrollY || document.documentElement.scrollTop || 0);
+  window.scrollTo({top:Math.max(0,pageTop - Math.round(window.innerHeight * .35)),behavior:"smooth"});
   card.classList.remove("recently-updated");
   void card.offsetWidth;
   card.classList.add("recently-updated");
@@ -10077,15 +10124,21 @@ function trackReceptionQueueChanges(clinics){
     const current = clinics[room.id] || {};
     const previousNumber = typeof previous.displayCurrent === "number" ? previous.displayCurrent : previous.current;
     const currentNumber = typeof current.displayCurrent === "number" ? current.displayCurrent : current.current;
+    const statusChanged = Boolean(previous.status && current.status && previous.status !== current.status);
     const queueNumberChanged = previous.status === "active" && current.status === "active" && previousNumber !== currentNumber;
     const recallChanged = previous.status === "active" && current.status === "active" && current.recallMode && previous.recallNumber !== current.recallNumber;
+    if(statusChanged && receptionVisible){
+      const oldStatus = receptionStatusInfo(previous).label;
+      const newStatus = receptionStatusInfo(current).label;
+      addReceptionUpdate(room,current,"تغيير حالة العيادة: من " + oldStatus + " إلى " + newStatus,"status");
+    }
     if(queueNumberChanged || recallChanged){
       numberChanged = true;
       if(receptionVisible){
         const detail = recallChanged
           ? "إعادة نداء الدور رقم " + ar(current.recallNumber)
           : "تغيير رقم الكشف: " + ar(previousNumber ?? 0) + " ← " + ar(currentNumber ?? 0);
-        addReceptionUpdate(room,current,detail,"queue");
+        if(!statusChanged) addReceptionUpdate(room,current,detail,"queue");
       }
     }
   });
@@ -10099,7 +10152,7 @@ function trackReceptionBookingChanges(bookings){
   const receptionVisible = !$("#view-reception").classList.contains("hidden-view") && isReceptionUser();
   if(closedRooms.length && receptionVisible){
     bookingAlarm();
-    closedRooms.forEach(room=>addReceptionUpdate(room,receptionDataForRoom(room),"تم إغلاق الحجز لاكتمال العدد","booking"));
+    closedRooms.forEach(room=>addReceptionUpdate(room,receptionDataForRoom(room),"تم إغلاق الحجز","booking"));
   }
   receptionPreviousBooking = bookings || {};
 }
