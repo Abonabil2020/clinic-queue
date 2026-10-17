@@ -7067,6 +7067,7 @@
   #view-nurse>.p-4>.bg-white>h2{font-size:14px;margin-bottom:6px}
   #view-nurse>.p-4>.grid{margin-top:8px}
 }
+
 </style>
 <style>
 /* Requested control spacing and persistent missed-turn strip. */
@@ -7261,6 +7262,51 @@
   #view-reception .reception-room-badge{min-width:43px;min-height:30px;padding:2px 6px;border-radius:9px}
   #view-reception .reception-room-badge strong{font-size:15px}
 }
+/* واجهة الاستعلامات فقط: احتواء حالة الانتهاء وتوسيط عناوين الطوابق. */
+#view-reception .reception-clinic-card[data-status="finished"] .reception-current-number{
+  max-width:100%;
+  padding:0 2px;
+  box-sizing:border-box;
+  font-size:clamp(14px,1.25vw,19px);
+  line-height:1.15;
+  text-align:center;
+  white-space:nowrap;
+}
+#view-reception .reception-floor-heading{
+  position:relative;
+  justify-content:center;
+  min-height:42px;
+  padding:5px 42px 9px;
+  border-bottom:0;
+}
+#view-reception .reception-floor-heading::before{display:none}
+#view-reception .reception-floor-heading-copy{
+  flex:0 1 auto;
+  text-align:center;
+}
+#view-reception .reception-floor-heading h2{
+  display:inline-block;
+  padding:7px 24px;
+  border-radius:999px;
+  color:#fff;
+  font-size:17px;
+  line-height:1.2;
+  font-weight:900;
+  box-shadow:0 4px 12px rgba(15,23,42,.15);
+}
+#view-reception .reception-floor-section[data-reception-floor-section="third"] .reception-floor-heading h2{
+  background:linear-gradient(135deg,#7f1d3d,#a92f54,#c74668);
+}
+#view-reception .reception-floor-section[data-reception-floor-section="ground"] .reception-floor-heading h2{
+  background:linear-gradient(135deg,#334155,#52657b,#718096);
+}
+#view-reception .reception-floor-count{
+  position:absolute;
+  inset-inline-end:0;
+  top:50%;
+  transform:translateY(-50%);
+}
+
 </style>
 </head>
 <body>
@@ -8888,10 +8934,13 @@ function renderBookingStatus(){
     el.dataset.booking = info.key;
 
     if(el.closest("#view-tv")){
-      if(info.key === "closed"){
+      const ended = el.closest(".queue-card")?.dataset.status === "finished";
+      if(ended){
+        el.style.display = "none";
+        el.textContent = "";
+      }else if(info.key === "closed"){
         el.style.display = "";
-        el.innerHTML =
-          '<span class="tv-booking-main">اكتمل العدد المتاح لهذه الفترة.</span>';
+        el.innerHTML = '<span class="tv-booking-main">اكتمل العدد المتاح لهذه الفترة.</span>';
       }else{
         el.style.display = "none";
         el.textContent = "";
@@ -10287,6 +10336,7 @@ function handleAllClinicsSnapshot(snapshot){
   if(tvVisible){
     trackTvClinicUpdates(clinics);
     renderTvDashboardFromClinics(clinics, true);
+    renderBookingStatus();
   }
 
   if(!$("#view-reception").classList.contains("hidden-view")) renderReceptionDashboard();
