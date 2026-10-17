@@ -7168,6 +7168,16 @@
 #view-reception .reception-updates-content{padding:3px 0 4px}
 #view-reception .reception-updates-hint{margin:0 2px 4px;color:#718096;font-family:'RB',sans-serif;font-size:10px;line-height:1.5}
 #view-reception .reception-updates-list{gap:6px}
+#view-reception .reception-toolbar{grid-template-columns:auto minmax(240px,1fr) auto}
+#view-reception .reception-updates-top-toggle{width:auto;min-width:128px;min-height:42px;justify-content:center;padding:5px 10px;border:1px solid #d7e6f0;border-radius:12px;background:#f5fbff;color:#174c6a}
+#view-reception .reception-updates-top-toggle .reception-updates-title{font-size:12px}
+#view-reception .reception-updates-top-toggle .reception-updates-title::before{display:none}
+#view-reception .reception-updates-top-toggle .reception-updates-count{min-width:20px;height:20px}
+#view-reception .reception-updates-top-toggle .reception-updates-chevron{font-size:16px}
+#view-reception .reception-toolbar .reception-search{grid-column:auto}
+#view-reception .reception-toolbar .reception-filter-group{grid-column:auto}
+#view-reception .reception-updates-panel{margin:6px 0 8px;padding:8px 10px;border-radius:12px}
+#view-reception .reception-updates-empty{padding:9px 10px;border:1px dashed #cfe4f4;border-radius:10px;background:#fff;color:#718096;font-family:'RB',sans-serif;font-size:11px;text-align:center}
 #view-reception .reception-update-item{align-items:center;min-width:0;padding:6px 8px;gap:7px;border-radius:10px}
 #view-reception .reception-update-icon{width:27px;height:27px;flex-basis:27px;border-radius:8px;font-size:13px}
 #view-reception .reception-update-copy{display:flex;flex-direction:column;gap:1px;min-width:0;line-height:1.55}
@@ -7216,8 +7226,12 @@
   #view-reception{padding:7px!important;overflow-x:hidden!important;overflow-y:visible!important;min-height:100vh;touch-action:auto;-webkit-overflow-scrolling:touch}
   #view-reception .reception-shell{width:100%;max-width:100%;min-width:0}
   #view-reception .reception-topbar{padding:9px 10px;margin-bottom:7px}
-  #view-reception .reception-toolbar{grid-template-columns:minmax(0,1fr);padding:7px;gap:7px}
-  #view-reception .reception-search{width:100%;min-width:0;height:40px;padding-inline:11px;font-family:'RB',sans-serif;font-size:12px}
+  #view-reception .reception-toolbar{grid-template-columns:auto minmax(0,1fr);padding:7px;gap:7px}
+  #view-reception .reception-updates-top-toggle{grid-column:1;grid-row:1;min-width:0;min-height:40px;padding:4px 7px;gap:5px}
+  #view-reception .reception-updates-top-toggle .reception-updates-title{font-size:11px}
+  #view-reception .reception-updates-top-toggle .reception-updates-chevron{font-size:14px}
+  #view-reception .reception-toolbar .reception-search{grid-column:2;grid-row:1;width:100%;min-width:0;height:40px;padding-inline:11px;font-family:'RB',sans-serif;font-size:12px}
+  #view-reception .reception-toolbar .reception-filter-group{grid-column:1/-1;grid-row:2}
   #view-reception .reception-filter-group{justify-content:flex-start;gap:5px}
   #view-reception .reception-filter-btn{min-height:33px;padding:0 9px;font-family:'RB',sans-serif;font-size:11px}
   #view-reception .reception-updates-panel{margin:4px 0 6px;padding:3px 6px}
@@ -8173,30 +8187,12 @@
       </div>
     </div>
 
-    <section id="receptionUpdatesPanel" class="reception-updates-panel hidden-view" aria-live="polite" aria-label="آخر تعديلات العيادات">
-      <div class="reception-updates-head">
-        <button id="receptionUpdatesToggle" class="reception-updates-toggle" type="button" aria-expanded="false" aria-controls="receptionUpdatesContent">
-          <span class="reception-updates-title">آخر التعديلات</span>
-          <span id="receptionUpdatesCount" class="reception-updates-count num">٠</span>
-          <span id="receptionUpdatesPreview" class="reception-updates-preview">اضغط لعرض التغييرات</span>
-          <span class="reception-updates-chevron" aria-hidden="true">⌄</span>
-        </button>
-      </div>
-      <div id="receptionUpdatesContent" class="reception-updates-content hidden-view">
-        <p class="reception-updates-hint">اضغط على التعديل للانتقال إلى العيادة</p>
-        <div id="receptionUpdatesList" class="reception-updates-list"></div>
-      </div>
-    </section>
-    <button id="receptionUpdateToast" class="reception-update-toast hidden-view" type="button" aria-live="polite">
-      <span class="reception-update-toast-mark" aria-hidden="true">●</span>
-      <span class="reception-update-toast-copy">
-        <strong id="receptionUpdateToastClinic"></strong>
-        <span id="receptionUpdateToastDetail"></span>
-      </span>
-      <span class="reception-update-toast-hint">عرض</span>
-    </button>
-
     <div class="reception-toolbar">
+      <button id="receptionUpdatesToggle" class="reception-updates-toggle reception-updates-top-toggle" type="button" aria-expanded="false" aria-controls="receptionUpdatesContent">
+        <span class="reception-updates-title">آخر التعديلات</span>
+        <span id="receptionUpdatesCount" class="reception-updates-count num">٠</span>
+        <span class="reception-updates-chevron" aria-hidden="true">⌄</span>
+      </button>
       <input id="receptionSearch" class="reception-search" type="search" autocomplete="off"
         placeholder="ابحث بالعيادة أو الغرفة أو الطبيب أو التمريض أو رقم الدور أو الحالة">
       <div id="receptionFilters" class="reception-filter-group">
@@ -8207,6 +8203,22 @@
         <button type="button" class="reception-filter-btn" data-rc-filter="finished">انتهت</button>
       </div>
     </div>
+
+    <section id="receptionUpdatesPanel" class="reception-updates-panel hidden-view" aria-live="polite" aria-label="آخر تعديلات العيادات">
+      <div id="receptionUpdatesContent" class="reception-updates-content hidden-view">
+        <p class="reception-updates-hint">اضغط على التعديل للانتقال إلى العيادة</p>
+        <div id="receptionUpdatesList" class="reception-updates-list"></div>
+        <div id="receptionUpdatesEmpty" class="reception-updates-empty">لا توجد تعديلات مسجلة حتى الآن</div>
+      </div>
+    </section>
+    <button id="receptionUpdateToast" class="reception-update-toast hidden-view" type="button" aria-live="polite">
+      <span class="reception-update-toast-mark" aria-hidden="true">●</span>
+      <span class="reception-update-toast-copy">
+        <strong id="receptionUpdateToastClinic"></strong>
+        <span id="receptionUpdateToastDetail"></span>
+      </span>
+      <span class="reception-update-toast-hint">عرض</span>
+    </button>
 
     <section id="receptionClosedBookings" class="reception-closed-panel" aria-live="polite">
       <div class="reception-closed-head">
@@ -10122,16 +10134,13 @@ function renderReceptionUpdates(){
   const toggle = $("#receptionUpdatesToggle");
   const content = $("#receptionUpdatesContent");
   const count = $("#receptionUpdatesCount");
-  const preview = $("#receptionUpdatesPreview");
+  const empty = $("#receptionUpdatesEmpty");
   if(!panel || !list) return;
-  panel.classList.toggle("hidden-view", receptionRecentUpdates.length === 0);
+  panel.classList.toggle("hidden-view", receptionRecentUpdates.length === 0 && !receptionUpdatesExpanded);
   if(count) count.textContent = ar(receptionRecentUpdates.length);
-  if(preview){
-    const latest = receptionRecentUpdates[0];
-    preview.textContent = latest ? latest.clinicName + " · " + latest.detail : "اضغط لعرض التغييرات";
-  }
   if(toggle) toggle.setAttribute("aria-expanded", receptionUpdatesExpanded ? "true" : "false");
   content?.classList.toggle("hidden-view", !receptionUpdatesExpanded);
+  empty?.classList.toggle("hidden-view", receptionRecentUpdates.length !== 0);
   list.innerHTML = "";
   receptionRecentUpdates.slice(0,3).forEach(update=>{
     const item = document.createElement("button");
