@@ -7321,6 +7321,28 @@
   transform:translateY(-50%);
 }
 
+
+/* Requested changes: twelve-clinic display only. */
+#view-tv:not(.tv-floor-only){grid-template-rows:8.9% minmax(0,1fr) 7%!important;width:100%;max-width:100vw;box-sizing:border-box}
+#view-tv:not(.tv-floor-only) .tv-activity-panel.expanded{width:min(40vw,900px)!important;max-height:32vh!important;padding:.7vh .8vw!important;gap:.4vh!important}
+#view-tv:not(.tv-floor-only) .tv-activity-panel.expanded .tv-activity-head{font-size:clamp(16px,2.1vh,48px)!important;min-height:0!important}
+#view-tv:not(.tv-floor-only) .tv-activity-panel.expanded .tv-activity-item{font-size:clamp(16px,2.2vh,50px)!important;padding:.25vh 0!important}
+#view-tv:not(.tv-floor-only) .tv-footer{display:flex!important;align-items:center!important;padding:.5vh 0!important;background:#fff1f1!important;border-top:2px solid #fe6565!important;box-shadow:0 -3px 14px #fe656526!important;min-width:0}
+#view-tv:not(.tv-floor-only) .tv-footer-message{font-size:clamp(20px,3.1vh,72px)!important;font-weight:700!important;line-height:1.3!important;color:#9b2929!important}
+#view-tv:not(.tv-floor-only) .tv-dashboard,#view-tv:not(.tv-floor-only) .floor-section,#view-tv:not(.tv-floor-only) .clinic-grid{min-width:0!important;max-width:100%;box-sizing:border-box}
+@media(max-width:900px){
+  #view-tv:not(.tv-floor-only){height:auto!important;min-height:100dvh!important;grid-template-rows:auto auto auto!important;overflow:visible!important}
+  #view-tv:not(.tv-floor-only) .tv-dashboard{display:grid!important;grid-template-rows:auto auto!important;height:auto!important;overflow:visible!important}
+  #view-tv:not(.tv-floor-only) .floor-section{grid-template-rows:auto auto!important;height:auto!important}
+  #view-tv:not(.tv-floor-only) .clinic-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-auto-rows:auto!important;height:auto!important;gap:8px!important}
+  #view-tv:not(.tv-floor-only) .queue-card{height:auto!important;min-width:0!important}
+  #view-tv:not(.tv-floor-only) .tv-activity-panel.expanded{width:min(82vw,420px)!important;max-height:30vh!important;padding:8px!important}
+  #view-tv:not(.tv-floor-only) .tv-footer-message{font-size:clamp(20px,3.2vw,30px)!important}
+  #view-tv:not(.tv-floor-only) .tv-footer{min-height:64px!important}
+}
+@media(max-width:480px){
+  #view-tv:not(.tv-floor-only) .clinic-grid{grid-template-columns:minmax(0,1fr)!important}
+}
 </style>
 </head>
 <body>
@@ -7385,7 +7407,6 @@
         <div class="portal-tv-options" role="menu" aria-label="اختيار شاشة العرض">
           <a href="#/tv" class="portal-tv-option" role="menuitem"><strong>عرض جميع العيادات</strong><small>12 عيادة</small></a>
           <a href="#/tv-slideshow" class="portal-tv-option" role="menuitem"><strong>العرض المتتابع للعيادات</strong><small>٣ صفحات — كل ١٠ ثوانٍ</small></a>
-          <a href="#/tv-individual" class="portal-tv-option" role="menuitem"><strong>العرض الفردي للعيادات</strong><small>12 عيادة — كل 5 ثوانٍ</small></a>
           <a href="#/tv-third" class="portal-tv-option" role="menuitem"><strong>عيادات الدور الثالث</strong><small>8 عيادات</small></a>
           <a href="#/tv-ground" class="portal-tv-option" role="menuitem"><strong>عيادات الدور الأرضي</strong><small>4 عيادات</small></a>
         </div>
@@ -10511,7 +10532,7 @@ function route(){
   if(h === "home")      { show("home"); }
   else if(h === "tv")   { setTvDisplayMode("all"); show("tv"); startClock(); }
   else if(h === "tv-slideshow") { setTvDisplayMode("slideshow"); show("tv"); startClock(); }
-  else if(h === "tv-individual") { setTvDisplayMode("individual"); show("tv"); startClock(); }
+  else if(h === "tv-individual") { location.replace("#/tv"); return; }
   else if(h === "tv-third") { setTvDisplayMode("third"); show("tv"); startClock(); }
   else if(h === "tv-ground") { setTvDisplayMode("ground"); show("tv"); startClock(); }
   else if(h === "qr")   { show("qr"); renderQrDashboard(); }
