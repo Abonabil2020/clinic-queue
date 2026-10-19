@@ -1963,7 +1963,6 @@
   #view-staff-manager[data-manager-role="clinics_manager"] .staff-import-method:first-child,
   #view-staff-manager[data-manager-role="clinics_manager"] .staff-import-method:last-child{display:none!important}
   #view-staff-manager[data-manager-role="clinics_manager"] .staff-import-methods{grid-template-columns:1fr}
-  #staffSavedNames{margin-top:12px;line-height:2}
   #view-staff-manager[data-manager-role="clinics_manager"] #staffImportChangesDetails{display:none}
 
   /* ===== فصل صلاحيات مسؤول العيادات ومسؤول التمريض ===== */
@@ -7886,10 +7885,6 @@
       </div>
     </section>
 
-    <details data-manager-only="clinics" style="margin:12px 0;padding:14px;border:1px solid #e1e5e9;border-radius:14px;background:white">
-      <summary>عرض الأطباء والتخصصات المحفوظة</summary>
-      <div id="staffSavedNames"></div>
-    </details>
     <div class="staff-workspace-switcher" id="staffWorkspaceSwitcher">
       <button type="button" class="staff-workspace-card" data-target="import">
         <span class="staff-workspace-icon">⇩</span>
@@ -12713,7 +12708,6 @@ async function commitStaffImport(){
     if(!isNursing){
       staffImportState = null;
       renderStaffImportPreview();
-      document.querySelector('#staffSavedNames')?.parentElement.setAttribute('open','');
     }
   }catch(e){
     console.error("Staff Excel import error:",e);
@@ -13270,12 +13264,6 @@ function renderStaffManager(){
   if(!$("#staffDirectoryStatus")) return;
   if(typeof updateStaffManagerTopButton === "function") updateStaffManagerTopButton();
   applyStaffManagerRoleUI();
-  if(staffManagerCanClinics()){
-  const savedSpecialties = new Map(staffDirectoryState.specialties.map(item=>[item.id,item.name]));
-  $("#staffSavedNames").innerHTML = staffDirectoryState.doctors.length
-    ? staffDirectoryState.doctors.map(item=>'<div>' + escapeHtml(item.name) + ' — ' + escapeHtml(savedSpecialties.get(item.specialtyId) || "بدون تخصص") + (item.active === false ? ' — موقوف' : '') + '</div>').join('')
-    : "لا توجد أسماء محفوظة بعد.";
-  }
   $("#staffSavedDoctorCount").textContent = ar(staffDirectoryState.doctors.length);
   $("#staffSavedSpecialtyCount").textContent = ar(staffDirectoryState.specialties.length);
   renderStaffImportPreview();
