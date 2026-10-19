@@ -8534,7 +8534,7 @@ const NURSING_RESUME_KEY = "islahNursingResume:" + location.pathname;
 let nursingResume = null;
 try { nursingResume = JSON.parse(localStorage.getItem(NURSING_RESUME_KEY) || "null"); } catch(e) {}
 const explicitRoom = new URLSearchParams(location.search).get("room");
-let nursingResumePending = Boolean(nursingResume && nursingResume.view === "nurse" && ["", "#/home", "#/nurse"].includes(location.hash) && (!explicitRoom || explicitRoom === nursingResume.roomId));
+let nursingResumePending = Boolean(nursingResume && nursingResume.view === "nurse" && location.hash === "#/nurse" && (!explicitRoom || explicitRoom === nursingResume.roomId));
 const requestedRoom = explicitRoom || (nursingResumePending ? nursingResume.roomId : null);
 const DISPLAY_SLOT_ID = ROOM_OPTIONS.some(room=>room.id === requestedRoom) ? requestedRoom : "311";
 const CURRENT_ROOM = ROOM_OPTIONS.find(room=>room.id === DISPLAY_SLOT_ID);
@@ -14555,7 +14555,7 @@ auth.onAuthStateChanged(user=>{
     sessionStorage.removeItem(SETUP_KEY);
     setupData = null;
     const currentView = (location.hash || "#/home").replace("#/","");
-    if(!["home","nurse","setup","nursing-control","tv","qr","reception","patient","clinics-manager","nursing-manager","staff-manager-login","staff-manager","admin-login","admin"].includes(currentView)){
+    if(!["home","nurse","setup","nursing-control","tv","tv-slideshow","tv-individual","tv-third","tv-ground","qr","reception","patient","clinics-manager","nursing-manager","staff-manager-login","staff-manager","admin-login","admin"].includes(currentView)){
       location.hash = "#/home";
     }
     route();
@@ -14568,7 +14568,7 @@ auth.onAuthStateChanged(user=>{
 
   if(isAdminUser(user)){
     const currentView = (location.hash || "#/home").replace("#/", "");
-    if(!["tv","qr","patient","admin","admin-login","setup","nurse"].includes(currentView)) location.hash = "#/admin";
+    if(!["home","tv","tv-slideshow","tv-individual","tv-third","tv-ground","qr","patient","admin","admin-login","setup","nurse"].includes(currentView)) location.hash = "#/admin";
     syncAdminRoomControls();
     route();
     return;
@@ -14578,7 +14578,7 @@ auth.onAuthStateChanged(user=>{
     stopAdminAuditListener();
     stopAdminPresenceListener();
     const currentView = (location.hash || "#/home").replace("#/", "");
-    if(!["tv","qr","patient","staff-manager","staff-manager-login"].includes(currentView)) location.hash = "#/staff-manager";
+    if(!["home","tv","tv-slideshow","tv-individual","tv-third","tv-ground","qr","patient","staff-manager","staff-manager-login"].includes(currentView)) location.hash = "#/staff-manager";
     route();
     return;
   }
@@ -14587,13 +14587,13 @@ auth.onAuthStateChanged(user=>{
     stopAdminAuditListener();
     stopAdminPresenceListener();
     const currentView = (location.hash || "#/home").replace("#/", "");
-    if(!["tv", "qr", "patient"].includes(currentView)) location.hash = "#/reception";
+    if(!["home", "tv", "tv-slideshow", "tv-individual", "tv-third", "tv-ground", "qr", "patient"].includes(currentView)) location.hash = "#/reception";
     route();
     return;
   }
 
   const currentView = (location.hash || "#/home").replace("#/","");
-  if(!["tv","qr","reception","patient"].includes(currentView)){
+  if(!["home","tv","tv-slideshow","tv-individual","tv-third","tv-ground","qr","reception","patient"].includes(currentView)){
     const authorizedRoom = authorizedRoomForUser(user);
     if(!authorizedRoom){
       $("#loginMsg").textContent = "هذا الحساب غير مربوط بأي حجرة";
