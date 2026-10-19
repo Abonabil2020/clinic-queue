@@ -1952,18 +1952,18 @@
   #view-staff-manager .staff-list-search-empty{padding:14px;text-align:center;color:#64748b;font-size:14px}
 
   /* اعتماد واحد وإحصائية القوائم المحفوظة لمسؤول العيادات */
-  #view-staff-manager[data-manager-role="clinics_manager"] #staffCommitImport,
-  #view-staff-manager[data-manager-role="clinics_manager"] #staffManualApproveBtn{display:none!important}
+  #view-staff-manager:is([data-manager-role="clinics_manager"],[data-manager-role="nursing_manager"]) #staffCommitImport,
+  #view-staff-manager:is([data-manager-role="clinics_manager"],[data-manager-role="nursing_manager"]) #staffManualApproveBtn{display:none!important}
   #staffSavedStats{margin:18px 0;padding:16px;border:1px solid #e1e5e9;border-radius:16px;background:#fff}
   #staffSavedStats .staff-import-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));margin-top:10px}
 
 
   /* واجهة مبسطة لمسؤول العيادات */
-  #view-staff-manager[data-manager-role="clinics_manager"] :is(#staffRoleGuide,.staff-admin-toolbar,#staffActivationHint,#staffDirectoryStatus,#staffManagerTopBtn,#staffQuickTopBtn,#staffQuickCloseBtn,.staff-workspace-return,#staffQuickPendingCount,.staff-admin-note,#staffImportReadyBadge){display:none!important}
-  #view-staff-manager[data-manager-role="clinics_manager"] .staff-import-method:first-child,
-  #view-staff-manager[data-manager-role="clinics_manager"] .staff-import-method:last-child{display:none!important}
-  #view-staff-manager[data-manager-role="clinics_manager"] .staff-import-methods{grid-template-columns:1fr}
-  #view-staff-manager[data-manager-role="clinics_manager"] #staffImportChangesDetails{display:none}
+  #view-staff-manager:is([data-manager-role="clinics_manager"],[data-manager-role="nursing_manager"]) :is(#staffRoleGuide,.staff-admin-toolbar,#staffActivationHint,#staffDirectoryStatus,#staffManagerTopBtn,#staffQuickTopBtn,#staffQuickCloseBtn,.staff-workspace-return,#staffQuickPendingCount,.staff-admin-note,#staffImportReadyBadge){display:none!important}
+  #view-staff-manager:is([data-manager-role="clinics_manager"],[data-manager-role="nursing_manager"]) .staff-import-method:first-child,
+  #view-staff-manager:is([data-manager-role="clinics_manager"],[data-manager-role="nursing_manager"]) .staff-import-method:last-child{display:none!important}
+  #view-staff-manager:is([data-manager-role="clinics_manager"],[data-manager-role="nursing_manager"]) .staff-import-methods{grid-template-columns:1fr}
+  #view-staff-manager:is([data-manager-role="clinics_manager"],[data-manager-role="nursing_manager"]) #staffImportChangesDetails{display:none}
 
   /* ===== فصل صلاحيات مسؤول العيادات ومسؤول التمريض ===== */
   #view-staff-manager[data-manager-role="clinics_manager"] [data-manager-only="nursing"],
@@ -7885,6 +7885,13 @@
       </div>
     </section>
 
+    <section data-manager-only="nursing" aria-label="إحصائية أسماء التمريض المحفوظة" aria-live="polite" style="margin:18px 0;padding:16px;border:1px solid #e1e5e9;border-radius:16px;background:#fff">
+      <strong>إجمالي أسماء التمريض المحفوظة في النظام</strong>
+      <div class="staff-import-stats">
+        <div class="staff-import-stat"><strong id="staffSavedNurseCount" class="num">٠</strong><span>تمريض</span></div>
+      </div>
+    </section>
+
     <div class="staff-workspace-switcher" id="staffWorkspaceSwitcher">
       <button type="button" class="staff-workspace-card" data-target="import">
         <span class="staff-workspace-icon">⇩</span>
@@ -10677,7 +10684,7 @@ function stopStaffDirectoryListener(){
   }
   staffDirectoryState = {ready:false,specialties:[],doctors:[],nurses:[]};
   staffDirectoryLoaded = false;
-  if($("#view-staff-manager").dataset.managerRole === "clinics_manager"){
+  if(["clinics_manager","nursing_manager"].includes($("#view-staff-manager").dataset.managerRole)){
     staffImportReadToken++;
     staffImportReading = false;
     staffImportState = normalizeStaffImportData(cloneEmbeddedStaffImport());
@@ -11615,15 +11622,15 @@ function applyStaffManagerRoleUI(){
   if(!view || !role) return;
   const previousRole = view.dataset.managerRole;
   view.dataset.managerRole = role;
-  if(role === "clinics_manager" && previousRole !== role){
+  if(previousRole !== role){
     staffImportState = null;
   }
   if(role === "clinics_manager"){
     document.querySelector('.staff-workspace-card[data-target="import"] small').textContent = "اختر ملف الأطباء والتخصصات واعتمده";
     document.querySelectorAll('.staff-import-method')[1].querySelector('p').textContent = "ارفع ملف Excel يحتوي على اسم الطبيب واسم التخصص.";
   }else{
-    document.querySelector('.staff-workspace-card[data-target="import"] small').textContent = "رفع Excel أو استخدام الملف الأساسي أو رابط OneDrive";
-    document.querySelectorAll('.staff-import-method')[1].querySelector('p').textContent = "يدعم ملفات XLSX وXLS وCSV. سيتم قراءة أسماء الأطباء والتخصصات والتمريض قبل الحفظ.";
+    document.querySelector('.staff-workspace-card[data-target="import"] small').textContent = "اختر ملف أسماء التمريض واعتمده";
+    document.querySelectorAll('.staff-import-method')[1].querySelector('p').textContent = "ارفع ملف Excel يحتوي على أسماء التمريض.";
   }
 
   const isNursing = role === "nursing_manager";
@@ -11665,7 +11672,7 @@ function applyStaffManagerRoleUI(){
     ? "استيراد أسماء التمريض من Excel"
     : "استيراد التخصصات والأطباء من Excel";
   if(importDesc) importDesc.textContent = isNursing
-    ? "ارفع ملف الموارد البشرية نفسه؛ سيستخدم النظام أسماء التمريض فقط ولن يغيّر التخصصات أو الأطباء."
+    ? "اختر ملف أسماء التمريض، راجع بياناته ثم اضغط اعتماد الملف."
     : "اختر ملف الأطباء والتخصصات، راجع بياناته ثم اضغط اعتماد الملف.";
 
   const manualDesc = document.querySelector("#view-staff-manager .staff-manual-desc");
@@ -11755,7 +11762,7 @@ function closeStaffWorkspace(returnToSwitcher = true){
   refreshStaffManagerQuickBar();
   updateStaffManagerTopButton();
 
-  if(returnToSwitcher && !staffManagerCanClinics()){
+  if(returnToSwitcher && !isStaffManagerUser()){
     const switcher = $("#staffWorkspaceSwitcher");
     if(switcher){
       setTimeout(()=>switcher.scrollIntoView({behavior:"smooth", block:"start"}),30);
@@ -11785,7 +11792,7 @@ function openStaffWorkspace(target){
   updateStaffManagerTopButton();
 
   const panel = document.querySelector('[data-workspace-panel="' + target + '"]');
-  if(panel && !staffManagerCanClinics()){
+  if(panel && !isStaffManagerUser()){
     setTimeout(()=>{
       panel.scrollIntoView({behavior:"smooth", block:"start"});
     },30);
@@ -11875,7 +11882,7 @@ function refreshStaffManagerQuickBar(){
 
   staffQuickCloseBtn.disabled = !workspaceOpen;
   const manualOpen = activeStaffWorkspace === "manual";
-  if(staffManagerCanClinics()){
+  if(isStaffManagerUser()){
     const importOpen = activeStaffWorkspace === "import";
     const count = refreshStaffManualDirtyState().changes.length;
     const data = staffImportDataForCurrentManager(staffImportState);
@@ -11883,7 +11890,7 @@ function refreshStaffManagerQuickBar(){
     staffQuickPendingCount.classList.toggle("hidden-view", !manualOpen);
     staffQuickPendingCount.textContent = ar(count);
     staffQuickApproveBtn.disabled = staffManualSaving || staffImportSaving || staffImportReading ||
-      (importOpen ? !data.specialties.length || !data.doctors.length : !manualOpen || count === 0);
+      (importOpen ? (staffManagerCanNursing() ? !data.nurses.length : !data.specialties.length || !data.doctors.length) : !manualOpen || count === 0);
     staffQuickApproveBtn.textContent = staffManualSaving || staffImportSaving ? "جارٍ الاعتماد..."
       : importOpen ? (staffImportReading ? "جارٍ قراءة الملف..." : "اعتماد الملف")
       : manualOpen ? "اعتماد التعديلات" : "اختر قسمًا للاعتماد";
@@ -11910,7 +11917,7 @@ staffQuickCloseBtn?.addEventListener("click",()=>{
 });
 
 staffQuickApproveBtn?.addEventListener("click",()=>{
-  if(staffManagerCanClinics() && activeStaffWorkspace === "import"){
+  if(isStaffManagerUser() && activeStaffWorkspace === "import"){
     if(!staffQuickApproveBtn.disabled) commitStaffImport();
     return;
   }
@@ -12146,7 +12153,9 @@ function renderStaffImportChanges(data){
   if(changes.loading){
     box.dataset.state = "loading";
     badge.textContent = "جارٍ المقارنة...";
-    summary.innerHTML = '<div class="staff-import-change-loading">جارٍ تحميل القوائم الحالية من Firebase للمقارنة مع الملف.</div>';
+    summary.innerHTML = staffManagerCanNursing()
+      ? '<div class="staff-import-change-loading">جارٍ تحميل القوائم الحالية للمقارنة مع الملف.</div>'
+      : '<div class="staff-import-change-loading">جارٍ تحميل القوائم الحالية من Firebase للمقارنة مع الملف.</div>';
     details.innerHTML = "";
     return;
   }
@@ -12238,7 +12247,7 @@ function renderStaffImportPreview(){
   $("#staffImportDoctorCount").textContent = ar(data.doctors.length);
   $("#staffImportNurseCount").textContent = ar(data.nurses.length);
 
-  $("#staffImportPreview").classList.toggle("hidden-view", staffManagerCanClinics() && !staffImportState);
+  $("#staffImportPreview").classList.toggle("hidden-view", isStaffManagerUser() && !staffImportState);
   renderStaffImportChanges(data);
 
   const warningBox = $("#staffImportWarnings");
@@ -12398,7 +12407,7 @@ async function readStaffExcelArrayBuffer(buffer, sourceName, readToken = staffIm
   if(!parsed.specialties.length && !parsed.doctors.length && !parsed.nurses.length){
     throw new Error("no-supported-data");
   }
-  if(staffManagerCanClinics() && readToken !== staffImportReadToken) return;
+  if(isStaffManagerUser() && readToken !== staffImportReadToken) return;
   staffImportState = parsed;
   renderStaffImportPreview();
   staffAdminMessage("تمت قراءة ملف Excel. راجع التنبيهات والفروقات قبل الحفظ.");
@@ -12705,13 +12714,11 @@ async function commitStaffImport(){
         );
       }
     }
-    if(!isNursing){
-      staffImportState = null;
-      renderStaffImportPreview();
-    }
+    staffImportState = null;
+    renderStaffImportPreview();
   }catch(e){
     console.error("Staff Excel import error:",e);
-    staffAdminMessage(isNursing ? "تعذر حفظ بيانات Excel في Firebase. راجع الاتصال والصلاحيات." : e?.message === "staff-save-verification"
+    staffAdminMessage(isNursing ? "لم يتم اعتماد ملف التمريض. تحقق من الاتصال أو تواصل مع مسؤول النظام." : e?.message === "staff-save-verification"
       ? "تم إرسال الحفظ، لكن تعذر التأكد من البيانات. راجع القائمة المحفوظة قبل إعادة الاعتماد."
       : "لم يتم اعتماد الملف. تحقق من الاتصال أو تواصل مع مسؤول النظام.", false);
   }finally{
@@ -12732,26 +12739,9 @@ $("#staffExcelFile").addEventListener("change",async event=>{
   const file = event.target.files?.[0];
   if(!file) return;
 
-  if(staffManagerCanNursing()){
-  try{
-    const buffer = await file.arrayBuffer();
-    await readStaffExcelArrayBuffer(buffer,file.name);
-  }catch(e){
-    console.error("Excel file import:",e);
-    staffAdminMessage(
-      e?.message === "excel-library-unavailable"
-        ? "تعذر تحميل مكتبة قراءة Excel. تأكد من اتصال الإنترنت."
-        : "تعذر قراءة ملف Excel. تأكد من أسماء الأعمدة وصيغة الملف.",
-      false
-    );
-  }finally{
-    event.target.value = "";
-  }
-    return;
-  }
-  if(staffManagerCanClinics() && staffImportSaving) return;
+  if(isStaffManagerUser() && staffImportSaving) return;
   const readToken = ++staffImportReadToken;
-  if(staffManagerCanClinics()){
+  if(isStaffManagerUser()){
     staffImportState = null;
     staffImportReading = true;
     renderStaffImportPreview();
@@ -12762,7 +12752,7 @@ $("#staffExcelFile").addEventListener("change",async event=>{
     await readStaffExcelArrayBuffer(buffer,file.name,readToken);
   }catch(e){
     if(readToken !== staffImportReadToken) return;
-    if(staffManagerCanClinics()) staffImportState = null;
+    if(isStaffManagerUser()) staffImportState = null;
     console.error("Excel file import:",e);
     staffAdminMessage(
       e?.message === "excel-library-unavailable"
@@ -12992,7 +12982,7 @@ async function approveStaffManualChanges(){
     return staffAdminMessage("لا توجد تعديلات معلقة للاعتماد.");
   }
 
-  if(!confirm("سيتم تطبيق " + diff.changes.length + (staffManagerCanClinics() ? " تعديل. متابعة؟" : " تعديل يدوي على Firebase. متابعة؟"))) return;
+  if(!confirm("سيتم تطبيق " + diff.changes.length + " تعديل. متابعة؟")) return;
 
   const button = $("#staffManualApproveBtn");
   const quickButton = $("#staffQuickApproveBtn");
@@ -13011,7 +13001,7 @@ async function approveStaffManualChanges(){
   }
   if(localStatus){
     localStatus.classList.remove("error");
-    localStatus.textContent = staffManagerCanClinics() ? "جارٍ حفظ التعديلات..." : "جارٍ إرسال التعديلات إلى Firebase...";
+    localStatus.textContent = "جارٍ حفظ التعديلات...";
   }
 
   try{
@@ -13048,13 +13038,13 @@ async function approveStaffManualChanges(){
     const approvalErrorCode = String(e?.code || "").toUpperCase();
     const permissionDenied = approvalErrorCode.includes("PERMISSION_DENIED") || approvalErrorCode.includes("PERMISSION-DENIED");
     const approvalErrorText = permissionDenied
-      ? (staffManagerCanClinics() ? "تعذر الاعتماد. تواصل مع مسؤول النظام لمراجعة صلاحيات حسابك." : "تعذر الاعتماد: حساب المسؤول الحالي غير مصرح له بالكتابة على قوائم Firebase. راجع Firebase Rules.")
+      ? "تعذر الاعتماد. تواصل مع مسؤول النظام لمراجعة صلاحيات حسابك."
       : "تعذر اعتماد التعديلات اليدوية. راجع الاتصال والصلاحيات.";
     staffAdminMessage(approvalErrorText, false);
     if(localStatus){
       localStatus.classList.add("error");
       localStatus.textContent = permissionDenied
-        ? (staffManagerCanClinics() ? "لم يتم حفظ التعديلات. تواصل مع مسؤول النظام." : "تعذر الاعتماد بسبب صلاحيات Firebase Rules — لم يتم تطبيق التعديلات.")
+        ? "لم يتم حفظ التعديلات. تواصل مع مسؤول النظام."
         : "تعذر الاعتماد. لم يتم تطبيق التعديلات.";
     }
     button.disabled = false;
@@ -13264,6 +13254,7 @@ function renderStaffManager(){
   if(!$("#staffDirectoryStatus")) return;
   if(typeof updateStaffManagerTopButton === "function") updateStaffManagerTopButton();
   applyStaffManagerRoleUI();
+  $("#staffSavedNurseCount").textContent = ar(staffDirectoryState.nurses.length);
   $("#staffSavedDoctorCount").textContent = ar(staffDirectoryState.doctors.length);
   $("#staffSavedSpecialtyCount").textContent = ar(staffDirectoryState.specialties.length);
   renderStaffImportPreview();
