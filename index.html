@@ -1951,6 +1951,12 @@
   #view-staff-manager .staff-admin-row[hidden],#view-staff-manager .staff-list-search-empty[hidden]{display:none!important}
   #view-staff-manager .staff-list-search-empty{padding:14px;text-align:center;color:#64748b;font-size:14px}
 
+  /* اعتماد واحد وإحصائية القوائم المحفوظة لمسؤول العيادات */
+  #view-staff-manager[data-manager-role="clinics_manager"] #staffCommitImport,
+  #view-staff-manager[data-manager-role="clinics_manager"] #staffManualApproveBtn{display:none!important}
+  #staffSavedStats{margin:18px 0;padding:16px;border:1px solid #e1e5e9;border-radius:16px;background:#fff}
+  #staffSavedStats .staff-import-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));margin-top:10px}
+
   /* ===== فصل صلاحيات مسؤول العيادات ومسؤول التمريض ===== */
   #view-staff-manager[data-manager-role="clinics_manager"] [data-manager-only="nursing"],
   #view-staff-manager[data-manager-role="nursing_manager"] [data-manager-only="clinics"]{
@@ -7863,6 +7869,14 @@
       </div>
     </section>
 
+    <section id="staffSavedStats" data-manager-only="clinics" aria-label="إحصائية القوائم المحفوظة" aria-live="polite">
+      <strong>إجمالي الأطباء والتخصصات المحفوظة في النظام</strong>
+      <div class="staff-import-stats">
+        <div class="staff-import-stat"><strong id="staffSavedDoctorCount" class="num">٠</strong><span>طبيب</span></div>
+        <div class="staff-import-stat"><strong id="staffSavedSpecialtyCount" class="num">٠</strong><span>تخصص</span></div>
+      </div>
+    </section>
+
     <div class="staff-workspace-switcher" id="staffWorkspaceSwitcher">
       <button type="button" class="staff-workspace-card" data-target="import">
         <span class="staff-workspace-icon">⇩</span>
@@ -11655,7 +11669,8 @@ function staffImportDataForCurrentManager(data){
     ...normalized,
     specialties:[...(normalized.specialties || [])],
     doctors:[...(normalized.doctors || [])],
-    nurses:[]
+    nurses:[],
+    warnings:(normalized.warnings || []).filter(warning=>warning !== "لم يتم العثور على عمود «أسماء التمريض» في الملف.")
   };
 }
 
@@ -11835,6 +11850,20 @@ function refreshStaffManagerQuickBar(){
 
   staffQuickCloseBtn.disabled = !workspaceOpen;
   const manualOpen = activeStaffWorkspace === "manual";
+  if(staffManagerCanClinics()){
+    const importOpen = activeStaffWorkspace === "import";
+    const count = refreshStaffManualDirtyState().changes.length;
+    const data = staffImportDataForCurrentManager(staffImportState);
+    staffQuickApproveBtn.classList.remove("hidden-view");
+    staffQuickPendingCount.classList.toggle("hidden-view", !manualOpen);
+    staffQuickPendingCount.textContent = ar(count);
+    staffQuickApproveBtn.disabled = staffManualSaving || staffImportSaving ||
+      (importOpen ? !data.specialties.length || !data.doctors.length : !manualOpen || count === 0);
+    staffQuickApproveBtn.textContent = staffManualSaving || staffImportSaving ? "جارٍ الاعتماد..."
+      : importOpen ? "اعتماد ملف الأطباء والتخصصات"
+      : manualOpen ? "اعتماد التعديلات" : "اختر قسمًا للاعتماد";
+    return;
+  }
   staffQuickApproveBtn.classList.toggle("hidden-view", !manualOpen);
   staffQuickPendingCount.classList.toggle("hidden-view", !manualOpen);
 
@@ -11856,11 +11885,16 @@ staffQuickCloseBtn?.addEventListener("click",()=>{
 });
 
 staffQuickApproveBtn?.addEventListener("click",()=>{
+  if(staffManagerCanClinics() && activeStaffWorkspace === "import"){
+    if(!staffQuickApproveBtn.disabled) commitStaffImport();
+    return;
+  }
   const approveButton = $("#staffManualApproveBtn");
   if(approveButton && !approveButton.disabled) approveButton.click();
 });
 
 let staffImportState = null;
+let staffImportSaving = false;
 
 function cloneEmbeddedStaffImport(){
   return JSON.parse(JSON.stringify(EMBEDDED_STAFF_IMPORT));
@@ -12189,7 +12223,8 @@ function renderStaffImportPreview(){
   }
 
   const hasData = data.specialties.length || data.doctors.length || data.nurses.length;
-  $("#staffCommitImport").disabled = !hasData;
+  $("#staffCommitImport").disabled = staffImportSaving || !hasData;
+  refreshStaffManagerQuickBar();
 }
 
 function escapeHtml(value){
@@ -12484,7 +12519,7 @@ function buildImportPayload(data){
 }
 
 async function commitStaffImport(){
-  if(!isStaffManagerUser()) return;
+  if(!isStaffManagerUser() || staffImportSaving) return;
 
   const data = staffImportDataForCurrentManager(staffImportState);
   const isNursing = staffManagerCanNursing();
@@ -12517,6 +12552,8 @@ async function commitStaffImport(){
   const oldText = button.textContent;
   button.disabled = true;
   button.textContent = "جارٍ الحفظ...";
+  staffImportSaving = true;
+  refreshStaffManagerQuickBar();
 
   try{
     if(mode === "replace"){
@@ -12620,8 +12657,10 @@ async function commitStaffImport(){
     console.error("Staff Excel import error:",e);
     staffAdminMessage("تعذر حفظ بيانات Excel في Firebase. راجع الاتصال والصلاحيات.", false);
   }finally{
+    staffImportSaving = false;
     button.disabled = false;
     button.textContent = oldText;
+    refreshStaffManagerQuickBar();
   }
 }
 
@@ -13136,6 +13175,8 @@ function renderStaffManager(){
   if(!$("#staffDirectoryStatus")) return;
   if(typeof updateStaffManagerTopButton === "function") updateStaffManagerTopButton();
   applyStaffManagerRoleUI();
+  $("#staffSavedDoctorCount").textContent = ar(staffDirectoryState.doctors.length);
+  $("#staffSavedSpecialtyCount").textContent = ar(staffDirectoryState.specialties.length);
   renderStaffImportPreview();
 
   const manualState = getStaffManualState();
@@ -13159,6 +13200,12 @@ function renderStaffManager(){
     activationHint.textContent = staffDirectoryState.ready
       ? "القوائم مفعلة بالفعل. أي إضافة أو تعديل جديد لا يحتاج هذا الزر؛ استخدم «اعتماد التعديلات» داخل قسم الإضافة والتعديل اليدوي."
       : "هذا الزر للتفعيل الأول فقط. بعد التفعيل، أي تعديل جديد يتم تطبيقه من زر «اعتماد التعديلات» داخل قسم الإضافة والتعديل اليدوي.";
+  }
+
+  if(activationHint && staffManagerCanClinics()){
+    activationHint.textContent = staffDirectoryState.ready
+      ? "القوائم مفعلة بالفعل. لاعتماد الملف أو التعديلات اليدوية استخدم زر الاعتماد الثابت أسفل الصفحة حسب القسم المفتوح."
+      : "زر التفعيل للاستخدام الأول فقط. لاعتماد الملف أو التعديلات اليدوية استخدم زر الاعتماد الثابت أسفل الصفحة حسب القسم المفتوح.";
   }
 
   const seeded = staffDirectoryState.specialties.length > 0 || staffDirectoryState.nurses.length > 0;
