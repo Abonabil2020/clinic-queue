@@ -7592,6 +7592,7 @@
         <div data-setup-step="0">
           <label for="setupRoomSelect" class="block text-sm mb-1.5 text-slate-600">اختر رقم الحجرة</label>
           <select id="setupRoomSelect" class="w-full px-4 py-3 rounded-xl bg-slate-100 mb-4"><option value="">اختر الحجرة للمتابعة</option></select>
+          <p id="nursingRoomLoading" class="text-sm text-slate-600 mb-4" role="status" aria-live="polite" hidden>جارٍ فتح الحجرة…</p>
       <div hidden class="mb-4 px-4 py-3 rounded-xl bg-sky-50 border border-sky-100 flex items-center justify-between gap-3">
         <div>
           <p class="text-xs text-slate-500">الحجرة المرتبطة بحسابك</p>
@@ -11031,6 +11032,13 @@ let nursingAuthPending = false;
 let nursingAuthError = false;
 let nursingAuthReady = false;
 let pendingSetupRoom = "";
+let nursingRoomOpening = false;
+function setNursingRoomOpening(opening){
+  nursingRoomOpening = opening;
+  $("#setupRoomSelect").disabled = opening;
+  $("#setupRoomSelect").setAttribute("aria-busy", String(opening));
+  $("#nursingRoomLoading").hidden = !opening;
+}
 let nursingAuthWaitTimer = null;
 const nursingAuthWaitMessage = "جاري تجهيز الدخول...";
 const nursingAuthSlowMessage = "تجهيز الدخول يستغرق وقتًا أطول من المعتاد. تحقق من اتصال الإنترنت، وسنكمل تلقائيًا عند نجاح الدخول.";
@@ -11225,6 +11233,7 @@ async function loadNursingPeriod(){
   nursingSetupDraft = false;
   const serial = ++nursingLoadSerial;
   setupWizardStep = 0;
+  setNursingRoomOpening(true);
   nursingPeriod = null;renderNursingSetup();
   $("#setupMsg").textContent = "";
   try{
@@ -11244,6 +11253,8 @@ async function loadNursingPeriod(){
     if(serial !== nursingLoadSerial) return;
     $("#setupMsg").textContent = "تعذر قراءة بيانات الحجرة. تحقق من الاتصال والصلاحيات وأعد المحاولة.";
     $("#nursingRetry").hidden = false;
+  }finally{
+    if(serial === nursingLoadSerial) setNursingRoomOpening(false);
   }
 }
 function openNursingData(mode){
@@ -11290,7 +11301,11 @@ async function ensureNursingAuth(){
     nursingAuthError = true;
     $("#setupMsg").textContent = e.code === "auth/operation-not-allowed" ? "يلزم تفعيل الدخول Anonymous في Firebase لتشغيل الدخول المباشر." : "تعذر تجهيز الدخول. تحقق من الاتصال وإعدادات Firebase.";
     $("#nursingRetry").hidden = false;
-  }finally{ nursingAuthPending = false; clearNursingAuthWait(); }
+  }finally{
+    nursingAuthPending = false;
+    clearNursingAuthWait();
+    if(nursingAuthError) setNursingRoomOpening(false);
+  }
 }
 
 let setupWizardStep = 0;
@@ -11327,16 +11342,19 @@ function prepareSetupWizard(){
   });
   const selected = sessionStorage.getItem(SETUP_ROOM_STEP_KEY) === DISPLAY_SLOT_ID;
   select.value = pendingSetupRoom || (selected ? DISPLAY_SLOT_ID : "");
-  select.disabled = false;
+  select.disabled = nursingRoomOpening;
   if(!auth.currentUser) showNursingAuthWait();
   renderNursingSetup();
 }
 $("#setupRoomSelect").addEventListener("change",()=>{
+  if(nursingRoomOpening) return;
   const roomId = $("#setupRoomSelect").value;
   if(!roomId){ pendingSetupRoom = ""; return; }
   if(!setupWizardRooms().some(room=>room.id === roomId)) return;
+  setNursingRoomOpening(true);
   if(!auth.currentUser){
     pendingSetupRoom = roomId;
+    if(nursingAuthError){ setNursingRoomOpening(false); return; }
     showNursingAuthWait();
     ensureNursingAuth();
     return;
