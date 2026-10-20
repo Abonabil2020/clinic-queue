@@ -10579,7 +10579,10 @@ function route(){
       location.hash = "#/setup";
     }
     if(!auth.currentUser){ show("setup"); prepareSetupWizard(); ensureNursingAuth(); }
-    else if(h === "nurse" && currentNursingIdentity() && setupData){ show("nurse"); renderNursingRoomSwitch(); }
+    else if(h === "nurse" && currentNursingIdentity() && setupData){
+      if(nursingRoomLoaded && !isAdminUser() && !nursingHandoverMatches({handoverId:nursingLiveHandoverId})){ requireNursingHandover(); return; }
+      show("nurse"); renderNursingRoomSwitch();
+    }
     else { show("setup"); prefillSetup(); }
   }
   else if(isStaffManagerUser()){ location.hash = "#/staff-manager"; show("staff-manager"); renderStaffManager(); }
@@ -11062,6 +11065,22 @@ function clearNursingAuthWait(){
 }
 let nursingRoomLoaded = false;
 let nursingLiveSessionStart = 0;
+let nursingLiveHandoverId = "";
+function nursingHandoverMatches(data, identity = currentNursingIdentity()){
+  return Boolean(identity && identity.handoverId && data && data.handoverId === identity.handoverId);
+}
+function requireNursingHandover(){
+  clearTimeout(writeTimer);
+  clearTimeout(settleTimer);
+  clearNursingResume();
+  delete nursingRooms[DISPLAY_SLOT_ID];
+  sessionStorage.setItem(NURSING_ROOMS_KEY,JSON.stringify(nursingRooms));
+  nursingSetupDraft = false;
+  nursingSetupMode = "enter";
+  sessionStorage.setItem(SETUP_ROOM_STEP_KEY,DISPLAY_SLOT_ID);
+  alert("التحكم الحالي باسم " + (state.nurse || "تمريض آخر") + ". اختر اسمك واستلم العيادة لاستئناف التحكم، دون تصفير الأدوار.");
+  location.hash = "#/setup";
+}
 let nursingRooms = {};
 try { nursingRooms = JSON.parse(sessionStorage.getItem(NURSING_ROOMS_KEY) || "{}"); } catch(e) {}
 function clearNursingResume(){
@@ -11090,7 +11109,7 @@ function restoreNursingResume(){
     clearNursingResume(); return false;
   }
   if(!nursingRoomLoaded){ show("nurse"); return true; }
-  if(nursingLiveSessionStart !== saved.sessionStart || !periodIsCurrent({...state,sessionStart:nursingLiveSessionStart})){
+  if(nursingLiveSessionStart !== saved.sessionStart || !nursingHandoverMatches({handoverId:nursingLiveHandoverId},identity) || !periodIsCurrent({...state,sessionStart:nursingLiveSessionStart})){
     clearNursingResume();
     sessionStorage.setItem(SETUP_ROOM_STEP_KEY,DISPLAY_SLOT_ID);
     nursingSetupMode = "enter";
@@ -11140,7 +11159,7 @@ function rememberNursingRoom(data,nurse){
   Object.keys(nursingRooms).forEach(id=>{
     if(nursingRooms[id].uid !== auth.currentUser.uid || nursingRooms[id].day !== operationalDayKey()) delete nursingRooms[id];
   });
-  nursingRooms[DISPLAY_SLOT_ID] = {uid:auth.currentUser.uid,day:operationalDayKey(),nurse,sessionStart:Number(data.sessionStart || 0),doctor:data.doctor,clinicName:data.clinicName || data.specialty};
+  nursingRooms[DISPLAY_SLOT_ID] = {uid:auth.currentUser.uid,day:operationalDayKey(),nurse,handoverId:data.handoverId || "",sessionStart:Number(data.sessionStart || 0),doctor:data.doctor,clinicName:data.clinicName || data.specialty};
   sessionStorage.setItem(NURSING_ROOMS_KEY,JSON.stringify(nursingRooms));
   const clinic = directorySpecialties().find(item=>item.name === (data.clinicName || data.specialty));
   setupData = {clinicId:clinic?.id || "",clinicName:data.clinicName || data.specialty,doctor:data.doctor,nurse,operationalDayKey:operationalDayKey()};
@@ -11579,12 +11598,15 @@ $("#saveSetupBtn").addEventListener("click", async ()=>{
   const roomId = DISPLAY_SLOT_ID;
   const expectedPeriodId = !takeover && !edit ? firebase.database().ref().push().key : null;
   const before = nursingPeriod;
+  const handoverId = takeover || !edit ? firebase.database().ref().push().key : before.handoverId;
+  const editingIdentity = currentNursingIdentity();
   try{
     let saved;
     if(takeover || edit){
       const result = await clinicRef.transaction(data=>{
         if(!periodIsCurrent(data || {}) || !nursingPeriodMatches(before,data)) return;
-        return {...data,nurse,...(edit ? {clinicName:clinic.name,specialty:clinic.name,doctor,doctorDisplayName:doctorDisplayName(doctor)} : {}),updatedAt:firebase.database.ServerValue.TIMESTAMP};
+        if(edit && !isAdminUser() && !nursingHandoverMatches(data,editingIdentity)) return;
+        return {...data,nurse,handoverId,...(edit ? {clinicName:clinic.name,specialty:clinic.name,doctor,doctorDisplayName:doctorDisplayName(doctor)} : {}),updatedAt:firebase.database.ServerValue.TIMESTAMP};
       },undefined,false);
       if(!result.committed) throw new Error("period-changed");
       saved = result.snapshot.val();
@@ -11593,16 +11615,16 @@ $("#saveSetupBtn").addEventListener("click", async ()=>{
       const latest = (await clinicRef.once("value")).val() || {};
       if(!nursingPeriodMatches(before,latest)) throw new Error("period-changed");
       clearTimeout(writeTimer);
-      await resetCurrentClinic({periodId:expectedPeriodId,prepared:true,status:"idle",clinicName:clinic.name,specialty:clinic.name,doctor,doctorDisplayName:doctorDisplayName(doctor),nurse,roomNumber:DISPLAY_SLOT_ID,floor:CURRENT_ROOM.floorName,location:"عيادة رقم " + DISPLAY_SLOT_ID + " — " + CURRENT_ROOM.floorName});
+      await resetCurrentClinic({periodId:expectedPeriodId,handoverId,prepared:true,status:"idle",clinicName:clinic.name,specialty:clinic.name,doctor,doctorDisplayName:doctorDisplayName(doctor),nurse,roomNumber:DISPLAY_SLOT_ID,floor:CURRENT_ROOM.floorName,location:"عيادة رقم " + DISPLAY_SLOT_ID + " — " + CURRENT_ROOM.floorName});
       saved = (await clinicRef.once("value")).val();
     }
-    if(!saved || roomId !== DISPLAY_SLOT_ID || saved.nurse !== nurse ||
+    if(!saved || roomId !== DISPLAY_SLOT_ID || saved.nurse !== nurse || saved.handoverId !== handoverId ||
        (!takeover && (saved.clinicName !== clinic.name || saved.doctor !== doctor)) ||
        (expectedPeriodId && (saved.periodId !== expectedPeriodId || saved.current !== 0 || saved.maxReached !== 0 || saved.displayCurrent !== 0 || Object.keys(saved.missedTurns || {}).length))) throw new Error("period-changed");
     const logged = await writeAuditLog({action:takeover ? "nurse_control_enter" : edit ? "clinic_setup" : "clinic_prepared",roomId:DISPLAY_SLOT_ID,clinicName:saved.clinicName,nurseName:nurse,summary:takeover ? nurse + " بدأ التحكم في حجرة " + DISPLAY_SLOT_ID : edit ? "تعديل بيانات الفترة دون تصفير" : "تجهيز فترة جديدة في انتظار بدء العيادة وتصفير الأدوار والفائت وإلغاء القفل",details:{previousNurse:before.nurse || "",sessionStart:saved.sessionStart || 0}});
     if(logged === false) alert("تم حفظ البيانات، لكن تعذر تسجيل الخطوة. راجع اتصال الإنترنت وصلاحية سجل الخطوات.");
     const confirmed = (await clinicRef.once("value")).val();
-    if(!confirmed || roomId !== DISPLAY_SLOT_ID || !nursingPeriodMatches(saved,confirmed) || confirmed.nurse !== nurse ||
+    if(!confirmed || roomId !== DISPLAY_SLOT_ID || !nursingPeriodMatches(saved,confirmed) || confirmed.nurse !== nurse || confirmed.handoverId !== handoverId ||
        (expectedPeriodId && confirmed.periodId !== expectedPeriodId)) throw new Error("period-changed");
     clearNursingResume();
     nursingPeriod = confirmed;
@@ -13662,6 +13684,7 @@ function applyClinicSnapshot(raw){
   const d = operationalDataForToday(raw || {});
   nursingRoomLoaded = true;
   nursingLiveSessionStart = Number(d.sessionStart || 0);
+  nursingLiveHandoverId = d.handoverId || "";
   state = {
     clinicName:d.clinicName || d.specialty || "—",
     doctor:   d.doctor   || "—",
@@ -13687,6 +13710,10 @@ function applyClinicSnapshot(raw){
   if(nursingResumePending){ route(); return; }
   if(!nursingSetupSaving && (location.hash || "") === "#/nurse") {
     const entry = currentNursingIdentity();
+    if(entry && !isAdminUser() && !nursingHandoverMatches(d,entry)){
+      requireNursingHandover();
+      return;
+    }
     if(entry && (Number(d.sessionStart || 0) !== entry.sessionStart || !periodIsCurrent(d))){
       sessionStorage.setItem(SETUP_ROOM_STEP_KEY,DISPLAY_SLOT_ID); nursingSetupMode = "enter"; location.hash = "#/setup";
     }else renderNursingRoomSwitch();
@@ -13906,8 +13933,11 @@ async function cancelMissedTurn(number){
   const clinicName = state.clinicName;
   const nurseName = state.nurse;
   const period = nursingLiveSessionStart;
+  const identity = currentNursingIdentity();
+  const adminControl = isAdminUser();
   try{
     const result = await ref.transaction(data=>{
+      if(!adminControl && !nursingHandoverMatches(data,identity)) return;
       if(!data || Number(data.sessionStart || 0) !== period || data.status === "break" || data.status === "finished") return;
       const saved = (data.missedTurns || {})[String(number)];
       if(!saved || saved.status === "done" || saved.missedAt !== item.missedAt) return;
@@ -14286,8 +14316,11 @@ function stepNumber(d){
 /* Reject delayed operational writes from a previous period. */
 async function updateCurrentPeriod(updates, expectedSession = nursingLiveSessionStart){
   if(nursingSetupSaving || !canControlCurrentRoom()) throw new Error("period-changed");
+  const identity = currentNursingIdentity();
+  const adminControl = isAdminUser();
   const result = await clinicRef.transaction(data=>{
     if(!data || Number(data.sessionStart || 0) !== expectedSession) return;
+    if(!adminControl && !nursingHandoverMatches(data,identity)) return;
     const next = {...data};
     for(const [path,value] of Object.entries(updates)){
       const keys = path.split("/");
@@ -14309,6 +14342,7 @@ async function updateCurrentPeriod(updates, expectedSession = nursingLiveSession
 function resetCurrentClinic(payload){
   const fresh = {
     ...payload,
+    handoverId:payload.handoverId || firebase.database().ref().push().key,
     operationalDayKey:operationalDayKey(),
     period:payload.period || "",
     current:0,
@@ -14340,7 +14374,7 @@ $("#resetSameClinicBtn").addEventListener("click", async ()=>{
   button.disabled = true;
   try{
     const latest = (await ref.once("value")).val() || {};
-    if(DISPLAY_SLOT_ID !== roomId || !canControlCurrentRoom() || Number(latest.sessionStart || 0) !== sessionStart) throw new Error("period-changed");
+    if(DISPLAY_SLOT_ID !== roomId || !canControlCurrentRoom() || (!isAdminUser() && !nursingHandoverMatches(latest)) || Number(latest.sessionStart || 0) !== sessionStart) throw new Error("period-changed");
     clearTimeout(writeTimer);
     await resetCurrentClinic({clinicName:latest.clinicName,specialty:latest.specialty || latest.clinicName,doctor:latest.doctor,doctorDisplayName:latest.doctorDisplayName || doctorDisplayName(latest.doctor),nurse:latest.nurse,period:latest.period || "",roomNumber:roomId,floor:latest.floor || CURRENT_ROOM.floorName,location:latest.location || "عيادة رقم " + roomId + " — " + CURRENT_ROOM.floorName,prepared:latest.prepared === true,status:latest.prepared === true ? "idle" : "active"});
     const saved = (await ref.once("value")).val();
@@ -14434,7 +14468,7 @@ function authorizedRoomForUser(user){
 }
 
 function canControlCurrentRoom(){
-  return !nursingSetupSaving && !nursingResumePending && (isAdminUser() || (nursingRoomAccess() && nursingRoomLoaded && Boolean(currentNursingIdentity()) && currentNursingIdentity().sessionStart === nursingLiveSessionStart));
+  return !nursingSetupSaving && !nursingResumePending && (isAdminUser() || (nursingRoomAccess() && nursingRoomLoaded && Boolean(currentNursingIdentity()) && currentNursingIdentity().sessionStart === nursingLiveSessionStart && nursingHandoverMatches({handoverId:nursingLiveHandoverId})));
 }
 
 function openAuthorizedRoom(roomId, hash = "#/setup"){
