@@ -11260,7 +11260,9 @@ async function loadNursingPeriod(){
     const data = (await clinicRef.once("value")).val() || {};
     if(serial !== nursingLoadSerial) return;
     nursingPeriod = data;
-    const fresh = nursingSetupMode === "new";
+    const periodTimestamp = Number(data.sessionStart || data.updatedAt || 0);
+    const periodDay = data.operationalDayKey || (periodTimestamp ? operationalDayKey(periodTimestamp) : "");
+    const fresh = nursingSetupMode === "new" || periodDay !== operationalDayKey();
     const clinic = fresh ? null : directorySpecialties().find(item=>item.name === (data.clinicName || data.specialty));
     $("#setupClinic").value = clinic?.id || "";
     $("#setupClinicSearch").value = clinic?.name || "";
