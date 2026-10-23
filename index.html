@@ -8939,6 +8939,10 @@ const DASHBOARD_STATUS = {
 const bookingRef = firebase.database().ref("bookingStatus");
 let bookingStates = {}, bookingLoaded = false, bookingBusy = false;
 function bookingInfo(roomId){
+  const clinicData = roomId === DISPLAY_SLOT_ID && ["#/nurse", "#/patient"].includes(location.hash)
+    ? state
+    : receptionDataForRoom({id:roomId});
+  if(clinicData.status === "finished") return {key:"closed", label:"الحجز مغلق — انتهت العيادة"};
   if(!bookingLoaded || !firebaseConnected) return {key:"unknown", label:"حالة الحجز غير مؤكدة — جارٍ الاتصال"};
   return bookingStateForToday(roomId).closed === true
     ? {key:"closed", label:"الحجز مغلق — اكتمل العدد"}
