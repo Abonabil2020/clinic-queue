@@ -7718,6 +7718,25 @@
 #view-tv.tv-floor-only.tv-third-slideshow .queue-public-more,#view-tv.tv-floor-only.tv-third-slideshow .queue-missed-empty{font-size:12px!important}
 }
 </style>
+<style>
+/* ألوان الحالات فقط — العرض المتتابع للدور الثالث. */
+#view-tv.tv-floor-only.tv-paged.tv-third-slideshow .queue-card{--state-ink:#64748b;--state-soft:#f1f5f9;--state-border:#cbd5e1;--state-heading:#64748b}
+#view-tv.tv-floor-only.tv-paged.tv-third-slideshow .queue-card[data-status="active"][data-waiting="false"]{--state-ink:#166534;--state-soft:#ecfdf5;--state-border:#86efac;--state-heading:#15803d}
+#view-tv.tv-floor-only.tv-paged.tv-third-slideshow .queue-card[data-status="finished"]{--state-ink:#b42332;--state-soft:#fff1f2;--state-border:#fda4af;--state-heading:#c93443}
+#view-tv.tv-floor-only.tv-paged.tv-third-slideshow .queue-card[data-status="break"]{--state-ink:#854d0e;--state-soft:#fffbeb;--state-border:#facc15;--state-heading:#facc15}
+#view-tv.tv-floor-only.tv-paged.tv-third-slideshow .queue-card[data-status]{border-color:var(--state-border)!important;background:#fff!important}
+#view-tv.tv-floor-only.tv-paged.tv-third-slideshow .queue-card[data-status] .queue-card-title{background:var(--state-heading)!important;color:#fff!important}
+#view-tv.tv-floor-only.tv-paged.tv-third-slideshow .queue-card[data-status] .queue-clinic-name,#view-tv.tv-floor-only.tv-paged.tv-third-slideshow .queue-card[data-status] .room-badge{color:#fff!important}
+#view-tv.tv-floor-only.tv-paged.tv-third-slideshow .queue-card[data-status="break"] .queue-card-title,#view-tv.tv-floor-only.tv-paged.tv-third-slideshow .queue-card[data-status="break"] .queue-clinic-name,#view-tv.tv-floor-only.tv-paged.tv-third-slideshow .queue-card[data-status="break"] .room-badge{color:#713f12!important}
+#view-tv.tv-floor-only.tv-paged.tv-third-slideshow .queue-card[data-status] .queue-number-box{background:var(--state-soft)!important;border-color:var(--state-border)!important}
+#view-tv.tv-floor-only.tv-paged.tv-third-slideshow .queue-card[data-status] .queue-number,#view-tv.tv-floor-only.tv-paged.tv-third-slideshow .queue-card[data-status] .queue-number-label{color:var(--state-ink)!important}
+#view-tv.tv-floor-only.tv-paged.tv-third-slideshow .queue-card[data-status] .queue-status{color:var(--state-ink)!important;background:var(--state-soft)!important}
+#view-tv.tv-floor-only.tv-paged.tv-third-slideshow .queue-card[data-status] .queue-status-dot{background:var(--state-ink)!important}
+#view-tv.tv-floor-only.tv-paged.tv-third-slideshow .queue-card .queue-doctor{color:#172033!important}
+#view-tv.tv-floor-only.tv-paged.tv-third-slideshow .queue-card .queue-missed-summary{background:#f8fafc!important;border-color:#cbd5e1!important}
+#view-tv.tv-floor-only.tv-paged.tv-third-slideshow .queue-card .queue-missed-summary-head,#view-tv.tv-floor-only.tv-paged.tv-third-slideshow .queue-card .queue-missed-empty,#view-tv.tv-floor-only.tv-paged.tv-third-slideshow .queue-card .queue-public-more{color:#475569!important}
+#view-tv.tv-floor-only.tv-paged.tv-third-slideshow .queue-card .queue-missed-count{color:#475569!important;background:#e2e8f0!important;border-color:#cbd5e1!important}
+</style>
 </head>
 <body>
 <div id="networkStatusIndicator" class="network-status-indicator" role="status" aria-live="polite">
@@ -15511,4 +15530,3 @@ route();
 </body>
 </html>
                                                                                                                                     
-            
