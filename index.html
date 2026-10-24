@@ -7383,6 +7383,29 @@
 #rcOfficialCount .official-count-message{display:block}
 #view-reception .official-count-badge{font-size:11px;font-weight:700;color:var(--rc-accent,#717171);margin-top:5px}
 </style>
+<style>
+/* تعديلات الاستعلامات: منع امتداد الزخرفة خارج الصفحة وتكثيف الملخص. */
+#view-reception .reception-shell::before{content:none!important}
+#view-reception .reception-updates-list{grid-template-columns:repeat(4,minmax(0,1fr))}
+#view-reception .reception-update-time{color:#64748b;font-size:10px;line-height:1.4}
+#view-reception .reception-closed-panel{padding:6px 9px;margin:6px 0}
+#view-reception .reception-closed-head{margin-bottom:4px}
+#view-reception .reception-closed-title{font-size:12px}
+#view-reception .reception-closed-count{height:23px;min-width:23px;font-size:11px}
+#view-reception .reception-closed-list{display:flex;flex-wrap:wrap;gap:5px;overflow:visible;padding:0}
+#view-reception .reception-closed-item{flex:0 1 auto;min-width:0;min-height:0;padding:4px 9px;border-radius:9px;box-shadow:none}
+#view-reception .reception-closed-clinic{font-size:11px;line-height:1.4;white-space:normal}
+#view-reception .reception-closed-clinic>span:first-child{white-space:normal}
+#view-reception .reception-closed-room,#view-reception .reception-closed-doctor{display:block;margin:0;font-size:10px;line-height:1.4;color:#64748b;white-space:normal}
+#view-reception .reception-closed-empty{padding:4px 8px;font-size:11px;width:100%}
+#view-reception .reception-top-actions{flex-wrap:wrap}
+#receptionDesktopNotifications{font-size:11px;padding:4px 8px;min-height:32px}
+@media(max-width:1000px){#view-reception .reception-updates-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){
+  #view-reception .reception-updates-list{grid-template-columns:minmax(0,1fr)}
+  #view-reception .reception-closed-item{flex:1 1 calc(50% - 5px)}
+}
+</style>
 </head>
 <body>
 <div id="networkStatusIndicator" class="network-status-indicator" role="status" aria-live="polite">
@@ -8328,9 +8351,18 @@
       </div>
       <div class="reception-top-actions">
         <span class="reception-live"><span class="dot bg-emerald-400"></span>تحديث مباشر</span>
+        <button id="receptionDesktopNotifications" type="button" class="reception-logout" title="تنبيهات الكمبيوتر والصفحة مفتوحة في الخلفية">تنبيهات كروم</button>
         <button id="receptionLogout" type="button" class="reception-logout">تسجيل الخروج</button>
       </div>
     </div>
+
+    <section id="receptionClosedBookings" class="reception-closed-panel" aria-live="polite">
+      <div class="reception-closed-head">
+        <h2 class="reception-closed-title">عيادات أغلق حجزها</h2>
+        <span id="receptionClosedCount" class="reception-closed-count num">٠</span>
+      </div>
+      <div id="receptionClosedList" class="reception-closed-list"></div>
+    </section>
 
     <div class="reception-toolbar">
       <button id="receptionUpdatesToggle" class="reception-updates-toggle reception-updates-top-toggle" type="button" aria-expanded="false" aria-controls="receptionUpdatesContent">
@@ -8365,13 +8397,7 @@
       <span class="reception-update-toast-hint">عرض</span>
     </button>
 
-    <section id="receptionClosedBookings" class="reception-closed-panel" aria-live="polite">
-      <div class="reception-closed-head">
-        <h2 class="reception-closed-title">عيادات أغلق حجزها</h2>
-        <span id="receptionClosedCount" class="reception-closed-count num">٠</span>
-      </div>
-      <div id="receptionClosedList" class="reception-closed-list"></div>
-    </section>
+
 
     <div id="receptionClinicGrid" class="reception-floor-groups">
       <section class="reception-floor-section" data-reception-floor-section="third" aria-labelledby="receptionThirdHeading">
@@ -9026,11 +9052,14 @@ function renderReceptionClosedBookings(){
     const clinicInfo = document.createElement("div");
     clinicInfo.className = "reception-closed-clinic";
     const clinicName = document.createElement("span");
-    clinicName.textContent = room.place;
+    clinicName.textContent = receptionClinicLabel(room.id,data).clinicName;
     const roomLabel = document.createElement("span");
     roomLabel.className = "reception-closed-room";
-    roomLabel.textContent = "غرفة " + room.id + " • " + room.floorName;
-    clinicInfo.append(clinicName,roomLabel);
+    roomLabel.textContent = room.place + " • غرفة " + room.id;
+    const doctor = document.createElement("span");
+    doctor.className = "reception-closed-doctor";
+    doctor.textContent = doctorDisplayFromData(data);
+    clinicInfo.append(clinicName,roomLabel,doctor);
     item.append(clinicInfo);
     list.appendChild(item);
   });
@@ -10279,6 +10308,49 @@ let receptionUpdateSequence = 0;
 let receptionUpdatesExpanded = false;
 let receptionUpdateToastTimer = null;
 
+function receptionUpdateTime(timestamp){
+  return new Date(timestamp).toLocaleTimeString("ar-EG",{timeZone:"Africa/Cairo",hour:"2-digit",minute:"2-digit",second:"2-digit"});
+}
+let receptionDesktopEnabled = false;
+try{ receptionDesktopEnabled = localStorage.getItem("receptionDesktopNotifications") === "on"; }catch(_){}
+let receptionDesktopNotice = null;
+const receptionDesktopButton = $("#receptionDesktopNotifications");
+function renderReceptionDesktopButton(){
+  if(!receptionDesktopButton) return;
+  receptionDesktopButton.textContent = receptionDesktopEnabled && "Notification" in window && Notification.permission === "granted" ? "إيقاف تنبيهات كروم" : "تفعيل تنبيهات كروم";
+}
+receptionDesktopButton?.addEventListener("click",async()=>{
+  if(!("Notification" in window) || !window.isSecureContext){ alert("التنبيهات تحتاج متصفحًا يدعمها ورابط HTTPS."); return; }
+  if(receptionDesktopEnabled && Notification.permission === "granted"){
+    receptionDesktopEnabled = false;
+    receptionDesktopNotice?.close();
+  }else{
+    try{ receptionDesktopEnabled = (await Notification.requestPermission()) === "granted"; }catch(_){ receptionDesktopEnabled = false; }
+    if(!receptionDesktopEnabled) alert("لم يتم السماح بالإشعارات. يمكنك السماح بها من إعدادات الموقع في كروم.");
+  }
+  try{ localStorage.setItem("receptionDesktopNotifications",receptionDesktopEnabled ? "on" : "off"); }catch(_){}
+  renderReceptionDesktopButton();
+});
+renderReceptionDesktopButton();
+function notifyReceptionDesktop(update){
+  if(!receptionDesktopEnabled || !isReceptionUser() || !("Notification" in window) || Notification.permission !== "granted" || (!document.hidden && document.hasFocus())) return;
+  try{
+    receptionDesktopNotice?.close();
+    const notice = new Notification(update.clinicName,{
+      body:update.detail + " • " + receptionUpdateTime(update.occurredAt),
+      dir:"rtl",lang:"ar",tag:"reception-clinic-update"
+    });
+    receptionDesktopNotice = notice;
+    notice.onclick = ()=>{
+      if(isReceptionUser() && !$("#view-reception").classList.contains("hidden-view")){
+        window.focus(); focusReceptionClinic(update.roomId);
+      }
+      notice.close();
+    };
+    setTimeout(()=>notice.close(),10000);
+  }catch(_){ /* تظل التنبيهات الداخلية متاحة إذا لم يدعم الجهاز تنبيهات سطح المكتب. */ }
+}
+
 function receptionClinicLabel(roomId, data){
   const room = ROOM_OPTIONS.find(item=>item.id === String(roomId));
   const rawName = String(data?.clinicName || data?.specialty || room?.place || "العيادة").trim();
@@ -10307,7 +10379,7 @@ function renderReceptionUpdates(){
   content?.classList.toggle("hidden-view", !receptionUpdatesExpanded);
   empty?.classList.toggle("hidden-view", receptionRecentUpdates.length !== 0);
   list.innerHTML = "";
-  receptionRecentUpdates.slice(0,3).forEach(update=>{
+  receptionRecentUpdates.slice(0,4).forEach(update=>{
     const item = document.createElement("button");
     item.type = "button";
     item.className = "reception-update-item" + (update.isNew ? " is-new" : "");
@@ -10324,7 +10396,11 @@ function renderReceptionUpdates(){
     const detail = document.createElement("span");
     detail.className = "reception-update-detail";
     detail.textContent = update.detail;
-    copy.append(clinic,detail);
+    const time = document.createElement("time");
+    time.className = "reception-update-time num";
+    time.dateTime = new Date(update.occurredAt).toISOString();
+    time.textContent = "الوقت: " + receptionUpdateTime(update.occurredAt);
+    copy.append(clinic,detail,time);
     item.append(icon,copy);
     item.addEventListener("click", ()=>focusReceptionClinic(update.roomId));
     list.appendChild(item);
@@ -10338,7 +10414,7 @@ function showReceptionUpdateToast(update){
   const detail = $("#receptionUpdateToastDetail");
   if(!toast || !clinic || !detail) return;
   clinic.textContent = update.clinicName;
-  detail.textContent = update.detail;
+  detail.textContent = update.detail + " • " + receptionUpdateTime(update.occurredAt);
   toast.classList.remove("hidden-view");
   clearTimeout(receptionUpdateToastTimer);
   receptionUpdateToastTimer = setTimeout(()=>toast.classList.add("hidden-view"),5000);
@@ -10349,10 +10425,11 @@ function setReceptionUpdatesExpanded(expanded){
   renderReceptionUpdates();
 }
 
-function addReceptionUpdate(room, data, detail, kind="queue"){
+function addReceptionUpdate(room, data, detail, kind="queue", occurredAt=data?.updatedAt){
   if(!room) return;
   const labels = receptionClinicLabel(room.id,data);
   receptionRecentUpdates.unshift({
+    occurredAt:Number.isFinite(Number(occurredAt)) && Number(occurredAt) > 0 ? Number(occurredAt) : Date.now(),
     id:++receptionUpdateSequence,
     roomId:String(room.id),
     clinicName:labels.clinicName,
@@ -10360,9 +10437,10 @@ function addReceptionUpdate(room, data, detail, kind="queue"){
     kind,
     isNew:true
   });
-  receptionRecentUpdates = receptionRecentUpdates.slice(0,3);
+  receptionRecentUpdates = receptionRecentUpdates.slice(0,4);
   renderReceptionUpdates();
   showReceptionUpdateToast(receptionRecentUpdates[0]);
+  notifyReceptionDesktop(receptionRecentUpdates[0]);
 }
 
 function focusReceptionClinic(roomId){
@@ -10421,7 +10499,7 @@ function trackReceptionBookingChanges(bookings){
   const receptionVisible = !$("#view-reception").classList.contains("hidden-view") && isReceptionUser();
   if(closedRooms.length && receptionVisible){
     bookingAlarm();
-    closedRooms.forEach(room=>addReceptionUpdate(room,receptionDataForRoom(room),"تم إغلاق الحجز","booking"));
+    closedRooms.forEach(room=>addReceptionUpdate(room,receptionDataForRoom(room),"تم إغلاق الحجز","booking",bookings[room.id]?.updatedAt));
   }
   receptionPreviousBooking = bookings || {};
 }
