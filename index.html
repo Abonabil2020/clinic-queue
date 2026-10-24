@@ -11218,60 +11218,66 @@ function renderNursingRoomSwitch(){
   add.style.display = rooms.length < 2 && (isSharedNurseUser() || isAdminUser()) ? "" : "none";
   add.onclick = ()=>{ nursingSetupDraft = false; sessionStorage.removeItem(SETUP_ROOM_STEP_KEY); nursingSetupMode = "enter";location.hash = "#/setup"; };
 }
-function renderRoomGrid(){
-  const grid = $("#setupRoomGrid");
-  if(!grid) return;
-  const select = $("#setupRoomSelect");
-  grid.replaceChildren();
-
-  const rooms = setupWizardRooms();
-  const floors = [
-    { key: "third", title: "عيادات الدور الثالث" },
-    { key: "ground", title: "عيادات الدور الأرضي" }
-  ];
-
-  floors.forEach(floor => {
-    const floorRooms = rooms.filter(r => r.floor === floor.key);
-    if(floorRooms.length === 0) return;
-
-    const floorDiv = document.createElement("div");
-    floorDiv.className = "room-floor";
-
-    const titleEl = document.createElement("h4");
-    titleEl.textContent = floor.title;
-    floorDiv.appendChild(titleEl);
-
-    const subGrid = document.createElement("div");
-    subGrid.className = "room-floor-grid";
-
-    floorRooms.forEach(room => {
-      const on = select.value === room.id;
-      const tile = document.createElement("button");
-      tile.type = "button";
-      tile.className = "room-tile" + (on ? " selected" : "");
-      tile.disabled = nursingRoomOpening;
-      tile.setAttribute("aria-pressed", String(on));
-
-      const num = document.createElement("strong");
-      num.className = "num";
-      num.textContent = room.id;
-
-      const name = document.createElement("span");
-      name.textContent = room.place;
-
-      tile.append(num, name);
-      tile.addEventListener("click", ()=>{
-        if(nursingRoomOpening) return;
-        select.value = room.id;
-        select.dispatchEvent(new Event("change"));
-        renderRoomGrid();
-      });
-      subGrid.appendChild(tile);
-    });
-
-    floorDiv.appendChild(subGrid);
-    grid.appendChild(floorDiv);
+function renderNursingSetup(){
+  renderRoomGrid();
+  const selected = $("#setupRoomSelect").value === DISPLAY_SLOT_ID;
+  const ready = Boolean(auth.currentUser) && selected && nursingPeriod !== null;
+  const existing = ready && periodIsCurrent(nursingPeriod);
+  const takeover = existing && nursingSetupMode === "enter";
+  if(!ready) setupWizardStep = 0;
+  else if(setupWizardStep === 0) setupWizardStep = takeover ? 3 : 1;
+  document.querySelectorAll("#setupWizard [data-setup-step]").forEach(panel=>{
+    panel.hidden = Number(panel.dataset.setupStep) !== setupWizardStep;
   });
+  const progress = $("#setupWizard .setup-wizard-progress");
+  progress.hidden = !ready || takeover;
+  progress.querySelectorAll("span").forEach((bar,i)=>bar.classList.toggle("complete",i < setupWizardStep));
+  $("#setupRoomChange").hidden = !ready;
+  $("#setupRoomChange").textContent = "حجرة " + DISPLAY_SLOT_ID + " — تغيير الحجرة";
+  $("#setupWizardBack").hidden = !ready || setupWizardStep <= (takeover ? 3 : 1);
+  const preview = $("#nursingPeriodPreview");preview.hidden = !existing;
+  preview.replaceChildren();
+  if(existing){
+    const heading = document.createElement("div");
+    heading.textContent = "بيانات العيادة الحالية المسجلة";
+    heading.style.cssText = "font-weight:700;color:#334155;margin-bottom:8px";
+    preview.appendChild(heading);
+    const currentEntries = [
+      "الحجرة: " + DISPLAY_SLOT_ID,
+      "التخصص: " + (nursingPeriod.clinicName || nursingPeriod.specialty || "—"),
+      "الطبيب: " + doctorDisplayFromData(nursingPeriod),
+      "التمريض الحالي: " + (nursingPeriod.nurse || "—"),
+      "الدور الحالي: " + ar(nursingPeriod.displayCurrent ?? nursingPeriod.current ?? 0) + " — الحالة: " + ({active:"تعمل",break:"استراحة",finished:"انتهت"}[nursingPeriod.status] || nursingPeriod.status)
+    ];
+    currentEntries.forEach(text=>{
+      const row = document.createElement("div");
+      row.textContent = text;
+      row.style.color = "#475569";
+      preview.appendChild(row);
+    });
+  }
+  const captions = {1:"١ من ٤ — اختر التخصص",2:"٢ من ٤ — اختر الطبيب",3:"٣ من ٤ — اختر اسمك",4:"٤ من ٤ — راجع البيانات وأكد الدخول"};
+  $("#setupStepCaption").textContent = !selected ? "اختر الحجرة أولًا" : !ready ? "جاري قراءة بيانات الحجرة..." : takeover ? (setupWizardStep === 3 ? "اختر اسمك لاستلام الفترة الحالية" : "راجع الفترة الحالية وأكد الدخول") : captions[setupWizardStep];
+  if(setupWizardStep === 4){
+    $("#setupReviewTitle").textContent = takeover ? "بيانات استلام العيادة قبل التأكيد" : nursingSetupMode === "edit" ? "البيانات المعدلة قبل الحفظ" : "بيانات الفترة الجديدة قبل الحفظ";
+    $("#setupReviewHint").textContent = takeover ? "راجع بيانات العيادة واسم التمريض الذي سيستلمها قبل الضغط على تأكيد." : existing ? "البيانات التالية لم تحفظ بعد. ستعتمد بدل البيانات الحالية بالأعلى عند الضغط على الحفظ." : "راجع البيانات التالية؛ لم يتم حفظها بعد.";
+    const review = $("#setupReview");review.replaceChildren();
+    const entries = ["الحجرة: " + DISPLAY_SLOT_ID,"التخصص: " + (takeover ? nursingPeriod.clinicName || nursingPeriod.specialty : $("#setupClinicSearch").value),"الطبيب: " + (takeover ? doctorDisplayFromData(nursingPeriod) : $("#setupDoctorSearch").value),"التمريض: " + $("#setupNurse").value];
+    entries.forEach(text=>{const row=document.createElement("div");row.textContent=text;review.appendChild(row);});
+  }
+  if(ready && setupWizardStep > 0 && setupWizardStep < 4){
+    const step = setupWizardStep;
+    requestAnimationFrame(()=>{
+      if(setupWizardStep !== step || $("#view-setup").classList.contains("hidden-view")) return;
+      [null,openClinicMenu,openDoctorMenu,openNurseMenu][step](true);
+    });
+  }
+  $("#saveSetupBtn").hidden = !ready || setupWizardStep !== 4;
+  $("#saveSetupBtn").disabled = !auth.currentUser || !ready;
+  $("#saveSetupBtn").textContent = takeover ? "تأكيد والدخول للتحكم" : nursingSetupMode === "edit" ? "حفظ التعديل والعودة للتحكم" : "حفظ وتجهيز العيادة";
+  $("#nursingNewPeriod").hidden = !takeover || setupWizardStep !== 3;
+  $("#setupStepBack").hidden = !currentNursingIdentity();
+  $("#setupStepBack").textContent = "العودة للتحكم دون تغيير";
 }
 async function loadNursingPeriod(){
   if(nursingSetupSaving) return;
