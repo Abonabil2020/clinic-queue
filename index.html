@@ -11356,43 +11356,54 @@ function renderRoomGrid(){
   if(!grid) return;
   const select = $("#setupRoomSelect");
   grid.replaceChildren();
-  const floors = [["third","عيادات الدور الثالث"],["ground","عيادات الدور الأرضي"]];
+
   const rooms = setupWizardRooms();
-  const groups = floors.map(([key,title])=>({title, list:rooms.filter(r=>r.floor===key)}));
-  const known = floors.map(f=>f[0]);
-  const rest = rooms.filter(r=>!known.includes(r.floor));
-  if(rest.length) groups.push({title:"عيادات أخرى", list:rest});
-  groups.forEach(g=>{
-    if(!g.list.length) return;
-    const box = document.createElement("div");
-    box.className = "room-floor";
-    const h = document.createElement("h4");
-    h.textContent = g.title;
-    const inner = document.createElement("div");
-    inner.className = "room-floor-grid";
-    box.append(h, inner);
-    grid.appendChild(box);
-    g.list.forEach(room=>{
-    const on = select.value === room.id;
-    const tile = document.createElement("button");
-    tile.type = "button";
-    tile.className = "room-tile" + (on ? " selected" : "");
-    tile.disabled = nursingRoomOpening;
-    tile.setAttribute("aria-pressed", String(on));
-    const num = document.createElement("strong");
-    num.className = "num";
-    num.textContent = room.id;
-    const name = document.createElement("span");
-    name.textContent = room.place;
-    tile.append(num, name);
-    tile.addEventListener("click", ()=>{
-      if(nursingRoomOpening) return;
-      select.value = room.id;
-      select.dispatchEvent(new Event("change"));
-      renderRoomGrid();
+  const floors = [
+    { key: "third", title: "عيادات الدور الثالث" },
+    { key: "ground", title: "عيادات الدور الأرضي" }
+  ];
+
+  floors.forEach(floor => {
+    const floorRooms = rooms.filter(r => r.floor === floor.key);
+    if(floorRooms.length === 0) return;
+
+    const floorDiv = document.createElement("div");
+    floorDiv.className = "room-floor";
+
+    const titleEl = document.createElement("h4");
+    titleEl.textContent = floor.title;
+    floorDiv.appendChild(titleEl);
+
+    const subGrid = document.createElement("div");
+    subGrid.className = "room-floor-grid";
+
+    floorRooms.forEach(room => {
+      const on = select.value === room.id;
+      const tile = document.createElement("button");
+      tile.type = "button";
+      tile.className = "room-tile" + (on ? " selected" : "");
+      tile.disabled = nursingRoomOpening;
+      tile.setAttribute("aria-pressed", String(on));
+
+      const num = document.createElement("strong");
+      num.className = "num";
+      num.textContent = room.id;
+
+      const name = document.createElement("span");
+      name.textContent = room.place;
+
+      tile.append(num, name);
+      tile.addEventListener("click", ()=>{
+        if(nursingRoomOpening) return;
+        select.value = room.id;
+        select.dispatchEvent(new Event("change"));
+        renderRoomGrid();
+      });
+      subGrid.appendChild(tile);
     });
-    inner.appendChild(tile);
-    });
+
+    floorDiv.appendChild(subGrid);
+    grid.appendChild(floorDiv);
   });
 }
 function prepareSetupWizard(){
