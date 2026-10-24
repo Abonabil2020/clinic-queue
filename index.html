@@ -7691,6 +7691,18 @@
 @media(min-width:901px){#view-tv.tv-floor-only.tv-floor-third .tv-footer-message{font-size:clamp(22px,2.9vh,68px)!important}}
 @media(max-width:900px){#view-tv.tv-floor-only.tv-floor-third .tv-footer-message{font-size:clamp(17px,4.4vw,26px)!important}}
 </style>
+<style>
+/* العرض المتتابع الجديد للدور الثالث فقط. */
+#view-tv.tv-third-slideshow .queue-card.tv-page-hidden{display:none!important}
+#view-tv.tv-third-slideshow .third-floor .clinic-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-rows:repeat(2,minmax(0,1fr))!important}
+#view-tv.tv-third-slideshow .queue-card-body,#view-tv.tv-third-slideshow .queue-card[data-has-missed="false"] .queue-card-body{grid-template-rows:auto minmax(0,1fr) clamp(32px,4.6vh,90px)!important}
+#view-tv.tv-third-slideshow .queue-missed-summary{height:100%!important;max-height:100%!important;box-sizing:border-box!important;display:flex!important;align-items:center!important;padding:.3vh .55vw!important}
+#view-tv.tv-third-slideshow .queue-missed-summary-head{font-size:clamp(14px,2.1vh,44px)!important}
+#view-tv.tv-third-slideshow .queue-missed-count{font-size:clamp(12px,1.7vh,34px)!important;min-width:1.5em!important;height:1.5em!important}
+#view-tv.tv-third-slideshow .queue-public-chip{font-size:clamp(17px,2.6vh,54px)!important;height:1.3em!important;min-width:1.4em!important;padding:0 .35vw!important}
+#view-tv.tv-third-slideshow .queue-public-more,#view-tv.tv-third-slideshow .queue-missed-empty{font-size:clamp(12px,1.7vh,34px)!important}
+@media(max-width:600px){#view-tv.tv-third-slideshow .third-floor .clinic-grid{grid-template-columns:minmax(0,1fr)!important;grid-template-rows:auto!important}}
+</style>
 </head>
 <body>
 <div id="networkStatusIndicator" class="network-status-indicator" role="status" aria-live="polite">
@@ -7754,6 +7766,7 @@
         <div class="portal-tv-options" role="menu" aria-label="اختيار شاشة العرض">
           <a href="#/tv" class="portal-tv-option" role="menuitem"><strong>عرض جميع العيادات</strong><small>12 عيادة</small></a>
           <a href="#/tv-slideshow" class="portal-tv-option" role="menuitem"><strong>العرض المتتابع للعيادات</strong><small>٣ صفحات — كل ١٠ ثوانٍ</small></a>
+          <a href="#/tv-third-slideshow" class="portal-tv-option" role="menuitem"><strong>العرض المتتابع لعيادات الدور الثالث</strong><small>٤ + ٤ عيادات — كل ١٠ ثوانٍ</small></a>
           <a href="#/tv-third" class="portal-tv-option" role="menuitem"><strong>عيادات الدور الثالث</strong><small>8 عيادات</small></a>
           <a href="#/tv-ground" class="portal-tv-option" role="menuitem"><strong>عيادات الدور الأرضي</strong><small>4 عيادات</small></a>
         </div>
@@ -9410,7 +9423,7 @@ const dashboardLastNumbers = {};
 let tvDisplayMode = "all";
 
 function tvRoomsForDisplay(){
-  if(tvDisplayMode === "third") return ROOM_OPTIONS.filter(room=>room.floor === "third");
+  if(tvDisplayMode === "third" || tvDisplayMode === "third-slideshow") return ROOM_OPTIONS.filter(room=>room.floor === "third");
   if(tvDisplayMode === "ground") return ROOM_OPTIONS.filter(room=>room.floor === "ground");
   return ROOM_OPTIONS;
 }
@@ -9428,7 +9441,7 @@ let tvIndividualIndex = 0;
 let tvIndividualTimer = null;
 let tvIndividualOrder = ROOM_OPTIONS.map(room=>room.id);
 function tvPagesForMode(){
-  return tvDisplayMode === "slideshow" ? TV_PAGES : TV_PAGES.filter(page=>page.floor === tvDisplayMode);
+  return tvDisplayMode === "slideshow" ? TV_PAGES : TV_PAGES.filter(page=>page.floor === (tvDisplayMode === "third-slideshow" ? "third" : tvDisplayMode));
 }
 function paintTvPage(animate = false){
   scheduleTvTextFit();
@@ -9522,7 +9535,8 @@ function noteIndividualRoom(roomId){
 function setTvDisplayMode(mode = "all"){
   stopTvPageTimer();
   stopTvIndividualTimer();
-  tvDisplayMode = ["third", "ground", "slideshow", "individual"].includes(mode) ? mode : "all";
+  tvDisplayMode = ["third", "ground", "slideshow", "third-slideshow", "individual"].includes(mode) ? mode : "all";
+  $("#view-tv").classList.toggle("tv-third-slideshow",tvDisplayMode === "third-slideshow");
   if(tvDisplayMode === "individual"){
     tvIndividualIndex = 0;
     tvIndividualOrder = ROOM_OPTIONS.map(room=>room.id);
@@ -9534,7 +9548,7 @@ function setTvDisplayMode(mode = "all"){
     }, TV_INDIVIDUAL_MS);
     return;
   }
-  if(tvDisplayMode !== "slideshow"){
+  if(tvDisplayMode !== "slideshow" && tvDisplayMode !== "third-slideshow"){
     const tv = $("#view-tv");
     tv.classList.remove("tv-paged", "tv-individual");
     tv.classList.toggle("tv-floor-only", tvDisplayMode !== "all");
@@ -10991,6 +11005,7 @@ function route(){
   else if(h === "tv")   { setTvDisplayMode("all"); show("tv"); startClock(); }
   else if(h === "tv-slideshow") { setTvDisplayMode("slideshow"); show("tv"); startClock(); }
   else if(h === "tv-individual") { location.replace("#/tv"); return; }
+  else if(h === "tv-third-slideshow") { setTvDisplayMode("third-slideshow"); show("tv"); startClock(); }
   else if(h === "tv-third") { setTvDisplayMode("third"); show("tv"); startClock(); }
   else if(h === "tv-ground") { setTvDisplayMode("ground"); show("tv"); startClock(); }
   else if(h === "qr")   { show("qr"); renderQrDashboard(); }
@@ -15136,7 +15151,7 @@ auth.onAuthStateChanged(user=>{
     sessionStorage.removeItem(SETUP_KEY);
     setupData = null;
     const currentView = (location.hash || "#/home").replace("#/","");
-    if(!["home","nurse","setup","nursing-control","tv","tv-slideshow","tv-individual","tv-third","tv-ground","qr","reception","patient","clinics-manager","nursing-manager","staff-manager-login","staff-manager","admin-login","admin"].includes(currentView)){
+    if(!["home","nurse","setup","nursing-control","tv","tv-slideshow","tv-individual","tv-third","tv-third-slideshow","tv-ground","qr","reception","patient","clinics-manager","nursing-manager","staff-manager-login","staff-manager","admin-login","admin"].includes(currentView)){
       location.hash = "#/home";
     }
     route();
@@ -15158,7 +15173,7 @@ auth.onAuthStateChanged(user=>{
 
   if(isAdminUser(user)){
     const currentView = (location.hash || "#/home").replace("#/", "");
-    if(!["home","tv","tv-slideshow","tv-individual","tv-third","tv-ground","qr","patient","admin","admin-login","setup","nurse"].includes(currentView)) location.hash = "#/admin";
+    if(!["home","tv","tv-slideshow","tv-individual","tv-third","tv-third-slideshow","tv-ground","qr","patient","admin","admin-login","setup","nurse"].includes(currentView)) location.hash = "#/admin";
     syncAdminRoomControls();
     route();
     return;
@@ -15168,7 +15183,7 @@ auth.onAuthStateChanged(user=>{
     stopAdminAuditListener();
     stopAdminPresenceListener();
     const currentView = (location.hash || "#/home").replace("#/", "");
-    if(!["home","tv","tv-slideshow","tv-individual","tv-third","tv-ground","qr","patient","staff-manager","staff-manager-login"].includes(currentView)) location.hash = "#/staff-manager";
+    if(!["home","tv","tv-slideshow","tv-individual","tv-third","tv-third-slideshow","tv-ground","qr","patient","staff-manager","staff-manager-login"].includes(currentView)) location.hash = "#/staff-manager";
     route();
     return;
   }
@@ -15177,13 +15192,13 @@ auth.onAuthStateChanged(user=>{
     stopAdminAuditListener();
     stopAdminPresenceListener();
     const currentView = (location.hash || "#/home").replace("#/", "");
-    if(!["home", "tv", "tv-slideshow", "tv-individual", "tv-third", "tv-ground", "qr", "patient"].includes(currentView)) location.hash = "#/reception";
+    if(!["home", "tv", "tv-slideshow", "tv-individual", "tv-third", "tv-third-slideshow", "tv-ground", "qr", "patient"].includes(currentView)) location.hash = "#/reception";
     route();
     return;
   }
 
   const currentView = (location.hash || "#/home").replace("#/","");
-  if(!["home","tv","tv-slideshow","tv-individual","tv-third","tv-ground","qr","reception","patient"].includes(currentView)){
+  if(!["home","tv","tv-slideshow","tv-individual","tv-third","tv-third-slideshow","tv-ground","qr","reception","patient"].includes(currentView)){
     if(!isSharedNurseUser(user)){
       const authorizedRoom = authorizedRoomForUser(user);
       if(!authorizedRoom){
