@@ -7406,6 +7406,36 @@
   #view-reception .reception-closed-item{flex:1 1 calc(50% - 5px)}
 }
 </style>
+<style>
+/* الاستعلامات فقط: فصل الطوابق مع تقليل مساحة العناوين والحواشي. */
+#view-reception .reception-floor-groups{gap:10px}
+#view-reception .reception-floor-section[data-reception-floor-section="third"]{--rf-accent:#b63d58;--rf-bg:#fff5f6;--rf-border:#edc6ce}
+#view-reception .reception-floor-section[data-reception-floor-section="ground"]{--rf-accent:#617186;--rf-bg:#f1f5f9;--rf-border:#ccd6e1}
+#view-reception .reception-floor-section{padding:5px;border-radius:12px;border:1px solid var(--rf-border);border-top:3px solid var(--rf-accent);background:var(--rf-bg);box-shadow:none}
+#view-reception .reception-floor-heading{position:static;justify-content:space-between;gap:6px;min-height:0;padding:0 2px;margin:0 0 5px;border:0}
+#view-reception .reception-floor-heading-copy{flex:0 1 auto;text-align:right}
+#view-reception .reception-floor-section .reception-floor-heading h2{padding:3px 10px;border-radius:7px;font-size:13px;line-height:1.4;box-shadow:none;background:var(--rf-accent)!important}
+#view-reception .reception-floor-count{position:static;transform:none;min-width:23px;height:22px;padding:0 5px;font-size:10px;border-radius:6px}
+#view-reception .reception-floor-clinic-grid{gap:7px}
+@media(max-width:600px){
+  #view-reception .reception-floor-groups{gap:8px}
+  #view-reception .reception-floor-section{padding:4px;border-radius:10px}
+  #view-reception .reception-floor-heading{margin-bottom:4px}
+  #view-reception .reception-floor-section .reception-floor-heading h2{font-size:12px;padding:3px 8px}
+  #view-reception .reception-floor-clinic-grid{gap:6px}
+}
+</style>
+<style>
+#receptionDesktopNotifications.reception-notification-switch{display:inline-flex;align-items:center;gap:8px;padding:7px 10px;min-height:36px;border:1px solid #f2b5b5;border-radius:12px;background:#fff;color:#717171;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer}
+#receptionDesktopNotifications .notification-switch-track{position:relative;display:block;flex:0 0 32px;width:32px;height:18px;border-radius:20px;background:#cbd0d6;transition:background .18s}
+#receptionDesktopNotifications .notification-switch-track::after{content:"";position:absolute;top:3px;left:3px;width:12px;height:12px;background:#fff;border-radius:50%;box-shadow:0 1px 3px #0002;transition:transform .18s}
+#receptionDesktopNotifications[aria-checked="true"]{background:#fff3f3;color:#b34343}
+#receptionDesktopNotifications[aria-checked="true"] .notification-switch-track{background:#fe6565}
+#receptionDesktopNotifications[aria-checked="true"] .notification-switch-track::after{transform:translateX(14px)}
+#receptionDesktopNotifications .notification-switch-state{font-size:10px;font-weight:400}
+#receptionDesktopNotifications:focus-visible{outline:3px solid #fe656580;outline-offset:3px}
+@media(prefers-reduced-motion:reduce){#receptionDesktopNotifications .notification-switch-track,#receptionDesktopNotifications .notification-switch-track::after{transition:none}}
+</style>
 </head>
 <body>
 <div id="networkStatusIndicator" class="network-status-indicator" role="status" aria-live="polite">
@@ -8350,8 +8380,7 @@
         </div>
       </div>
       <div class="reception-top-actions">
-        <span class="reception-live"><span class="dot bg-emerald-400"></span>تحديث مباشر</span>
-        <button id="receptionDesktopNotifications" type="button" class="reception-logout" title="تنبيهات الكمبيوتر والصفحة مفتوحة في الخلفية">تنبيهات كروم</button>
+        <button id="receptionDesktopNotifications" type="button" class="reception-notification-switch" role="switch" aria-checked="false" title="تنبيهات الكمبيوتر والصفحة مفتوحة في الخلفية"><span class="notification-switch-track" aria-hidden="true"></span><span>تنبيهات كروم</span><span class="notification-switch-state">متوقفة</span></button>
         <button id="receptionLogout" type="button" class="reception-logout">تسجيل الخروج</button>
       </div>
     </div>
@@ -10309,7 +10338,7 @@ let receptionUpdatesExpanded = false;
 let receptionUpdateToastTimer = null;
 
 function receptionUpdateTime(timestamp){
-  return new Date(timestamp).toLocaleTimeString("ar-EG",{timeZone:"Africa/Cairo",hour:"2-digit",minute:"2-digit",second:"2-digit"});
+  return new Date(timestamp).toLocaleTimeString("ar-EG",{timeZone:"Africa/Cairo",hour:"2-digit",minute:"2-digit"});
 }
 let receptionDesktopEnabled = false;
 try{ receptionDesktopEnabled = localStorage.getItem("receptionDesktopNotifications") === "on"; }catch(_){}
@@ -10317,7 +10346,10 @@ let receptionDesktopNotice = null;
 const receptionDesktopButton = $("#receptionDesktopNotifications");
 function renderReceptionDesktopButton(){
   if(!receptionDesktopButton) return;
-  receptionDesktopButton.textContent = receptionDesktopEnabled && "Notification" in window && Notification.permission === "granted" ? "إيقاف تنبيهات كروم" : "تفعيل تنبيهات كروم";
+  const enabled = receptionDesktopEnabled && "Notification" in window && Notification.permission === "granted";
+  receptionDesktopButton.setAttribute("aria-checked",String(enabled));
+  receptionDesktopButton.querySelector(".notification-switch-state").textContent = enabled ? "مفعلة" : "متوقفة";
+  receptionDesktopButton.title = enabled ? "إيقاف تنبيهات كروم" : "تشغيل تنبيهات كروم والصفحة مفتوحة في الخلفية";
 }
 receptionDesktopButton?.addEventListener("click",async()=>{
   if(!("Notification" in window) || !window.isSecureContext){ alert("التنبيهات تحتاج متصفحًا يدعمها ورابط HTTPS."); return; }
@@ -10337,7 +10369,8 @@ function notifyReceptionDesktop(update){
   try{
     receptionDesktopNotice?.close();
     const notice = new Notification(update.clinicName,{
-      body:update.detail + " • " + receptionUpdateTime(update.occurredAt),
+      body:update.detail + "\nالوقت: " + receptionUpdateTime(update.occurredAt),
+      icon:new URL("logo.png",document.baseURI).href,
       dir:"rtl",lang:"ar",tag:"reception-clinic-update"
     });
     receptionDesktopNotice = notice;
