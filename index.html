@@ -7762,6 +7762,35 @@
 #view-patient .patient-instructions-mobile{display:block}
 }
 </style>
+
+<style>
+/* Compact mobile third-floor cards only. */
+@media(max-width:900px){
+#view-tv.tv-floor-only.tv-paged.tv-third-slideshow .queue-card{min-height:0!important;height:auto!important;grid-template-rows:auto auto!important;border-radius:14px!important}
+#view-tv.tv-floor-only.tv-paged.tv-third-slideshow .third-floor .clinic-grid{gap:10px!important}
+#view-tv.tv-floor-only.tv-paged.tv-third-slideshow .queue-card-title{min-height:44px!important;height:auto!important;padding:8px 10px!important}
+#view-tv.tv-floor-only.tv-paged.tv-third-slideshow .queue-clinic-name{font-size:clamp(17px,4.6vw,23px)!important;line-height:1.25!important}
+#view-tv.tv-floor-only.tv-paged.tv-third-slideshow .room-badge{font-size:12px!important;padding:4px 6px!important}
+#view-tv.tv-floor-only.tv-paged.tv-third-slideshow .queue-card .queue-card-body{height:auto!important;min-height:0!important;display:grid!important;grid-template-columns:minmax(0,1fr)!important;grid-template-rows:auto auto auto!important;padding:10px!important;gap:7px!important;align-content:start!important}
+#view-tv.tv-floor-only.tv-paged.tv-third-slideshow .queue-card .queue-doctor{font-size:clamp(17px,4.5vw,22px)!important;line-height:1.4!important;margin:0!important;padding:0 0 0 86px!important;min-height:30px!important;text-align:right!important}
+#view-tv.tv-floor-only.tv-paged.tv-third-slideshow .queue-card .queue-status{top:10px!important;left:10px!important;width:auto!important;max-width:82px!important;min-height:24px!important;padding:4px 6px!important;font-size:11px!important;line-height:1.3!important;white-space:normal!important}
+#view-tv.tv-floor-only.tv-paged.tv-third-slideshow .queue-card .queue-number-box{height:auto!important;min-height:0!important;padding:9px!important;gap:5px!important;border-radius:12px!important}
+#view-tv.tv-floor-only.tv-paged.tv-third-slideshow .queue-card .queue-number-label{font-size:15px!important;line-height:1.4!important;margin:0!important}
+#view-tv.tv-floor-only.tv-paged.tv-third-slideshow .queue-card .queue-number{font-size:64px!important;line-height:1.05!important;min-height:0!important;margin:0!important;padding:0!important}
+#view-tv.tv-floor-only.tv-paged.tv-third-slideshow .queue-card[data-status="finished"] .queue-number{font-size:28px!important;line-height:1.3!important}
+#view-tv.tv-floor-only.tv-paged.tv-third-slideshow .queue-card[data-status="break"] .queue-number{font-size:26px!important;line-height:1.3!important}
+#view-tv.tv-floor-only.tv-paged.tv-third-slideshow .queue-card[data-waiting="true"] .queue-number{font-size:23px!important;line-height:1.3!important;white-space:normal!important}
+#view-tv.tv-floor-only.tv-paged.tv-third-slideshow .queue-card[data-status="finished"] .queue-number::before{width:28px!important;height:28px!important;margin-bottom:4px!important}
+#view-tv.tv-floor-only.tv-paged.tv-third-slideshow .queue-card .queue-missed-summary{height:auto!important;min-height:36px!important;padding:6px 8px!important;gap:6px!important;border-radius:10px!important}
+#view-tv.tv-floor-only.tv-paged.tv-third-slideshow .queue-missed-summary-head{font-size:14px!important;line-height:1.3!important}
+#view-tv.tv-floor-only.tv-paged.tv-third-slideshow .queue-missed-count{font-size:12px!important}
+#view-tv.tv-floor-only.tv-paged.tv-third-slideshow .queue-public-chip{font-size:19px!important;min-width:28px!important;height:27px!important}
+#view-tv.tv-floor-only.tv-paged.tv-third-slideshow .queue-public-more, #view-tv.tv-floor-only.tv-paged.tv-third-slideshow .queue-missed-empty{font-size:11px!important}
+#view-tv.tv-floor-only.tv-paged.tv-third-slideshow .tv-footer{height:auto!important;min-height:0!important;padding:6px 8px!important}
+#view-tv.tv-floor-only.tv-paged.tv-third-slideshow .tv-footer-ticker{height:auto!important;min-height:0!important;padding:10px 12px!important;border-radius:12px!important}
+#view-tv.tv-floor-only.tv-paged.tv-third-slideshow .tv-footer-message{font-size:15px!important;line-height:1.65!important;white-space:normal!important}
+}
+</style>
 </head>
 <body>
 <div id="networkStatusIndicator" class="network-status-indicator" role="status" aria-live="polite">
