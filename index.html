@@ -7746,6 +7746,15 @@
 #view-tv.tv-floor-only.tv-paged.tv-third-slideshow .queue-card[data-recall="true"][data-status="active"][data-waiting="false"] .queue-status{background:#0369a1!important;color:#fff!important}
 #view-tv.tv-floor-only.tv-paged.tv-third-slideshow .queue-card[data-recall="true"][data-status="active"][data-waiting="false"] .queue-status-dot{background:#fff!important}
 </style>
+<style>
+@media(max-width:900px){
+#view-tv.tv-third-slideshow{height:auto!important;max-height:none!important;overflow:visible!important}
+#view-tv.tv-third-slideshow .tv-dashboard,#view-tv.tv-third-slideshow .third-floor{height:auto!important;overflow:visible!important}
+#view-tv.tv-third-slideshow .third-floor .clinic-grid{grid-template-columns:minmax(0,1fr)!important;grid-template-rows:none!important;grid-auto-rows:auto!important;height:auto!important}
+#view-tv.tv-third-slideshow .queue-card{min-height:300px!important}
+#view-tv.tv-third-slideshow #tvPageProgress,#view-tv.tv-third-slideshow #tvPageBadge{display:none!important}
+}
+</style>
 </head>
 <body>
 <div id="networkStatusIndicator" class="network-status-indicator" role="status" aria-live="polite">
@@ -9464,6 +9473,10 @@ function renderBookingStatus(){
 }
 const dashboardLastNumbers = {};
 let tvDisplayMode = "all";
+const thirdSlideshowMobile = window.matchMedia("(max-width:900px)");
+thirdSlideshowMobile.addEventListener("change",()=>{
+  if(tvDisplayMode === "third-slideshow") setTvDisplayMode("third-slideshow");
+});
 
 function tvRoomsForDisplay(){
   if(tvDisplayMode === "third" || tvDisplayMode === "third-slideshow") return ROOM_OPTIONS.filter(room=>room.floor === "third");
@@ -9490,7 +9503,10 @@ function paintTvPage(animate = false){
   scheduleTvTextFit();
   const tv = $("#view-tv");
   const pages = tvPagesForMode();
-  const page = pages[tvPageIndex];
+  const mobileThird = tvDisplayMode === "third-slideshow" && thirdSlideshowMobile.matches;
+  const page = mobileThird
+    ? {floor:"third",rooms:ROOM_OPTIONS.filter(room=>room.floor === "third").map(room=>room.id)}
+    : pages[tvPageIndex];
   tv.classList.add("tv-floor-only", "tv-paged");
   tv.classList.toggle("tv-floor-third", page.floor === "third");
   tv.classList.toggle("tv-floor-ground", page.floor === "ground");
@@ -9515,12 +9531,13 @@ function paintTvPage(animate = false){
   dashboard.classList.remove("tv-page-enter");
   if(animate){ void dashboard.offsetWidth; dashboard.classList.add("tv-page-enter"); }
   const badge = $("#tvPageBadge");
-  badge.textContent = String(tvPageIndex + 1);
+  badge.textContent = mobileThird ? "" : String(tvPageIndex + 1);
+  badge.hidden = mobileThird;
   badge.setAttribute("aria-label", "الصفحة " + ar(tvPageIndex + 1) + " من " + ar(pages.length));
   const progress = $("#tvPageProgress");
-  progress.hidden = pages.length < 2;
+  progress.hidden = mobileThird || pages.length < 2;
   progress.classList.remove("running");
-  if(pages.length > 1){ void progress.offsetWidth; progress.classList.add("running"); }
+  if(!mobileThird && pages.length > 1){ void progress.offsetWidth; progress.classList.add("running"); }
 }
 function stopTvPageTimer(){
   if(tvPageTimer !== null) clearInterval(tvPageTimer);
@@ -9616,7 +9633,7 @@ function setTvDisplayMode(mode = "all"){
   }
   tvPageIndex = 0;
   paintTvPage();
-  if(tvPagesForMode().length > 1){
+  if(tvPagesForMode().length > 1 && !(tvDisplayMode === "third-slideshow" && thirdSlideshowMobile.matches)){
     tvPageTimer = setInterval(()=>{
       if($("#view-tv").classList.contains("hidden-view")) return;
       tvPageIndex = (tvPageIndex + 1) % tvPagesForMode().length;
