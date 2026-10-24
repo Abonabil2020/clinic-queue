@@ -7703,6 +7703,34 @@
 #view-tv.tv-third-slideshow .queue-public-more,#view-tv.tv-third-slideshow .queue-missed-empty{font-size:clamp(12px,1.7vh,34px)!important}
 @media(max-width:600px){#view-tv.tv-third-slideshow .third-floor .clinic-grid{grid-template-columns:minmax(0,1fr)!important;grid-template-rows:auto!important}}
 </style>
+<style>
+/* تكبير عناصر القراءة من بعيد في العرض المتتابع للدور الثالث فقط. */
+#view-tv.tv-floor-only.tv-floor-third.tv-third-slideshow .queue-card-title{padding:.25vh .45vw!important;min-height:0!important}
+#view-tv.tv-floor-only.tv-floor-third.tv-third-slideshow .queue-clinic-name{font-size:clamp(22px,4.1vh,90px)!important;line-height:1.15!important}
+#view-tv.tv-floor-only.tv-floor-third.tv-third-slideshow .room-badge{font-size:clamp(14px,2.5vh,54px)!important;min-width:0!important;padding:.25vh .5vw!important}
+#view-tv.tv-floor-only.tv-floor-third.tv-third-slideshow .queue-card-body,#view-tv.tv-floor-only.tv-floor-third.tv-third-slideshow .queue-card[data-has-missed="false"] .queue-card-body{padding:.2vh .4vw!important;gap:.2vh .3vw!important;grid-template-rows:auto minmax(0,1fr) clamp(34px,5.6vh,120px)!important}
+#view-tv.tv-floor-only.tv-floor-third.tv-third-slideshow .queue-doctor{font-size:clamp(21px,3.6vh,78px)!important;line-height:1.15!important;padding-inline:.3vw!important}
+#view-tv.tv-floor-only.tv-floor-third.tv-third-slideshow .queue-status{font-size:clamp(10px,1.5vh,32px)!important;padding:.2vh .3vw!important}
+#view-tv.tv-floor-only.tv-floor-third.tv-third-slideshow .queue-number-box{padding:.1vh .2vw!important;gap:.1vh!important}
+#view-tv.tv-floor-only.tv-floor-third.tv-third-slideshow .queue-number{font-size:clamp(80px,23vh,650px)!important;line-height:.95!important}
+#view-tv.tv-floor-only.tv-floor-third.tv-third-slideshow .queue-number-label{font-size:clamp(13px,2vh,44px)!important}
+#view-tv.tv-floor-only.tv-floor-third.tv-third-slideshow .queue-card[data-waiting="true"] .queue-number,#view-tv.tv-floor-only.tv-floor-third.tv-third-slideshow .queue-card[data-status="finished"] .queue-number,#view-tv.tv-floor-only.tv-floor-third.tv-third-slideshow .queue-card[data-status="idle"] .queue-number{font-size:clamp(22px,4.4vh,96px)!important;line-height:1.15!important;padding:0!important}
+#view-tv.tv-floor-only.tv-floor-third.tv-third-slideshow .queue-card[data-status="finished"] .queue-number::before{width:1em!important;height:1em!important;margin-bottom:.1em!important}
+#view-tv.tv-floor-only.tv-floor-third.tv-third-slideshow .queue-card[data-waiting="true"] .queue-number::before{font-size:1em!important;line-height:1!important;margin-bottom:.1em!important}
+#view-tv.tv-floor-only.tv-floor-third.tv-third-slideshow .queue-missed-summary{padding:.15vh .35vw!important;gap:.4vw!important}
+#view-tv.tv-floor-only.tv-floor-third.tv-third-slideshow .queue-missed-summary-head{font-size:clamp(17px,2.7vh,58px)!important;line-height:1.1!important;flex:0 1 auto!important}
+#view-tv.tv-floor-only.tv-floor-third.tv-third-slideshow .queue-missed-count{font-size:clamp(14px,2.2vh,48px)!important;height:1.4em!important;min-width:1.4em!important}
+#view-tv.tv-floor-only.tv-floor-third.tv-third-slideshow .queue-public-chip{font-size:clamp(22px,3.6vh,78px)!important;height:1.15em!important;min-width:1.25em!important;line-height:1.1!important;padding:0 .25vw!important}
+#view-tv.tv-floor-only.tv-floor-third.tv-third-slideshow .queue-public-more,#view-tv.tv-floor-only.tv-floor-third.tv-third-slideshow .queue-missed-empty{font-size:clamp(13px,2vh,44px)!important}
+@media(max-width:600px){
+#view-tv.tv-floor-only.tv-floor-third.tv-third-slideshow .queue-clinic-name{font-size:clamp(21px,5vw,30px)!important}
+#view-tv.tv-floor-only.tv-floor-third.tv-third-slideshow .queue-doctor{font-size:clamp(19px,4.6vw,28px)!important}
+#view-tv.tv-floor-only.tv-floor-third.tv-third-slideshow .queue-missed-summary-head{font-size:16px!important}
+#view-tv.tv-floor-only.tv-floor-third.tv-third-slideshow .queue-public-chip{font-size:24px!important}
+#view-tv.tv-floor-only.tv-floor-third.tv-third-slideshow .queue-missed-count{font-size:14px!important}
+#view-tv.tv-floor-only.tv-floor-third.tv-third-slideshow .queue-missed-empty,#view-tv.tv-floor-only.tv-floor-third.tv-third-slideshow .queue-public-more{font-size:12px!important}
+}
+</style>
 </head>
 <body>
 <div id="networkStatusIndicator" class="network-status-indicator" role="status" aria-live="polite">
