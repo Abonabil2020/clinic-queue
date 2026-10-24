@@ -7737,6 +7737,15 @@
 #view-tv.tv-floor-only.tv-paged.tv-third-slideshow .queue-card .queue-missed-summary-head,#view-tv.tv-floor-only.tv-paged.tv-third-slideshow .queue-card .queue-missed-empty,#view-tv.tv-floor-only.tv-paged.tv-third-slideshow .queue-card .queue-public-more{color:#475569!important}
 #view-tv.tv-floor-only.tv-paged.tv-third-slideshow .queue-card .queue-missed-count{color:#475569!important;background:#e2e8f0!important;border-color:#cbd5e1!important}
 </style>
+<style>
+/* تمييز إعادة النداء وتهدئة لون الاستراحة فقط. */
+#view-tv.tv-floor-only.tv-paged.tv-third-slideshow .queue-card[data-status="break"]{--state-ink:#92400e;--state-soft:#fff8eb;--state-border:#e9c58b;--state-heading:#c58b32}
+#view-tv.tv-floor-only.tv-paged.tv-third-slideshow .queue-card[data-status="break"] .queue-card-title,#view-tv.tv-floor-only.tv-paged.tv-third-slideshow .queue-card[data-status="break"] .queue-clinic-name,#view-tv.tv-floor-only.tv-paged.tv-third-slideshow .queue-card[data-status="break"] .room-badge{color:#fff!important}
+#view-tv.tv-floor-only.tv-paged.tv-third-slideshow .queue-card[data-recall="true"][data-status="active"][data-waiting="false"] .queue-number-box{background:#e0f2fe!important;border-color:#0284c7!important;box-shadow:inset 0 0 0 2px #0284c7}
+#view-tv.tv-floor-only.tv-paged.tv-third-slideshow .queue-card[data-recall="true"][data-status="active"][data-waiting="false"] .queue-number,#view-tv.tv-floor-only.tv-paged.tv-third-slideshow .queue-card[data-recall="true"][data-status="active"][data-waiting="false"] .queue-number-label{color:#075985!important}
+#view-tv.tv-floor-only.tv-paged.tv-third-slideshow .queue-card[data-recall="true"][data-status="active"][data-waiting="false"] .queue-status{background:#0369a1!important;color:#fff!important}
+#view-tv.tv-floor-only.tv-paged.tv-third-slideshow .queue-card[data-recall="true"][data-status="active"][data-waiting="false"] .queue-status-dot{background:#fff!important}
+</style>
 </head>
 <body>
 <div id="networkStatusIndicator" class="network-status-indicator" role="status" aria-live="polite">
