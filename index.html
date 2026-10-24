@@ -7731,6 +7731,20 @@
 #view-tv.tv-floor-only.tv-floor-third.tv-third-slideshow .queue-missed-empty,#view-tv.tv-floor-only.tv-floor-third.tv-third-slideshow .queue-public-more{font-size:12px!important}
 }
 </style>
+<style>
+/* تناسق عنوان العيادة والحجرة وزيادة مساحة رقم الكشف في العرض المتتابع للدور الثالث فقط. */
+#view-tv.tv-floor-only.tv-floor-third.tv-third-slideshow .queue-card-title{padding:.3vh .45vw!important;align-items:center!important;gap:.45vw!important}
+#view-tv.tv-floor-only.tv-floor-third.tv-third-slideshow .queue-clinic-name{font-size:clamp(25px,4.7vh,104px)!important;line-height:1.12!important;font-weight:900!important}
+#view-tv.tv-floor-only.tv-floor-third.tv-third-slideshow .room-badge{font-size:clamp(18px,3.2vh,70px)!important;line-height:1.15!important;padding:.3vh .55vw!important;min-width:0!important;white-space:nowrap!important}
+#view-tv.tv-floor-only.tv-floor-third.tv-third-slideshow .queue-number-box{padding:0 .15vw!important;gap:0!important}
+#view-tv.tv-floor-only.tv-floor-third.tv-third-slideshow .queue-number-label{font-size:clamp(12px,1.8vh,40px)!important;line-height:1.05!important}
+#view-tv.tv-floor-only.tv-floor-third.tv-third-slideshow .queue-number{line-height:.9!important}
+#view-tv.tv-floor-only.tv-floor-third.tv-third-slideshow .queue-card[data-status="finished"] .queue-number,#view-tv.tv-floor-only.tv-floor-third.tv-third-slideshow .queue-card[data-status="idle"] .queue-number,#view-tv.tv-floor-only.tv-floor-third.tv-third-slideshow .queue-card[data-waiting="true"] .queue-number{line-height:1.15!important}
+@media(max-width:600px){
+#view-tv.tv-floor-only.tv-floor-third.tv-third-slideshow .queue-clinic-name{font-size:clamp(23px,5.8vw,34px)!important}
+#view-tv.tv-floor-only.tv-floor-third.tv-third-slideshow .room-badge{font-size:clamp(16px,4.2vw,23px)!important}
+}
+</style>
 </head>
 <body>
 <div id="networkStatusIndicator" class="network-status-indicator" role="status" aria-live="polite">
