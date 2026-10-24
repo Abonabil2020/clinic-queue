@@ -7436,6 +7436,17 @@
 #receptionDesktopNotifications:focus-visible{outline:3px solid #fe656580;outline-offset:3px}
 @media(prefers-reduced-motion:reduce){#receptionDesktopNotifications .notification-switch-track,#receptionDesktopNotifications .notification-switch-track::after{transition:none}}
 </style>
+<style>
+/* توسيط عنواني الطوابق وتكبيرهما فقط. */
+#view-reception .reception-floor-section .reception-floor-heading{position:relative;justify-content:center;min-height:34px;padding:0 30px;margin-bottom:5px}
+#view-reception .reception-floor-section .reception-floor-heading-copy{text-align:center;min-width:0}
+#view-reception .reception-floor-section .reception-floor-heading h2{padding:5px 20px;font-size:16px;line-height:1.4;border-radius:10px}
+#view-reception .reception-floor-section .reception-floor-count{position:absolute;inset-inline-end:1px;top:50%;transform:translateY(-50%)}
+@media(max-width:600px){
+#view-reception .reception-floor-section .reception-floor-heading{min-height:31px;padding-inline:27px}
+#view-reception .reception-floor-section .reception-floor-heading h2{font-size:14px;padding:5px 14px}
+}
+</style>
 </head>
 <body>
 <div id="networkStatusIndicator" class="network-status-indicator" role="status" aria-live="polite">
