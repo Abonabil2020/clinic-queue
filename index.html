@@ -7361,9 +7361,13 @@
 <style>
 /* Official count controls are scoped to nursing and reception. */
 #view-nurse .official-options-row{position:relative}
-#view-nurse .official-options-row>details>summary{padding-inline-end:162px;min-height:22px}
-#nurseOfficialCount{position:absolute;left:0;top:7px;max-width:160px;font-size:11px;z-index:1}
-#nurseOfficialCount .official-count-toggle{white-space:nowrap;font-size:11px;padding:1px 4px;color:#fe6565;font-weight:700}
+#view-nurse .official-period-header{display:flex;align-items:center;gap:10px}
+#view-nurse .official-period-names{flex:1;min-width:0}
+#nurseOfficialCount{position:relative;flex:0 0 96px;width:96px;padding:6px;border:1px solid #f4caca;border-radius:12px;background:#fff4f4;text-align:center;font-size:12px;z-index:1}
+#nurseOfficialCount .official-count-toggle{display:block;width:100%;white-space:pre-line;font-size:20px;line-height:1.35;padding:0;color:#d34f4f;font-weight:700}
+#nurseOfficialCount .official-count-toggle::first-line{font-size:12px}
+#nurseOfficialCount .official-count-form{flex-wrap:wrap;justify-content:center}
+#nurseOfficialCount .official-count-form input{width:100%}
 .official-count-form{display:flex;align-items:center;gap:3px;margin:0}
 .official-count-form[hidden],.official-count-toggle[hidden]{display:none!important}
 .official-count-form input{width:52px;min-width:0;height:23px;padding:1px 4px;border:1px solid #f3bcbc;border-radius:6px;color:#555;background:#fff;font:inherit;text-align:center}
@@ -7372,7 +7376,7 @@
 .official-count-toggle{font-family:inherit}
 .official-count-toggle:disabled,.official-count-form button:disabled{opacity:.5}
 .official-count-message{font-size:10px;color:#9b4545;line-height:1.5}
-#nurseOfficialCount .official-count-message:not(:empty){position:absolute;top:26px;left:0;width:220px;padding:5px;background:#fff5f5;border:1px solid #f4cccc;border-radius:7px;box-shadow:0 2px 5px #0001}
+#nurseOfficialCount .official-count-message:not(:empty){position:absolute;top:100%;left:0;width:220px;padding:5px;background:#fff5f5;border:1px solid #f4cccc;border-radius:7px;box-shadow:0 2px 5px #0001}
 #rcOfficialCount{margin-top:12px;padding:9px 10px;border-radius:10px;background:#fff4f4;border:1px solid #f4dada;font-size:13px}
 #rcOfficialCount .official-count-toggle{color:#c05050;font-weight:700}
 #rcOfficialCount .official-count-meta{display:block;font-size:10px;color:#717171;margin-top:4px}
@@ -7738,9 +7742,14 @@
 
   <div class="p-4">
     <div id="nursingCurrentPeriod" class="bg-white rounded-2xl shadow-sm p-3 mb-3" style="min-width:0;overflow-wrap:anywhere">
+      <div class="official-period-header">
+        <div class="official-period-names">
       <h2 id="panelClinic" class="font-bold text-base">—</h2>
       <p id="panelDoctor" class="text-sky-700 font-bold text-base mt-1">—</p>
       <p class="text-sm text-slate-500 mt-1">التمريض: <span id="panelNurse">—</span></p>
+        </div>
+        <div id="nurseOfficialCount" aria-label="عدد الحالات المقرر"></div>
+      </div>
       <div id="nursingRoomSwitch" class="flex flex-wrap gap-2 mt-2" style="display:none"></div>
       <div class="official-options-row">
       <details class="mt-2 border-t border-slate-100 pt-2">
@@ -7753,7 +7762,6 @@
         </div>
         <p class="nursing-period-help">تعديل البيانات: يحافظ على الأدوار والفائت والحجز.<br>فترة جديدة: يصفّر الأدوار والفائت ويلغي قفل الحجز.</p>
       </details>
-      <div id="nurseOfficialCount" aria-label="عدد الحالات المقرر"></div>
       </div>
     </div>
 
@@ -14991,7 +14999,7 @@ window.officialCounts = (()=>{
     const e=editors[kind],c=context(kind);if(!e)return;
     const key=c?c.room+':'+c.session:'';
     if(e.key!==key){e.key=key;e.editing=false;e.message.textContent='';}
-    e.button.textContent='الحالات: '+(ready&&c?label(c.room,c.session):'—')+' ✎';
+    e.button.textContent=(kind==='nurse'?'عدد الحالات\n':'الحالات: ')+(ready&&c?label(c.room,c.session):'—')+' ✎';
     e.button.disabled=!ready||!c?.session||!c?.permitted||busy;
     const saved=c?current(c.room,c.session):null;
     const note=saved?'آخر تعديل: '+saved.actorName+' — '+new Date(saved.updatedAt).toLocaleTimeString('ar-EG',{timeZone:'Africa/Cairo',hour:'2-digit',minute:'2-digit'}):'عدد الحالات المقرر للفترة الحالية';
