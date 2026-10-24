@@ -14736,23 +14736,6 @@ auth.onAuthStateChanged(user=>{
   }
   route();
 });
-
-  const currentView = (location.hash || "#/home").replace("#/","");
-  if(!["home","tv","tv-slideshow","tv-individual","tv-third","tv-ground","qr","reception","patient"].includes(currentView)){
-    const authorizedRoom = authorizedRoomForUser(user);
-    if(!authorizedRoom){
-      $("#loginMsg").textContent = "هذا الحساب غير مربوط بأي حجرة";
-      auth.signOut();
-      return;
-    }
-    if(authorizedRoom !== DISPLAY_SLOT_ID){
-      openAuthorizedRoom(authorizedRoom, "#/setup");
-      return;
-    }
-  }
-  route();
-});
-
 /* ==========================================================
    ⑨  ساعة التلفزيون + ملء الشاشة
    ========================================================== */
