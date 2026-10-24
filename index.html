@@ -7475,14 +7475,14 @@
 </section>
 
 <!-- ============================================================
-     1) شاشة تسجيل الدخول (حساب مستقل لكل حجرة)
+     1) شاشة تسجيل دخول التمريض
 ============================================================ -->
 <section id="view-login" class="hidden-view min-h-screen flex items-center justify-center p-5">
   <div class="w-full max-w-sm bg-white rounded-3xl shadow-xl shadow-slate-300/40 p-7">
     <div class="text-center mb-6">
       <img src="logo.png" alt="" class="site-login-logo" onerror="this.style.display='none'">
       <h1 id="loginRoomTitle" class="text-2xl font-bold">تسجيل دخول التمريض</h1>
-      <p class="text-slate-500 text-sm mt-1">كل حساب مرتبط بحجرة واحدة فقط</p>
+      <p class="text-slate-500 text-sm mt-1">حساب موحد للتمريض — اختر الحجرة بعد تسجيل الدخول</p>
     </div>
     <label class="block text-sm mb-1 text-slate-600">اسم المستخدم</label>
     <input id="loginEmail" type="text" inputmode="text" autocomplete="username" autocapitalize="none" autocorrect="off" dir="ltr"
@@ -8609,6 +8609,14 @@ const MAX_NUMBER = 50;
 
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
+const NURSING_EMAIL = "nurse@islah.clinic";
+function isSharedNurseUser(user = auth.currentUser){
+  return Boolean(user && !user.isAnonymous && String(user.email || "").toLowerCase() === NURSING_EMAIL);
+}
+function showNursingLogin(){
+  $("#loginEmail").value = "nurse";
+  show("login");
+}
 const clinicRef = firebase.database().ref("clinics/" + DISPLAY_SLOT_ID);
 const allClinicsRef = firebase.database().ref("clinics");
 const staffDirectoryRef = firebase.database().ref("staffDirectory");
@@ -10581,14 +10589,14 @@ function route(){
   }
   else if(h === "patient")  { show("patient"); startClock(); }
   else if(["nursing-control","setup","nurse"].includes(h) && !isStaffManagerUser() && !isReceptionUser()){
+    if(!nursingRoomAccess()){ showNursingLogin(); return; }
     if(h === "nursing-control"){
-      if(auth.currentUser && !auth.currentUser.isAnonymous && !isAdminUser()){ migrateNursingLogin(); return; }
       nursingSetupMode = "enter";
       nursingSetupDraft = false;
       sessionStorage.removeItem(SETUP_ROOM_STEP_KEY);
       location.hash = "#/setup";
     }
-    if(!auth.currentUser){ show("setup"); prepareSetupWizard(); ensureNursingAuth(); }
+    if(!nursingRoomAccess()){ showNursingLogin(); }
     else if(h === "nurse" && currentNursingIdentity() && setupData){
       if(nursingRoomLoaded && !isAdminUser() && !nursingHandoverMatches({handoverId:nursingLiveHandoverId})){ requireNursingHandover(); return; }
       show("nurse"); renderNursingRoomSwitch();
@@ -10598,7 +10606,7 @@ function route(){
   else if(isStaffManagerUser()){ location.hash = "#/staff-manager"; show("staff-manager"); renderStaffManager(); }
   else if(isReceptionUser()){ location.hash = "#/reception"; show("reception"); renderReceptionDashboard(); }
   else if(isAdminUser() && !["setup","nurse"].includes(h)){ location.hash = "#/admin"; show("admin"); renderAdminDashboard(); }
-  else if(!auth.currentUser)  { show("login"); }
+  else if(!nursingRoomAccess())  { showNursingLogin(); }
   else if(h === "setup" || !setupData){ show("setup"); prefillSetup(); }
   else { show("nurse"); }
 }
@@ -11151,7 +11159,7 @@ window.addEventListener("pagehide",saveNursingResume);
 window.addEventListener("pageshow",()=>{ if(nursingResumePending) route(); });
 
 function nursingRoomAccess(){
-  return Boolean(auth.currentUser && (isAdminUser() || auth.currentUser.isAnonymous || authorizedRoomForUser(auth.currentUser) === DISPLAY_SLOT_ID));
+  return Boolean(auth.currentUser && (isAdminUser() || isSharedNurseUser() || (!auth.currentUser.isAnonymous && authorizedRoomForUser(auth.currentUser) === DISPLAY_SLOT_ID)));
 }
 function currentNursingIdentity(){
   const entry = nursingRooms[DISPLAY_SLOT_ID];
@@ -11194,7 +11202,7 @@ function renderNursingRoomSwitch(){
     wrap.appendChild(button);
   });
   const add = $("#nursingAddRoomBtn");
-  add.style.display = rooms.length < 2 && (auth.currentUser?.isAnonymous || isAdminUser()) ? "" : "none";
+  add.style.display = rooms.length < 2 && (isSharedNurseUser() || isAdminUser()) ? "" : "none";
   add.onclick = ()=>{ nursingSetupDraft = false; sessionStorage.removeItem(SETUP_ROOM_STEP_KEY); nursingSetupMode = "enter";location.hash = "#/setup"; };
 }
 function renderNursingSetup(){
@@ -11304,45 +11312,14 @@ $("#nursingRetry").onclick = ()=>{
   $("#nursingRetry").hidden = true;
   if(auth.currentUser) prefillSetup(); else ensureNursingAuth();
 };
-async function migrateNursingLogin(){
-  if(nursingAuthPending) return;
-  nursingAuthPending = true;
-  sessionStorage.removeItem(SETUP_ROOM_STEP_KEY);
-  nursingRooms = {}; sessionStorage.removeItem(NURSING_ROOMS_KEY); clearNursingResume();
-  location.hash = "#/setup";
-  show("setup");prepareSetupWizard();
-  try{
-    await auth.signOut();
-    await auth.signInAnonymously();
-    route();
-  }catch(e){
-    nursingAuthError = true;
-    $("#setupMsg").textContent = "تعذر تجهيز الدخول المباشر. تحقق من تفعيل Anonymous في Firebase والاتصال.";
-    $("#nursingRetry").hidden = false;
-  }finally { nursingAuthPending = false; }
-}
-async function ensureNursingAuth(){
-  if(!nursingAuthReady || auth.currentUser || nursingAuthPending || nursingAuthError) return;
-  nursingAuthPending = true;
-  showNursingAuthWait();
-  try{
-    await auth.signInAnonymously();
-    if(["nursing-control","setup","nurse"].includes((location.hash || "").replace("#/",""))) route();
-  }catch(e){
-    nursingAuthError = true;
-    $("#setupMsg").textContent = e.code === "auth/operation-not-allowed" ? "يلزم تفعيل الدخول Anonymous في Firebase لتشغيل الدخول المباشر." : "تعذر تجهيز الدخول. تحقق من الاتصال وإعدادات Firebase.";
-    $("#nursingRetry").hidden = false;
-  }finally{
-    nursingAuthPending = false;
-    clearNursingAuthWait();
-    if(nursingAuthError) setNursingRoomOpening(false);
-  }
+function ensureNursingAuth(){
+  if(!nursingRoomAccess()) showNursingLogin();
 }
 
 let setupWizardStep = 0;
 const SETUP_ROOM_STEP_KEY = "islahSetupRoomStep";
 function setupWizardRooms(){
-  return !auth.currentUser || isAdminUser() || auth.currentUser.isAnonymous ? ROOM_OPTIONS : ROOM_OPTIONS.filter(room=>room.id === authorizedRoomForUser(auth.currentUser));
+  return isAdminUser() || isSharedNurseUser() ? ROOM_OPTIONS : !auth.currentUser || auth.currentUser.isAnonymous ? [] : ROOM_OPTIONS.filter(room=>room.id === authorizedRoomForUser(auth.currentUser));
 }
 function setSetupWizardStep(step){
   closeClinicMenu();closeDoctorMenu();closeNurseMenu();
@@ -14460,6 +14437,7 @@ const LOGIN_ERRORS = {
 function loginEmailFromUsername(value){
   const entered = String(value || "").trim().toLowerCase();
   if(!entered) return "";
+  if(entered === "nurse") return NURSING_EMAIL;
   if(entered.includes("@")) return entered;
 
   const compact = entered.replace(/\s+/g, "");
@@ -14503,15 +14481,21 @@ function doLogin(){
   const button = $("#loginBtn");
 
   msg.textContent = "";
-  if(!em) return void (msg.textContent = "اسم المستخدم غير صحيح. اكتب رقم الحجرة مثل 301");
+  if(!em) return void (msg.textContent = "اسم المستخدم غير صحيح. اكتب nurse");
   if(!pw) return void (msg.textContent = "اكتب كلمة المرور");
 
   button.disabled = true;
   button.textContent = "جاري الدخول...";
-  location.hash = "#/setup";
-
-  auth.signInWithEmailAndPassword(em, pw)
+  auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+    .then(()=>auth.signInWithEmailAndPassword(em, pw))
     .then(credential=>{
+      $("#loginPass").value = "";
+      if(isSharedNurseUser(credential.user)){
+        nursingSetupMode = "enter";
+        location.hash = "#/setup";
+        route();
+        return;
+      }
       const roomId = authorizedRoomForUser(credential.user);
       if(!roomId){
         msg.textContent = "هذا الحساب غير مربوط بأي حجرة";
@@ -14638,9 +14622,18 @@ auth.onAuthStateChanged(user=>{
     return;
   }
 
+  if(user.isAnonymous){
+    stopAdminAuditListener(); stopAdminPresenceListener(); stopStaffDirectoryListener();
+    clearNursingResume();
+    auth.signOut().catch(()=>route());
+    route(); return;
+  }
   startStaffDirectoryListener();
 
-  if(user.isAnonymous){ stopAdminAuditListener(); stopAdminPresenceListener(); route(); return; }
+  if(isSharedNurseUser(user)){
+    stopAdminAuditListener(); stopAdminPresenceListener();
+    route(); return;
+  }
 
   if(isAdminUser(user)){
     const currentView = (location.hash || "#/home").replace("#/", "");
