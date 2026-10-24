@@ -7358,6 +7358,27 @@
 #view-setup .room-tile.selected{border-color:#fe6565;background:#fff1f2}
 #view-setup .room-tile:disabled{opacity:.55;cursor:not-allowed}
 </style>
+<style>
+/* Official count controls are scoped to nursing and reception. */
+#view-nurse .official-options-row{position:relative}
+#view-nurse .official-options-row>details>summary{padding-inline-end:162px;min-height:22px}
+#nurseOfficialCount{position:absolute;left:0;top:7px;max-width:160px;font-size:11px;z-index:1}
+#nurseOfficialCount .official-count-toggle{white-space:nowrap;font-size:11px;padding:1px 4px;color:#fe6565;font-weight:700}
+.official-count-form{display:flex;align-items:center;gap:3px;margin:0}
+.official-count-form[hidden],.official-count-toggle[hidden]{display:none!important}
+.official-count-form input{width:52px;min-width:0;height:23px;padding:1px 4px;border:1px solid #f3bcbc;border-radius:6px;color:#555;background:#fff;font:inherit;text-align:center}
+.official-count-form button{height:23px;padding:1px 6px;border-radius:6px;background:#fe6565;color:#fff;font:inherit;font-weight:700}
+.official-count-form button.official-count-cancel{background:#f1f1f1;color:#717171}
+.official-count-toggle{font-family:inherit}
+.official-count-toggle:disabled,.official-count-form button:disabled{opacity:.5}
+.official-count-message{font-size:10px;color:#9b4545;line-height:1.5}
+#nurseOfficialCount .official-count-message:not(:empty){position:absolute;top:26px;left:0;width:220px;padding:5px;background:#fff5f5;border:1px solid #f4cccc;border-radius:7px;box-shadow:0 2px 5px #0001}
+#rcOfficialCount{margin-top:12px;padding:9px 10px;border-radius:10px;background:#fff4f4;border:1px solid #f4dada;font-size:13px}
+#rcOfficialCount .official-count-toggle{color:#c05050;font-weight:700}
+#rcOfficialCount .official-count-meta{display:block;font-size:10px;color:#717171;margin-top:4px}
+#rcOfficialCount .official-count-message{display:block}
+#view-reception .official-count-badge{font-size:11px;font-weight:700;color:var(--rc-accent,#717171);margin-top:5px}
+</style>
 </head>
 <body>
 <div id="networkStatusIndicator" class="network-status-indicator" role="status" aria-live="polite">
@@ -7721,6 +7742,7 @@
       <p id="panelDoctor" class="text-sky-700 font-bold text-base mt-1">—</p>
       <p class="text-sm text-slate-500 mt-1">التمريض: <span id="panelNurse">—</span></p>
       <div id="nursingRoomSwitch" class="flex flex-wrap gap-2 mt-2" style="display:none"></div>
+      <div class="official-options-row">
       <details class="mt-2 border-t border-slate-100 pt-2">
         <summary class="text-sm font-bold cursor-pointer text-slate-600">خيارات العيادة</summary>
         <div class="flex flex-wrap gap-2 mt-2">
@@ -7731,6 +7753,8 @@
         </div>
         <p class="nursing-period-help">تعديل البيانات: يحافظ على الأدوار والفائت والحجز.<br>فترة جديدة: يصفّر الأدوار والفائت ويلغي قفل الحجز.</p>
       </details>
+      <div id="nurseOfficialCount" aria-label="عدد الحالات المقرر"></div>
+      </div>
     </div>
 
     <!-- البكرة -->
@@ -8382,6 +8406,7 @@
 
           <p class="text-xs text-slate-500 mt-3">التمريض المسؤول</p>
           <p id="rcNurse" class="font-bold text-sky-800">—</p>
+          <div id="rcOfficialCount" aria-label="عدد الحالات المقرر"></div>
 
           <div class="reception-detail-number">
             <span id="rcNumberLabel" class="text-sm text-slate-500">الرقم بالداخل</span>
@@ -9802,6 +9827,7 @@ function renderReceptionDetail(){
   $("#rcBookingStatus").dataset.bookingRoom = room.id;
   renderBookingStatus();
   drawQR(room.id);
+  window.officialCounts?.render();
 }
 
 function renderReceptionDashboard(){
@@ -10545,6 +10571,7 @@ function show(v){
   $("#view-" + v).classList.remove("hidden-view");
   document.title = pageTitleForView(v);
   syncAllClinicsListenerForView(v);
+  window.officialCounts?.sync(v);
   if(v === "nurse"){
     saveNursingResume();
     requestAnimationFrame(()=>{
@@ -13765,6 +13792,7 @@ function applyClinicSnapshot(raw){
   lastSeen = state.current;
   renderAll(changed);
   renderBookingStatus();
+  window.officialCounts?.render();
   if(nursingResumePending){ route(); return; }
   if(!nursingSetupSaving && (location.hash || "") === "#/nurse") {
     const entry = currentNursingIdentity();
@@ -14943,6 +14971,86 @@ $("#nurseBookingClose").addEventListener("click", async ()=>{
 });
 
 renderBookingStatus();
+
+/* Shared official booking count: one small record per room, saved on request only. */
+window.officialCounts = (()=>{
+  const root=firebase.database().ref('officialCounts');
+  let values={},listening=false,ready=false,listener=null,activeView='',busy=false;
+  const editors={};
+  const node=id=>document.getElementById(id);
+  function allowed(){return isAdminUser()||isReceptionUser()||nursingRoomAccess();}
+  function context(kind){
+    if(kind==='nurse')return {room:String(DISPLAY_SLOT_ID),session:Number(nursingLiveSessionStart)||0,period:'',permitted:canControlCurrentRoom(),nurse:state.nurse||''};
+    const room=ROOM_OPTIONS.find(r=>r.id===receptionSelectedRoom);if(!room)return null;
+    const d=receptionDataForRoom(room);
+    return {room:room.id,session:Number(d.sessionStart)||0,period:String(d.periodId||''),permitted:isReceptionUser()||isAdminUser(),nurse:''};
+  }
+  function current(room,session){const v=values[room];return v&&Number(v.sessionStart)===session?v:null;}
+  function label(room,session){const v=current(room,session);return v?ar(v.count):'لم يحدد';}
+  function updateEditor(kind){
+    const e=editors[kind],c=context(kind);if(!e)return;
+    const key=c?c.room+':'+c.session:'';
+    if(e.key!==key){e.key=key;e.editing=false;e.message.textContent='';}
+    e.button.textContent='الحالات: '+(ready&&c?label(c.room,c.session):'—')+' ✎';
+    e.button.disabled=!ready||!c?.session||!c?.permitted||busy;
+    const saved=c?current(c.room,c.session):null;
+    const note=saved?'آخر تعديل: '+saved.actorName+' — '+new Date(saved.updatedAt).toLocaleTimeString('ar-EG',{timeZone:'Africa/Cairo',hour:'2-digit',minute:'2-digit'}):'عدد الحالات المقرر للفترة الحالية';
+    e.button.title=note;e.meta.textContent=kind==='reception'?note:'';
+    e.button.hidden=e.editing;e.form.hidden=!e.editing;
+    e.save.disabled=busy;e.cancel.disabled=busy;e.input.disabled=busy;
+  }
+  function render(){
+    if(!allowed())return;
+    updateEditor('nurse');updateEditor('reception');
+    document.querySelectorAll('#receptionClinicGrid .reception-clinic-card').forEach(card=>{
+      const room=ROOM_OPTIONS.find(r=>r.id===card.dataset.room);if(!room)return;
+      const d=receptionDataForRoom(room);let badge=card.querySelector('.official-count-badge');
+      if(!badge){badge=document.createElement('div');badge.className='official-count-badge';card.querySelector('.reception-nurse')?.after(badge);}
+      badge.textContent='عدد الحالات المقرر: '+(ready?label(room.id,Number(d.sessionStart)||0):'—');
+    });
+  }
+  function sync(view){
+    activeView=view;
+    if(!['nurse','reception'].includes(view)||!allowed()){
+      if(listening)root.off('value',listener);listening=false;ready=false;values={};
+      for(const e of Object.values(editors)){e.editing=false;e.input.value='';e.message.textContent='';}return;
+    }
+    if(!listening){
+      listening=true;listener=s=>{values=s.val()||{};ready=true;render();};
+      root.on('value',listener,()=>{ready=false;Object.values(editors).forEach(e=>e.message.textContent='تعذر تحميل عدد الحالات؛ راجع الصلاحيات والاتصال.');render();});
+    }
+    render();
+  }
+  function install(kind,id){
+    const host=node(id);if(!host)return;
+    host.innerHTML='<button type="button" class="official-count-toggle" aria-label="تعديل عدد الحالات المقرر"></button><form class="official-count-form" hidden><input type="text" inputmode="numeric" autocomplete="off" maxlength="5" aria-label="عدد الحالات المقرر" placeholder="العدد"><button type="submit">حفظ</button><button type="button" class="official-count-cancel" aria-label="إلغاء التعديل">×</button></form><span class="official-count-message" role="status"></span><small class="official-count-meta"></small>';
+    const e=editors[kind]={button:host.querySelector('button'),form:host.querySelector('form'),input:host.querySelector('input'),save:host.querySelector('[type=submit]'),cancel:host.querySelector('.official-count-cancel'),message:host.querySelector('.official-count-message'),meta:host.querySelector('small'),editing:false,key:'',version:0};
+    e.button.onclick=()=>{const c=context(kind);if(!c?.permitted||!c.session||!ready)return;const saved=current(c.room,c.session);e.version=Number(values[c.room]?.updatedAt)||0;e.input.value=saved?String(saved.count):'';e.editing=true;e.message.textContent='';updateEditor(kind);e.input.focus();e.input.select();};
+    e.cancel.onclick=()=>{e.editing=false;e.message.textContent='';updateEditor(kind);};
+    e.form.onsubmit=async event=>{
+      event.preventDefault();if(busy)return;
+      const c=context(kind),key=c?c.room+':'+c.session:'';
+      if(!c?.session||!c.permitted||key!==e.key)return;
+      const raw=e.input.value.trim().replace(/[٠-٩]/g,x=>String('٠١٢٣٤٥٦٧٨٩'.indexOf(x))).replace(/[۰-۹]/g,x=>String('۰۱۲۳۴۵۶۷۸۹'.indexOf(x)));
+      if(!/^\d{1,5}$/.test(raw)||Number(raw)>10000){e.message.textContent='أدخل عددًا صحيحًا من ٠ إلى ١٠٠٠٠.';return;}
+      busy=true;updateEditor(kind);e.message.textContent='جارٍ الحفظ...';
+      const uid=auth.currentUser.uid,email=auth.currentUser.email,actorName=kind==='nurse'?(c.nurse||'التمريض'):'الاستعلامات';
+      try{
+        const result=await root.child(c.room).transaction(old=>{
+          if((Number(old?.updatedAt)||0)!==e.version)return;
+          return {count:Number(raw),sessionStart:c.session,updatedAt:firebase.database.ServerValue.TIMESTAMP,actorUid:uid,actorEmail:email,actorName};
+        },undefined,false);
+        if(!result.committed){e.message.textContent='العدد اتعدل من جهاز آخر؛ أغلق التعديل وافتحه لمراجعة الأحدث.';return;}
+        e.editing=false;e.message.textContent='تم الحفظ';setTimeout(()=>{if(e.message.textContent==='تم الحفظ')e.message.textContent='';},2000);
+      }catch(error){e.message.textContent='تعذر الحفظ؛ تأكد من الاتصال والصلاحيات وأن فترة العيادة لم تتغير.';}
+      finally{busy=false;render();}
+    };
+    e.input.onkeydown=event=>{if(event.key==='Escape'&&!busy)e.cancel.click();};
+  }
+  install('nurse','nurseOfficialCount');install('reception','rcOfficialCount');
+  auth.onAuthStateChanged(()=>sync(activeView));
+  return {sync,render};
+})();
 
 route();
 </script>
