@@ -7755,6 +7755,13 @@
 #view-tv.tv-third-slideshow #tvPageProgress,#view-tv.tv-third-slideshow #tvPageBadge{display:none!important}
 }
 </style>
+<style>
+#view-patient .patient-instructions-mobile{display:none}
+@media(max-width:767px){
+#view-patient .patient-instructions-desktop{display:none}
+#view-patient .patient-instructions-mobile{display:block}
+}
+</style>
 </head>
 <body>
 <div id="networkStatusIndicator" class="network-status-indicator" role="status" aria-live="polite">
@@ -8901,8 +8908,8 @@
     </div>
 
     <div class="w-full max-w-2xl mx-auto mt-4 rounded-2xl p-4 md:p-5 text-right" style="background:#fef3c7;color:#92400e">
-      <h3 class="font-bold text-base md:text-lg mb-3">تعليمات تنظيم الدور بالمجمع</h3>
-      <ul class="space-y-2 text-sm md:text-base leading-7 font-medium">
+      <h3 class="font-bold text-base md:text-lg mb-3"><span class="patient-instructions-desktop">تعليمات تنظيم الدور بالمجمع</span><span class="patient-instructions-mobile">تعليمات متابعة وتنظيم الدور</span></h3>
+      <ul class="patient-instructions-desktop space-y-2 text-sm md:text-base leading-7 font-medium">
         <li class="flex items-start gap-2">
           <span class="font-bold shrink-0">•</span>
           <span>يرجى التواجد أمام العيادة قبل دورك بحالتين، لضمان عدم فوات رقمك.</span>
@@ -8915,6 +8922,10 @@
           <span class="font-bold shrink-0">•</span>
           <span>يتم النداء على أرقام الأدوار من خلال النظام، ولا يتم تسليم إيصال الحجز للتمريض.</span>
         </li>
+      </ul>
+      <ul class="patient-instructions-mobile space-y-2 text-sm leading-7 font-medium">
+        <li class="flex items-start gap-2"><span class="font-bold shrink-0">•</span><span>يرجى التواجد أمام العيادة قبل دورك بحالتين، لضمان عدم فوات رقمك.</span></li>
+        <li class="flex items-start gap-2"><span class="font-bold shrink-0">•</span><span>في حال فوات دورك، يرجى إبلاغ المسؤول عن تنظيم الدور عند وصولك إلى المجمع، ويكون دخولك بعد حالتين من تسجيل حضورك.</span></li>
       </ul>
     </div>
   </main>
