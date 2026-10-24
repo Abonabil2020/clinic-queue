@@ -7358,6 +7358,49 @@
 #view-setup .room-tile.selected{border-color:#fe6565;background:#fff1f2}
 #view-setup .room-tile:disabled{opacity:.55;cursor:not-allowed}
 </style>
+<style>
+/* Daily admin services: scoped to admin only; inherited RB font. */
+#view-admin [hidden]{display:none!important}
+#view-admin .ds-nav{display:flex;gap:8px;overflow-x:auto;margin:16px 0;padding:7px;background:#fff;border:1px solid #e7e7e7;border-radius:16px}
+#view-admin .ds-nav button{flex:1;white-space:nowrap;padding:12px 15px;border-radius:11px;color:#717171;background:#f6f6f6;font-weight:700;font-family:inherit}
+#view-admin .ds-nav button.active{background:#fe6565;color:white}
+#view-admin .ds-toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+#view-admin .ds-toolbar>input{flex:1;min-width:220px}
+#view-admin .ds-toolbar input,#view-admin .ds-toolbar select,#view-admin .ds-draft-row input,#view-admin .ds-detail select{padding:10px;border:1px solid #dedede;border-radius:10px;background:#fff;color:#555;font-family:inherit;max-width:100%}
+#view-admin #dsThreshold{width:75px}
+#view-admin .ds-service{padding:18px;background:white;border:1px solid #e5e5e5;border-radius:18px;margin:14px 0;color:#555}
+#view-admin .ds-service h2{font-size:20px;font-weight:700;color:#fe6565}
+#view-admin .ds-service h3{font-size:16px;font-weight:700;margin:10px 0;color:#555}
+#view-admin .ds-heading,#view-admin .ds-actions{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+#view-admin .ds-button{padding:9px 12px;margin:5px 0;border:1px solid #f4caca;border-radius:10px;background:#fff2f2;color:#bf4b4b;font-weight:700;font-family:inherit;cursor:pointer}
+#view-admin .ds-button.primary{background:#fe6565;color:#fff}
+#view-admin .ds-button:disabled{opacity:.5;cursor:wait}
+#view-admin .ds-note{font-size:12px;line-height:1.9;color:#717171;margin:8px 0;overflow-wrap:anywhere}
+#view-admin .ds-warning,#view-admin #dsMessage[data-bad=true]{font-size:12px;line-height:1.8;color:#9c4c18;background:#fff5e8;border-radius:8px;padding:8px}
+#view-admin .ds-warning:empty,#view-admin #dsMessage:empty{display:none}
+#view-admin .ds-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:14px 0}
+#view-admin .ds-card{padding:14px;border:1px solid #e5e5e5;border-top:4px solid #fe6565;border-radius:14px;background:#fffafa;overflow-wrap:anywhere}
+#view-admin .ds-card p{font-size:12px;margin:5px 0}
+#view-admin .ds-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:14px 0}
+#view-admin .ds-field{display:flex;flex-direction:column;gap:6px;padding:9px;background:#f7f7f7;border-radius:10px;font-size:12px}
+#view-admin .ds-field span{color:#717171}
+#view-admin .ds-field strong{font-size:14px;color:#555;overflow-wrap:anywhere}
+#view-admin .ds-detail{padding:14px;border:1px solid #f1c7c7;border-radius:14px}
+#view-admin .ds-table-scroll{overflow-x:auto;margin-top:12px}
+#view-admin .ds-table-scroll table{width:100%;min-width:650px;border-collapse:collapse;font-size:12px}
+#view-admin .ds-table-scroll th,#view-admin .ds-table-scroll td{padding:10px;text-align:right;border-bottom:1px solid #eee}
+#view-admin .ds-table-scroll th{background:#fff0f0;color:#a34444}
+#view-admin .ds-quick td{background:#fff4db}
+#view-admin .ds-preview{display:block;max-width:100%;max-height:650px;object-fit:contain;margin:16px auto}
+#view-admin .ds-upload{display:block;padding:15px;border:1px dashed #fe6565;border-radius:12px;font-size:13px}
+#view-admin .ds-draft-row{display:grid;grid-template-columns:2fr 1.5fr 1fr 1fr 1fr auto;gap:8px;padding:12px 0;border-bottom:1px solid #eee;align-items:end}
+#view-admin .ds-draft-row label{display:flex;flex-direction:column;gap:6px;font-size:11px;min-width:0}
+#view-admin .ds-draft-row input{width:100%;min-width:0}
+#view-admin .ds-approved{font-size:12px;line-height:2}
+#view-admin .ds-live-extra{font-size:11px;color:#717171;margin-top:9px;padding-top:8px;border-top:1px solid #eee}
+@media(max-width:850px){#view-admin .ds-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#view-admin .ds-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}#view-admin .ds-draft-row{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:500px){#view-admin .ds-grid{grid-template-columns:1fr}#view-admin .ds-service{padding:12px}#view-admin .ds-nav button{font-size:11px;padding:10px}#view-admin .ds-toolbar select{flex:1}}
+</style>
 </head>
 <body>
 <div id="networkStatusIndicator" class="network-status-indicator" role="status" aria-live="polite">
@@ -7541,6 +7584,37 @@
       </div>
       <button id="adminLogout" type="button" class="px-4 py-2.5 rounded-xl bg-slate-100 text-slate-600 text-sm font-bold">تسجيل الخروج</button>
     </header>
+
+    <!-- Daily admin services: additions only. -->
+    <nav class="ds-nav" aria-label="خدمات الأدمن" role="tablist">
+      <button type="button" data-ds-tab="live" class="active" role="tab" aria-selected="true">متابعة العيادات</button>
+      <button type="button" data-ds-tab="stats" role="tab" aria-selected="false">إحصائيات اليوم</button>
+      <button type="button" data-ds-tab="schedule" role="tab" aria-selected="false">الجدول اليومي</button>
+    </nav>
+    <div class="ds-toolbar">
+      <input id="dsSearch" type="search" placeholder="بحث بالدكتور أو التمريض أو العيادة أو الغرفة" aria-label="بحث في العيادات">
+      <select id="dsFloor" aria-label="الدور"><option value="">كل الأدوار</option value="third">الدور الثالث</option><option value="ground">الدور الأرضي</option></select>
+      <select id="dsStatus" aria-label="حالة العيادة"><option value="">كل الحالات</option><option value="active">تعمل</option><option value="break">استراحة</option><option value="idle">في انتظار التشغيل</option><option value="finished">انتهت العيادة</option><option value="incomplete">فترة غير مكتملة</option></select>
+      <label id="dsThresholdWrap" hidden>مراجعة المدد الأقل من <input id="dsThreshold" type="number" min="1" max="600" value="60" aria-label="حد المدة القصيرة بالثواني"> ثانية</label>
+    </div>
+    <p id="dsMessage" class="ds-note" role="status"></p>
+    <section id="dsStats" class="ds-service" hidden aria-label="إحصائيات اليوم">
+      <div class="ds-heading"><h2>إحصائيات اليوم</h2><div><button id="dsRefresh" type="button" class="ds-button">تحديث المدد</button><button id="dsExport" type="button" class="ds-button">تنزيل تقرير Excel ‏(CSV)</button></div></div>
+      <p class="ds-note">الحضور من أول رقم أكبر من صفر، والانصراف من إنهاء العيادة. البيانات لليوم التشغيلي الحالي فقط. الحذف بعد ٣ صباحًا عند أول فتح بحساب أدمن أو تمريض مصرح. المدد الظاهرة تتحدث مع العمليات أو زر التحديث.</p>
+      <p id="dsUnstarted" class="ds-warning"></p>
+      <div id="dsCards" class="ds-grid"></div>
+      <section id="dsDetails" class="ds-detail" hidden aria-label="تفاصيل الفترة والأرقام"></section>
+    </section>
+    <section id="dsSchedule" class="ds-service" hidden aria-label="الجدول اليومي">
+      <h2>الجدول اليومي</h2>
+      <p class="ds-note">اختر صورة الجدول للمعاينة، ثم أدخل بيانات العيادات وراجعها قبل الاعتماد. لا توجد قراءة تلقائية للصورة في هذه النسخة. الصورة الأصلية لا تتعدل ولا ترفع إلى قاعدة البيانات ولا تحفظ بعد إغلاق الصفحة.</p>
+      <label class="ds-upload">صورة الجدول <input id="dsImage" type="file" accept="image/jpeg,image/png,image/webp"></label>
+      <img id="dsPreview" hidden alt="معاينة صورة الجدول الأصلية" class="ds-preview">
+      <p class="ds-note">أدخل المواعيد بتوقيت القاهرة. استبعد المعمل والحضانة والأشعة والعلاج الطبيعي. اسم الدكتور والتخصص مطابقان لبيانات العيادة؛ عند تعدد الفترات اختر الربط من تفاصيل الفترة.</p>
+      <div id="dsDraft"></div>
+      <div class="ds-actions"><button id="dsAdd" type="button" class="ds-button">إضافة فترة</button><button id="dsEdit" type="button" class="ds-button">تحميل المعتمد للتعديل</button><button id="dsApprove" type="button" class="ds-button primary">اعتماد جدول اليوم</button></div>
+      <h3>الجدول المعتمد</h3><div id="dsApproved" class="ds-approved"></div>
+    </section>
 
     <section id="adminConnectionsPanel" class="admin-connections-panel" data-level="normal" aria-label="المتصلون بالنظام الآن">
       <div class="admin-connections-head">
@@ -10217,6 +10291,7 @@ function renderAdminDashboard(){
     card.append(head,body);
     grid.appendChild(card);
   });
+  if(typeof DailyAdmin !== "undefined") DailyAdmin.refresh();
 }
 
 document.getElementById("adminAuditToolbar")?.addEventListener("click", event=>{
@@ -11679,6 +11754,7 @@ $("#saveSetupBtn").addEventListener("click", async ()=>{
     if(!saved || roomId !== DISPLAY_SLOT_ID || saved.nurse !== nurse || saved.handoverId !== handoverId ||
        (!takeover && (saved.clinicName !== clinic.name || saved.doctor !== doctor)) ||
        (expectedPeriodId && (saved.periodId !== expectedPeriodId || saved.current !== 0 || saved.maxReached !== 0 || saved.displayCurrent !== 0 || Object.keys(saved.missedTurns || {}).length))) throw new Error("period-changed");
+    DailyAdmin.resetRecord(before,saved,roomId);
     const logged = await writeAuditLog({action:takeover ? "nurse_control_enter" : edit ? "clinic_setup" : "clinic_prepared",roomId:DISPLAY_SLOT_ID,clinicName:saved.clinicName,nurseName:nurse,summary:takeover ? nurse + " بدأ التحكم في حجرة " + DISPLAY_SLOT_ID : edit ? "تعديل بيانات الفترة دون تصفير" : "تجهيز فترة جديدة في انتظار بدء العيادة وتصفير الأدوار والفائت وإلغاء القفل",details:{previousNurse:before.nurse || "",sessionStart:saved.sessionStart || 0}});
     if(logged === false) alert("تم حفظ البيانات، لكن تعذر تسجيل الخطوة. راجع اتصال الإنترنت وصلاحية سجل الخطوات.");
     const confirmed = (await clinicRef.once("value")).val();
@@ -13994,11 +14070,13 @@ async function cancelMissedTurn(number){
   const identity = currentNursingIdentity();
   const adminControl = isAdminUser();
   try{
+    let dailyBefore = null;
     const result = await ref.transaction(data=>{
       if(!adminControl && !nursingHandoverMatches(data,identity)) return;
       if(!data || Number(data.sessionStart || 0) !== period || data.status === "break" || data.status === "finished") return;
       const saved = (data.missedTurns || {})[String(number)];
       if(!saved || saved.status === "done" || saved.missedAt !== item.missedAt) return;
+      dailyBefore = JSON.parse(JSON.stringify(data));
       delete data.missedTurns[String(number)];
       if(data.recallMode && data.recallNumber === number){
         data.displayCurrent = typeof data.previousDisplay === "number" ? data.previousDisplay : data.current;
@@ -14010,6 +14088,7 @@ async function cancelMissedTurn(number){
       return data;
     }, undefined, false);
     if(!result.committed) return void flashSync("تغيرت حالة الدور؛ راجع القائمة وحاول مرة أخرى", false);
+    DailyAdmin.record(dailyBefore,result.snapshot.val(),roomId);
     writeAuditLog({action:"cancel_missed", roomId, clinicName, nurseName,
       summary:"إلغاء تسجيل الدور " + ar(number) + " من الأدوار الفائتة لتسجيله بالغلط"});
     flashSync("تم إلغاء تسجيل " + ar(number) + " من الفائتة", true);
@@ -14376,9 +14455,12 @@ async function updateCurrentPeriod(updates, expectedSession = nursingLiveSession
   if(nursingSetupSaving || !canControlCurrentRoom()) throw new Error("period-changed");
   const identity = currentNursingIdentity();
   const adminControl = isAdminUser();
+  const dailyRoom = DISPLAY_SLOT_ID;
+  let dailyBefore = null;
   const result = await clinicRef.transaction(data=>{
     if(!data || Number(data.sessionStart || 0) !== expectedSession) return;
     if(!adminControl && !nursingHandoverMatches(data,identity)) return;
+    dailyBefore = JSON.parse(JSON.stringify(data));
     const next = {...data};
     for(const [path,value] of Object.entries(updates)){
       const keys = path.split("/");
@@ -14393,6 +14475,7 @@ async function updateCurrentPeriod(updates, expectedSession = nursingLiveSession
     return next;
   },undefined,false);
   if(!result.committed) throw new Error("period-changed");
+  DailyAdmin.record(dailyBefore,result.snapshot.val(),dailyRoom);
   return result;
 }
 
@@ -14440,6 +14523,7 @@ $("#resetSameClinicBtn").addEventListener("click", async ()=>{
       rememberNursingRoom(saved,currentNursingIdentity()?.nurse || saved.nurse);
       nursingSetupMode = "enter"; location.hash = "#/nurse"; route();
     }
+    DailyAdmin.resetRecord(latest,saved,roomId);
     const logged = await writeAuditLog({action:"clinic_reset",roomId,clinicName:saved.clinicName,nurseName:saved.nurse,summary:"تصفير العيادة بنفس البيانات ومسح الأدوار والفائت وإلغاء قفل الحجز والاستراحة والإنهاء"});
     if(logged === false) alert("تم التصفير، لكن تعذر تسجيل الخطوة. راجع الاتصال وصلاحية سجل الخطوات.");
   }catch(e){
@@ -14943,6 +15027,290 @@ $("#nurseBookingClose").addEventListener("click", async ()=>{
 });
 
 renderBookingStatus();
+
+/* Daily admin services: lazy reads; no per-second database writes. */
+const DailyAdmin = (()=>{
+  const Core = (()=>{
+const TZ = 'Africa/Cairo';
+function dayKey(t = Date.now()) {
+  const p = Object.fromEntries(new Intl.DateTimeFormat('en-CA', {timeZone:TZ,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',hourCycle:'h23'}).formatToParts(new Date(t)).filter(x=>x.type!=='literal').map(x=>[x.type,x.value]));
+  const d = new Date(Date.UTC(+p.year,+p.month-1,+p.day));
+  if (+p.hour < 3) d.setUTCDate(d.getUTCDate()-1);
+  return d.toISOString().slice(0,10);
+}
+function normalize(s) {
+  return String(s || '').normalize('NFKC').replace(/[\u064b-\u065f\u0670\u0640]/g,'').replace(/[أإآ]/g,'ا').replace(/ى/g,'ي').replace(/^(?:دكتور|دكتورة|د\.?|ا\.?د\.?)\s+/,'').replace(/[^\p{L}\p{N}]/gu,'');
+}
+function snapshot(d) {
+  if (!d) return null;
+  return {current:Number(d.current)||0,display:Number(d.displayCurrent ?? d.current)||0,status:d.status||'idle',recall:!!d.recallMode,recallNumber:Number(d.recallNumber)||0,missed:Object.fromEntries(Object.entries(d.missedTurns||{}).map(([n,v])=>[n,v.status||'missed']))};
+}
+function reducePeriod(events) {
+  const list = Object.entries(events||{}).map(([id,e])=>({...e,id})).sort((a,b)=>a.at-b.at || a.id.localeCompare(b.id));
+  const rows=[]; let active=null, normal=null, prev=null, last=0, arrival=0, departure=0, breaks=0, breakCount=0, incomplete=false, partial=false, reopened=false;
+  const add = (n,at,kind)=>{const row={id:String(rows.length+1),number:n,kind,start:at,end:0,ms:0,status:'current'};rows.push(row);return row;};
+  for(const e of list) {
+    const at=Math.max(last,e.at), after=e.after;
+    if(prev && last) {
+      const dt=Math.max(0,at-last);
+      if(!departure && arrival && prev.status==='break') breaks+=dt;
+      if(!departure && active && prev.status==='active') active.ms+=dt;
+    }
+    if(e.seed && !prev) {prev=e.seed;partial=prev.current>0 || prev.recall;}
+    if(!after) {
+      if(active && !active.end) {active.end=at;if(active.status==='current')active.status='incomplete';}
+      if(normal && !normal.end){normal.end=at;if(normal.status==='current')normal.status='incomplete';}
+      incomplete=!departure; active=null;prev=null;last=at;continue;
+    }
+    if(departure && after.status!=='finished') reopened=true;
+    if(!arrival && !partial && after.current>0 && after.status==='active') arrival=at;
+    if(after.status==='break' && prev?.status!=='break' && arrival && !departure) breakCount++;
+    if(after.current>Number(prev?.current||0) && !after.recall) {
+      for(let n=Number(prev?.current||0)+1;n<after.current;n++) {
+        if(!rows.some(r=>r.number===n)) rows.push({id:String(rows.length+1),number:n,kind:'skipped',start:0,end:0,ms:0,status:'skipped'});
+      }
+    }
+    if(after.recall) {
+      if(!prev?.recall || prev.recallNumber!==after.recallNumber) {
+        if(active && active!==normal && !active.end) {active.end=at;active.status='returned';}
+        active=add(after.recallNumber,at,'recall');
+      }
+    } else {
+      if(prev?.recall && active && active!==normal) {
+        active.end=at; active.status=after.missed[String(active.number)]==='done'?'done':'missed';
+        active=normal;
+      }
+      if(after.current>0 && (!normal || normal.number!==after.current)) {
+        if(normal && !normal.end) {normal.end=at;if(normal.status==='current')normal.status='done';}
+        normal=add(after.current,at,'normal'); active=normal;
+      }
+      if(after.current===0) {
+        if(normal && !normal.end) {normal.end=at;if(normal.status==='current') normal.status='corrected';}
+        normal=null;active=null;
+      }
+    }
+    for(const r of rows) {
+      if(r.kind==='normal' && ['missed','recalling'].includes(after.missed[String(r.number)])) r.status='missed';
+      else if(r.kind==='normal' && r.status==='missed' && after.status!=='finished' && prev?.missed[String(r.number)] && !after.missed[String(r.number)]) r.status=r.end?'corrected':'current';
+    }
+    if(after.status==='finished' && !departure) {
+      departure=at;
+      if(active && !active.end) {active.end=at;if(active.status==='current')active.status='done';}
+      if(normal && !normal.end) {normal.end=at;if(normal.status==='current')normal.status='done';}
+      active=null;
+    }
+    prev=after;last=at;
+  }
+  const completed=rows.filter(r=>['done','corrected'].includes(r.status) && r.kind!=='skipped' && r.start && r.end);
+  const durations=completed.map(r=>r.ms);
+  return {rows,arrival,departure,breaks,breakCount,incomplete,partial,reopened,lastAt:last,live:prev,activeId:active?.id||'',total:arrival&&departure?Math.max(0,departure-arrival):0,average:durations.length?durations.reduce((a,b)=>a+b,0)/durations.length:0,min:durations.length?Math.min(...durations):0,max:durations.length?Math.max(...durations):0,completed:completed.length,missed:rows.filter(r=>r.status==='missed').length,skipped:rows.filter(r=>r.kind==='skipped').length};
+}
+function chooseSchedule(meta, entries) {
+  return (entries||[]).filter(e=>normalize(e.doctor)===normalize(meta.doctor) && normalize(e.specialty)===normalize(meta.specialty));
+}
+function cairoTimestamp(date,time) {
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!/^\d{2}:\d{2}$/.test(time)) throw Error('موعد غير صحيح');
+  const [h,m]=time.split(':').map(Number);if(h>23||m>59)throw Error('موعد غير صحيح');
+  const target=Date.parse(date+'T'+time+':00Z');let guess=target;
+  for(let i=0;i<4;i++) {
+    const p=Object.fromEntries(new Intl.DateTimeFormat('en-CA',{timeZone:TZ,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(new Date(guess)).filter(x=>x.type!=='literal').map(x=>[x.type,x.value]));
+    const local=Date.parse(`${p.year}-${p.month}-${p.day}T${p.hour}:${p.minute}:00Z`);
+    const delta=target-local;if(!delta)return guess;guess+=delta;
+  }
+  throw Error('الوقت غير متاح بتوقيت القاهرة؛ راجع الموعد');
+}
+
+return {dayKey,normalize,snapshot,reducePeriod,chooseSchedule,cairoTimestamp};
+})();
+  const db=firebase.database(), ST=firebase.database.ServerValue.TIMESTAMP;
+  const state={tab:'live',reports:{},schedule:[],ref:null,handler:null,day:'',busy:false,search:'',floor:'',status:'',imageUrl:'',draft:[],selected:null,offset:0,offsetLoaded:false,failed:0};
+  const el=id=>document.getElementById(id), text=(tag,value,cls)=>{const n=document.createElement(tag);n.textContent=value;if(cls)n.className=cls;return n;};
+  const now=()=>Date.now()+state.offset;
+  const admin=()=>isAdminUser();
+  const authWriter=()=>{const e=auth.currentUser?.email||'';return e===ADMIN_EMAIL||e==='nurse@islah.clinic'||/^room\d+@islah\.clinic$/.test(e);};
+  const day=()=>operationalDayKey(now());
+  function nextReset(key=day()) {
+    const d=new Date(key+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+1);
+    return Core.cairoTimestamp(d.toISOString().slice(0,10),'03:00');
+  }
+  function stamp(ts){return ts?new Date(ts).toLocaleTimeString('ar-EG',{timeZone:'Africa/Cairo',hour:'2-digit',minute:'2-digit',second:'2-digit'}):'—';}
+  function duration(ms){const s=Math.floor(Math.max(0,ms)/1000);return `${Math.floor(s/3600)} س ${Math.floor(s%3600/60)} د ${s%60} ث`;}
+  function status(msg,bad=false){const n=el('dsMessage');if(n){n.textContent=msg;n.dataset.bad=String(bad);}}
+  function periodKey(d){return String(d.periodId||d.sessionStart||'').replace(/[.#$\[\]/]/g,'_');}
+  function meta(d,room){return {doctor:d.doctor||'',specialty:d.clinicName||d.specialty||'',nurse:d.nurse||'',room:String(room),sessionStart:Number(d.sessionStart)||0};}
+  async function cleanup(){
+    if(!authWriter())return;
+    try{
+      const ix=(await db.ref('dailyReportIndex').once('value')).val()||{};
+      const updates={};Object.entries(ix).forEach(([k,v])=>{if(Number(v.expiresAt)<=now()){updates['dailyReports/'+k]=null;updates['dailyReportIndex/'+k]=null;}});
+      if(Object.keys(updates).length)await db.ref().update(updates);
+    }catch(e){if(admin())status('تعذر تنظيف بيانات الأيام السابقة؛ راجع صلاحيات الإضافة.',true);}
+  }
+  function record(before,after,room,kind='change'){
+    if(!authWriter()||!after?.sessionStart)return;
+    const a=Core.snapshot(after),b=Core.snapshot(before);
+    if(kind==='change'&&JSON.stringify(a)===JSON.stringify(b))return;
+    const at=Number(after.updatedAt)||now(),key=operationalDayKey(at),pid=periodKey(after);
+    if(key!==day()||!pid)return;
+    const event={at,after:a,seed:b,meta:meta(after,room),kind,actorUid:auth.currentUser.uid,actorEmail:auth.currentUser.email,createdAt:ST};
+    const eid=db.ref().push().key, updates={};
+    updates[`dailyReports/${key}/periods/${room}/${pid}/events/${eid}`]=event;
+    updates[`dailyReportIndex/${key}/expiresAt`]=nextReset(key);
+    db.ref().update(updates).catch(()=>{state.failed++;if(location.hash==='#/nurse')flashSync('تم حفظ الدور، لكن تعذر تسجيل الإحصائية',false);status('تعذر حفظ بعض الإحصائيات. قد يكون التقرير غير مكتمل؛ راجع اتصال وصلاحيات الإضافة.',true);console.warn('Daily statistics write failed; queue save remains successful.');});
+  }
+  function resetRecord(before,after,room){
+    if(before?.sessionStart && periodKey(before)!==periodKey(after) && operationalDayKey(Number(before.sessionStart))===day()) {
+      const old={...before,updatedAt:Number(after.updatedAt)||now()};
+      const key=day(),pid=periodKey(old),eid=db.ref().push().key;
+      db.ref(`dailyReports/${key}/periods/${room}/${pid}/events/${eid}`).set({at:old.updatedAt,after:null,seed:Core.snapshot(before),meta:meta(before,room),kind:'reset',actorUid:auth.currentUser.uid,actorEmail:auth.currentUser.email,createdAt:ST}).catch(()=>status('تعذر تسجيل نهاية الفترة السابقة؛ راجع التقرير.',true));
+    }
+    record(null,after,room,'setup');
+  }
+  function detach(){if(state.ref&&state.handler)state.ref.off('value',state.handler);state.ref=null;state.handler=null;}
+  function load(){
+    if(!admin()||state.tab==='live')return;
+    const key=day();if(state.ref&&state.day===key)return;
+    detach();state.day=key;state.ref=db.ref('dailyReports/'+key);
+    state.handler=s=>{if(!admin())return;const data=s.val()||{};state.reports=data.periods||{};state.schedule=data.schedule?.entries||[];render();};
+    state.ref.on('value',state.handler,()=>status('تعذر قراءة بيانات اليوم. أضف قواعد صلاحيات الإضافة المرفقة.',true));
+  }
+  function periods(){
+    return Object.entries(state.reports).flatMap(([room,p])=>Object.entries(p||{}).map(([pid,v])=>{
+      const events=Object.values(v.events||{}).sort((a,b)=>a.at-b.at),m=events[events.length-1]?.meta||{room};
+      return {room,pid,meta:m,stats:Core.reducePeriod(v.events),binding:v.binding||''};
+    })).sort((a,b)=>a.room.localeCompare(b.room)||a.stats.lastAt-b.stats.lastAt);
+  }
+  function currentMatch(p){
+    if(p.binding)return state.schedule.find(e=>e.id===p.binding)||null;
+    const matches=Core.chooseSchedule(p.meta,state.schedule);return matches.length===1?matches[0]:null;
+  }
+  function computed(p){
+    const s=JSON.parse(JSON.stringify(p.stats)),end=Math.min(now(),nextReset()),dt=Math.max(0,end-s.lastAt);
+    if(s.arrival&&!s.departure&&!s.incomplete){
+      if(s.live?.status==='break')s.breaks+=dt;
+      const row=s.rows.find(r=>r.id===s.activeId);if(row&&s.live?.status==='active')row.ms+=dt;
+    }
+    s.total=s.arrival?Math.max(0,(s.departure|| (s.incomplete?s.lastAt:end))-s.arrival):0;
+    return s;
+  }
+  function filtered(p){
+    const q=Core.normalize(state.search),r=ROOM_OPTIONS.find(r=>r.id===p.room);
+    return (!q||Core.normalize(Object.values(p.meta).join(' ')).includes(q))&&(!state.floor||r?.floor===state.floor)&&(!state.status||(p.stats.incomplete?'incomplete':p.stats.departure?'finished':p.stats.live?.status||'idle')===state.status);
+  }
+  function field(label,value){const n=text('div','', 'ds-field');n.append(text('span',label),text('strong',value));return n;}
+  function scheduleInfo(p,wrap){
+    const match=currentMatch(p),matches=Core.chooseSchedule(p.meta,state.schedule),s=p.stats;
+    if(match){
+      wrap.append(field('الموعد المعلن',`${match.start} — ${match.end}`),field('الحالات المعلنة',match.count==null?'غير محدد':String(match.count)),field('التأخر عن الموعد',s.arrival?duration(Math.max(0,s.arrival-match.startAt)):'لم يبدأ الكشف'),field('الفرق عن النهاية المعلنة',s.departure?(s.departure>=match.endAt?'بعد الموعد بـ ':'قبل الموعد بـ ')+duration(Math.abs(s.departure-match.endAt)):'لم تنته العيادة'));
+    }else wrap.append(text('p',matches.length>1?'الدكتور له أكثر من فترة؛ حدد الفترة من الجدول.':'لا توجد فترة مطابقة معتمدة. يمكنك ربطها يدويًا.','ds-note'));
+    if(state.schedule.length){
+      const select=document.createElement('select');select.setAttribute('aria-label','تحديد الفترة المعلنة');select.append(new Option('ربط تلقائي / اختر الفترة',''));
+      state.schedule.forEach(e=>select.append(new Option(`${e.doctor} — ${e.specialty} — ${e.start} إلى ${e.end}`,e.id)));select.value=p.binding;
+      select.onchange=async()=>{try{await db.ref(`dailyReports/${day()}/periods/${p.room}/${p.pid}/binding`).set(select.value||null);}catch(e){status('تعذر ربط الفترة.',true);}};
+      wrap.append(select);
+    }
+  }
+  function details(p){
+    const s=computed(p),box=el('dsDetails');box.replaceChildren();state.selected={room:p.room,pid:p.pid};
+    const title=text('h3',`${p.meta.specialty} — ${p.meta.doctor} — غرفة ${p.room}`);box.append(title);
+    const metrics=text('div','','ds-metrics');
+    metrics.append(field('حضور الدكتور',stamp(s.arrival)),field('انصراف الدكتور',stamp(s.departure)),field(s.departure?'مدة وجوده بالمجمع':'مدة وجوده حتى الآن',duration(s.total)),field('صافي الوقت بعد خصم الاستراحة',duration(Math.max(0,s.total-s.breaks))),field('الاستراحات',`${s.breakCount} — ${duration(s.breaks)}`),field('متوسط مدة الكشف المكتمل',duration(s.average)),field('أقصر / أطول مدة',`${duration(s.min)} / ${duration(s.max)}`),field('الفائت / المتخطى',`${s.missed} / ${s.skipped}`));
+    box.append(metrics);scheduleInfo(p,box);
+    if(s.partial||s.incomplete||s.reopened)box.append(text('p',s.partial?'بدأ التسجيل أثناء فترة قائمة؛ وقت الحضور غير متاح.':s.incomplete?'تم تغيير الفترة بدون إنهاء؛ الانصراف غير مسجل والمدة غير مكتملة.':'أعيد تشغيل فترة منتهية؛ راجع التوقيتات.','ds-warning'));
+    box.append(text('p','المدد هي مدة بقاء الرقم على النظام بعد خصم الاستراحة. التغيير السريع علامة للمراجعة وليس حكمًا على الكشف.','ds-note'));
+    const scroll=text('div','','ds-table-scroll'),table=document.createElement('table'),head=document.createElement('thead');head.innerHTML='<tr><th>الرقم</th><th>النوع</th><th>البداية</th><th>النهاية</th><th>المدة</th><th>الحالة</th></tr>';table.append(head);
+    const body=document.createElement('tbody'),labels={current:'بالداخل',done:'انتهى',missed:'لم يحضر',skipped:'تم تخطيه',returned:'عودة للسابق',corrected:'تم التصحيح',incomplete:'غير مكتمل'};
+    const threshold=Number(el('dsThreshold').value||60)*1000;
+    s.rows.forEach(r=>{const tr=document.createElement('tr'),valid=!['missed','skipped'].includes(r.status),quick=valid&&r.end&&r.ms<threshold;if(quick)tr.className='ds-quick';[String(r.number),r.kind==='recall'?'إعادة نداء':r.kind==='skipped'?'متخطى':'كشف',stamp(r.start),stamp(r.end),valid?duration(r.ms):'—',(labels[r.status]||r.status)+(quick?' — مدة قصيرة للمراجعة':'')].forEach(v=>tr.append(text('td',v)));body.append(tr);});
+    if(!s.rows.length){const tr=document.createElement('tr'),td=text('td','لم يبدأ تسجيل الأرقام لهذه الفترة');td.colSpan=6;tr.append(td);body.append(tr);}table.append(body);scroll.append(table);box.append(scroll);
+    const ops=text('details','','ds-operations');ops.append(text('summary','سجل عمليات الفترة'));Object.values(state.reports[p.room]?.[p.pid]?.events||{}).sort((a,b)=>b.at-a.at).forEach(e=>{const a=e.after,b=e.seed;const action=e.kind==='reset'?'تغيير الفترة بدون إنهاء':e.kind==='setup'?'تجهيز أو تحديث بيانات الفترة':a?.status==='finished'?'إنهاء العيادة':a?.status==='break'?'استراحة':b?.status==='break'?'استئناف الكشف':a?.recall?'إعادة نداء '+a.recallNumber:'الرقم '+(a?.display||0);ops.append(text('p',`${stamp(e.at)} — ${action} — ${e.meta?.nurse||e.actorEmail}`));});box.append(ops);box.hidden=false;
+  }
+  function render(){
+    if(!admin()||!el('dsCards'))return;
+    if(state.tab==='live'){renderLive();return;}
+    const list=periods(),cards=el('dsCards');cards.replaceChildren();
+    list.filter(filtered).forEach(p=>{
+      const s=computed(p),card=text('article','','ds-card'),button=text('button','تفاصيل الأرقام والفترة','ds-button');button.type='button';button.onclick=()=>details(p);
+      card.append(text('h3',p.meta.specialty||'عيادة'),text('p',p.meta.doctor||'—'),text('p',`الغرفة ${p.room} — التمريض: ${p.meta.nurse||'—'}`),field('الحضور / الانصراف',`${stamp(s.arrival)} / ${stamp(s.departure)}`),field('مدة وجوده',duration(s.total)),button);cards.append(card);
+    });
+    if(!cards.children.length)cards.append(text('p','لا توجد فترات مسجلة مطابقة. تبدأ البيانات من تشغيل النسخة الجديدة.','ds-note'));
+    const unstarted=state.schedule.filter(e=>!list.some(p=>currentMatch(p)?.id===e.id&&p.stats.arrival)&&e.startAt<now());
+    el('dsUnstarted').textContent=unstarted.length?'مواعيد تجاوزت بدايتها ولم يسجل لها كشف: '+unstarted.map(e=>`${e.doctor} (${e.start})`).join('، '):'';
+    if(state.selected){const p=list.find(p=>p.room===state.selected.room&&p.pid===state.selected.pid);if(p)details(p);else el('dsDetails').hidden=true;}
+    renderApproved();
+  }
+  function renderLive(){
+    document.querySelectorAll('#adminRoomGrid .admin-room-card').forEach((card,i)=>{
+      const room=ROOM_OPTIONS[i];if(!room)return;const d=adminRoomData(room),q=Core.normalize(state.search);
+      card.hidden=!!((q&&!Core.normalize([room.id,d.doctor,d.nurse,d.clinicName,d.specialty].join(' ')).includes(q))||(state.floor&&room.floor!==state.floor)||(state.status&&d.status!==state.status));
+      const body=card.querySelector('.admin-room-body');if(!body)return;
+      let extra=body.querySelector('.ds-live-extra');if(!extra){extra=text('div','','ds-live-extra');body.append(extra);}extra.replaceChildren();
+      const missed=Object.entries(d.missedTurns||{}).filter(([,v])=>v.status!=='done').map(([n])=>n);
+      extra.append(text('p',d.recallMode?`الرقم الأصلي: ${d.current||0} — إعادة نداء: ${d.displayCurrent||0}`:`الفائت: ${missed.join('، ')||'لا يوجد'}`));
+      const b=text('button','تفاصيل الفترة والأرقام','ds-button');b.type='button';b.onclick=()=>{switchTab('stats');state.search='';el('dsSearch').value='';state.selected={room:room.id,pid:periodKey(d)};render();};extra.append(b);
+    });
+  }
+  function switchTab(tab){
+    state.tab=tab;
+    document.querySelectorAll('[data-ds-tab]').forEach(b=>{b.classList.toggle('active',b.dataset.dsTab===tab);b.setAttribute('aria-selected',String(b.dataset.dsTab===tab));});
+    ['adminConnectionsPanel','adminRoomGrid'].forEach(id=>el(id).hidden=tab!=='live');
+    const audit=document.querySelector('#view-admin .admin-audit-panel');if(audit)audit.hidden=tab!=='live';
+    el('dsStats').hidden=tab!=='stats';el('dsSchedule').hidden=tab!=='schedule';el('dsThresholdWrap').hidden=tab!=='stats';
+    if(tab==='live')detach();else load();render();
+  }
+  function renderApproved(){
+    const box=el('dsApproved');box.replaceChildren();
+    state.schedule.forEach(e=>box.append(text('p',`${e.doctor} | ${e.specialty} | ${e.start} — ${e.end} | الحالات: ${e.count??'غير محدد'}`)));
+    if(!state.schedule.length)box.append(text('p','لم يعتمد جدول اليوم بعد.'));
+  }
+  function draftRow(value={}){
+    const row=text('div','','ds-draft-row');
+    [['doctor','اسم الدكتور','text'],['specialty','التخصص','text'],['start','بداية الفترة','time'],['end','نهاية الفترة','time'],['count','الحالات المعلنة','number']].forEach(([key,label,type])=>{
+      const lab=text('label',label),input=document.createElement('input');input.type=type;input.dataset.field=key;input.value=value[key]??'';input.required=key!=='count';if(type==='number'){input.min='0';input.step='1';}lab.append(input);row.append(lab);
+    });
+    const b=text('button','حذف','ds-button');b.type='button';b.onclick=()=>row.remove();row.append(b);el('dsDraft').append(row);
+  }
+  async function approve(){
+    if(state.busy||!admin())return;state.busy=true;el('dsApprove').disabled=true;
+    try{
+      const key=day(),entries=[];
+      for(const row of el('dsDraft').children){
+        const v=Object.fromEntries([...row.querySelectorAll('input')].map(n=>[n.dataset.field,n.value.trim()]));
+        if(!v.doctor||!v.specialty||!v.start||!v.end)throw Error('أكمل اسم الدكتور والتخصص والبداية والنهاية لكل صف.');
+        if(/معمل|تحاليل|حضان|اشع|أشع|علاج طبيعي/.test(v.specialty))throw Error('الجدول مخصص للعيادات فقط.');
+        const dateFor=t=>{const d=new Date(key+'T12:00:00Z');if(t<'03:00')d.setUTCDate(d.getUTCDate()+1);return d.toISOString().slice(0,10);};
+        const startAt=Core.cairoTimestamp(dateFor(v.start),v.start),endAt=Core.cairoTimestamp(dateFor(v.end),v.end);
+        if(endAt<=startAt||endAt>nextReset(key))throw Error('راجع ترتيب المواعيد؛ نهاية الفترة يجب أن تكون بعد بدايتها وقبل بداية اليوم الجديد.');
+        const count=v.count===''?null:Number(v.count);if(count!==null&&(!Number.isInteger(count)||count<0||count>10000))throw Error('عدد الحالات غير صحيح.');
+        const id='s_'+Core.normalize(v.doctor+'_'+v.specialty)+'_'+v.start.replace(':','');
+        if(entries.some(e=>e.id===id))throw Error('يوجد صف مكرر لنفس الدكتور والتخصص وموعد البداية.');
+        entries.push({...v,id,startAt,endAt,count});
+      }
+      if(!entries.length)throw Error('أضف فترة واحدة على الأقل.');if(entries.length>100)throw Error('الحد الأقصى ١٠٠ فترة في اليوم.');
+      await db.ref().update({[`dailyReports/${key}/schedule`]:{entries,approvedAt:ST,approvedBy:auth.currentUser.uid},[`dailyReportIndex/${key}/expiresAt`]:nextReset(key)});
+      status('تم اعتماد جدول اليوم وربطه بتفاصيل العيادات.');
+    }catch(e){status(e.code?'تعذر اعتماد الجدول؛ راجع الاتصال وقواعد الإضافة.':e.message,true);}finally{state.busy=false;el('dsApprove').disabled=false;}
+  }
+  function exportCsv(){
+    const rows=[['اليوم','الغرفة','الدكتور','التخصص','التمريض','الحضور','الانصراف','مدة الوجود بالدقائق','الاستراحة بالدقائق','الرقم','نوع الدور','البداية','النهاية','مدة الرقم بالدقائق','الحالة','البداية المعلنة','النهاية المعلنة','الحالات المعلنة','التأخر بالدقائق']];
+    periods().filter(filtered).forEach(p=>{const s=computed(p);for(const r of s.rows.length?s.rows:[{}])rows.push([day(),p.room,p.meta.doctor,p.meta.specialty,p.meta.nurse,stamp(s.arrival),stamp(s.departure),(s.total/60000).toFixed(2),(s.breaks/60000).toFixed(2),r.number??'',r.kind||'',stamp(r.start),stamp(r.end),['missed','skipped'].includes(r.status)?'':((r.ms||0)/60000).toFixed(2),r.status||'لم يبدأ',currentMatch(p)?.start||'',currentMatch(p)?.end||'',currentMatch(p)?.count??'',s.arrival&&currentMatch(p)?(Math.max(0,s.arrival-currentMatch(p).startAt)/60000).toFixed(2):'']);});
+    const safe=v=>{let s=String(v??'');if(/^[=+\-@\t\r]/.test(s))s="'"+s;return '"'+s.replace(/"/g,'""')+'"';};
+    const url=URL.createObjectURL(new Blob(['\ufeff'+rows.map(r=>r.map(safe).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'})),a=document.createElement('a');a.href=url;a.download='clinic-report-'+day()+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }
+  function init(){
+    document.querySelectorAll('[data-ds-tab]').forEach(b=>b.onclick=()=>switchTab(b.dataset.dsTab));
+    el('dsSearch').oninput=e=>{state.search=e.target.value;render();};el('dsFloor').onchange=e=>{state.floor=e.target.value;render();};el('dsStatus').onchange=e=>{state.status=e.target.value;render();};el('dsThreshold').onchange=()=>render();
+    el('dsRefresh').onclick=()=>{detach();load();render();};el('dsExport').onclick=exportCsv;el('dsAdd').onclick=()=>draftRow();el('dsApprove').onclick=approve;
+    el('dsEdit').onclick=()=>{el('dsDraft').replaceChildren();state.schedule.forEach(draftRow);if(!state.schedule.length)draftRow();};
+    el('dsImage').onchange=e=>{const file=e.target.files[0];if(state.imageUrl)URL.revokeObjectURL(state.imageUrl);state.imageUrl='';el('dsPreview').removeAttribute('src');el('dsPreview').hidden=true;if(!file)return;if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>12*1024*1024){status('اختر صورة JPG أو PNG أو WebP بحجم أقل من ١٢ ميجابايت.',true);return;}state.imageUrl=URL.createObjectURL(file);el('dsPreview').src=state.imageUrl;el('dsPreview').hidden=false;};
+    draftRow();
+    auth.onAuthStateChanged(user=>{if(!user||!admin()){detach();state.reports={};state.schedule=[];state.selected=null;el('dsDetails').replaceChildren();el('dsCards').replaceChildren();el('dsApproved').replaceChildren();el('dsDraft').replaceChildren();draftRow();if(state.imageUrl)URL.revokeObjectURL(state.imageUrl);state.imageUrl='';el('dsPreview').removeAttribute('src');el('dsPreview').hidden=true;el('dsImage').value='';}if(user&&authWriter()){cleanup();if(!state.offsetLoaded){state.offsetLoaded=true;db.ref('.info/serverTimeOffset').once('value').then(s=>state.offset=Number(s.val())||0).catch(()=>{});}}if(user&&admin())load();});
+    window.addEventListener('hashchange',()=>{if(location.hash!=='#/admin')detach();else if(admin())load();});
+  }
+  function refresh(){if(!admin())return;if(state.tab!=='live')load();render();}
+  return {init,refresh,record,resetRecord,cleanup};
+})();
+DailyAdmin.init();
 
 route();
 </script>
