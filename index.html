@@ -7347,14 +7347,16 @@
   #view-tv:not(.tv-floor-only) .clinic-grid{grid-template-columns:minmax(0,1fr)!important}
 }
 /* شبكة اختيار الحجرة — بوكسات جديدة فقط */
-#view-setup .room-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:16px}
-#view-setup .room-tile{min-width:0;padding:12px 6px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-align:center;border:2px solid #e2e8f0;border-radius:14px;background:#f1f5f9;color:#475569;transition:border-color .15s ease,background .15s ease,transform .15s ease}
+#view-setup .room-grid{display:block;margin-bottom:16px}
+#view-setup .room-floor{margin-bottom:14px}
+#view-setup .room-floor h4{margin:0 0 8px;font-size:14px;font-weight:700;color:#334155;padding-bottom:6px;border-bottom:1px solid #e2e8f0}
+#view-setup .room-floor-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:10px}
+#view-setup .room-tile{min-width:0;min-height:76px;touch-action:manipulation;-webkit-tap-highlight-color:transparent;padding:12px 6px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-align:center;border:2px solid #e2e8f0;border-radius:14px;background:#f1f5f9;color:#475569;transition:border-color .15s ease,background .15s ease,transform .15s ease}
 #view-setup .room-tile strong{font-size:28px;line-height:1.1;font-weight:700;color:#0f172a}
 #view-setup .room-tile span{font-size:12px;line-height:1.4;overflow-wrap:anywhere}
 #view-setup .room-tile:active:not(:disabled){transform:scale(.97)}
 #view-setup .room-tile.selected{border-color:#fe6565;background:#fff1f2}
 #view-setup .room-tile:disabled{opacity:.55;cursor:not-allowed}
-@media(max-width:380px){#view-setup .room-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
 </head>
 <body>
@@ -11354,7 +11356,23 @@ function renderRoomGrid(){
   if(!grid) return;
   const select = $("#setupRoomSelect");
   grid.replaceChildren();
-  setupWizardRooms().forEach(room=>{
+  const floors = [["third","عيادات الدور الثالث"],["ground","عيادات الدور الأرضي"]];
+  const rooms = setupWizardRooms();
+  const groups = floors.map(([key,title])=>({title, list:rooms.filter(r=>r.floor===key)}));
+  const known = floors.map(f=>f[0]);
+  const rest = rooms.filter(r=>!known.includes(r.floor));
+  if(rest.length) groups.push({title:"عيادات أخرى", list:rest});
+  groups.forEach(g=>{
+    if(!g.list.length) return;
+    const box = document.createElement("div");
+    box.className = "room-floor";
+    const h = document.createElement("h4");
+    h.textContent = g.title;
+    const inner = document.createElement("div");
+    inner.className = "room-floor-grid";
+    box.append(h, inner);
+    grid.appendChild(box);
+    g.list.forEach(room=>{
     const on = select.value === room.id;
     const tile = document.createElement("button");
     tile.type = "button";
@@ -11373,7 +11391,8 @@ function renderRoomGrid(){
       select.dispatchEvent(new Event("change"));
       renderRoomGrid();
     });
-    grid.appendChild(tile);
+    inner.appendChild(tile);
+    });
   });
 }
 function prepareSetupWizard(){
