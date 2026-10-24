@@ -7346,6 +7346,15 @@
 @media(max-width:480px){
   #view-tv:not(.tv-floor-only) .clinic-grid{grid-template-columns:minmax(0,1fr)!important}
 }
+/* شبكة اختيار الحجرة — بوكسات جديدة فقط */
+#view-setup .room-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:16px}
+#view-setup .room-tile{min-width:0;padding:12px 6px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-align:center;border:2px solid #e2e8f0;border-radius:14px;background:#f1f5f9;color:#475569;transition:border-color .15s ease,background .15s ease,transform .15s ease}
+#view-setup .room-tile strong{font-size:28px;line-height:1.1;font-weight:700;color:#0f172a}
+#view-setup .room-tile span{font-size:12px;line-height:1.4;overflow-wrap:anywhere}
+#view-setup .room-tile:active:not(:disabled){transform:scale(.97)}
+#view-setup .room-tile.selected{border-color:#fe6565;background:#fff1f2}
+#view-setup .room-tile:disabled{opacity:.55;cursor:not-allowed}
+@media(max-width:380px){#view-setup .room-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
 </head>
 <body>
@@ -7594,7 +7603,8 @@
         <button id="setupRoomChange" type="button" hidden>تغيير الحجرة</button>
         <div data-setup-step="0">
           <label for="setupRoomSelect" class="block text-sm mb-1.5 text-slate-600">اختر رقم الحجرة</label>
-          <select id="setupRoomSelect" class="w-full px-4 py-3 rounded-xl bg-slate-100 mb-4"><option value="">اختر الحجرة للمتابعة</option></select>
+          <select id="setupRoomSelect" hidden class="w-full px-4 py-3 rounded-xl bg-slate-100 mb-4"><option value="">اختر الحجرة للمتابعة</option></select>
+          <div id="setupRoomGrid" class="room-grid" role="group" aria-label="اختيار الحجرة"></div>
           <p id="nursingRoomLoading" class="text-sm text-slate-600 mb-4" role="status" aria-live="polite" hidden>جارٍ فتح الحجرة…</p>
       <div hidden class="mb-4 px-4 py-3 rounded-xl bg-sky-50 border border-sky-100 flex items-center justify-between gap-3">
         <div>
@@ -11059,6 +11069,7 @@ function setNursingRoomOpening(opening){
   $("#setupRoomSelect").disabled = opening;
   $("#setupRoomSelect").setAttribute("aria-busy", String(opening));
   $("#nursingRoomLoading").hidden = !opening;
+  renderRoomGrid();
 }
 let nursingAuthWaitTimer = null;
 const nursingAuthWaitMessage = "جاري تجهيز الدخول...";
@@ -11206,6 +11217,7 @@ function renderNursingRoomSwitch(){
   add.onclick = ()=>{ nursingSetupDraft = false; sessionStorage.removeItem(SETUP_ROOM_STEP_KEY); nursingSetupMode = "enter";location.hash = "#/setup"; };
 }
 function renderNursingSetup(){
+  renderRoomGrid();
   const selected = $("#setupRoomSelect").value === DISPLAY_SLOT_ID;
   const ready = Boolean(auth.currentUser) && selected && nursingPeriod !== null;
   const existing = ready && periodIsCurrent(nursingPeriod);
@@ -11337,6 +11349,33 @@ $("#setupRoomChange").onclick = ()=>{
   sessionStorage.removeItem(SETUP_ROOM_STEP_KEY);
   renderNursingSetup();
 };
+function renderRoomGrid(){
+  const grid = $("#setupRoomGrid");
+  if(!grid) return;
+  const select = $("#setupRoomSelect");
+  grid.replaceChildren();
+  setupWizardRooms().forEach(room=>{
+    const on = select.value === room.id;
+    const tile = document.createElement("button");
+    tile.type = "button";
+    tile.className = "room-tile" + (on ? " selected" : "");
+    tile.disabled = nursingRoomOpening;
+    tile.setAttribute("aria-pressed", String(on));
+    const num = document.createElement("strong");
+    num.className = "num";
+    num.textContent = room.id;
+    const name = document.createElement("span");
+    name.textContent = room.place;
+    tile.append(num, name);
+    tile.addEventListener("click", ()=>{
+      if(nursingRoomOpening) return;
+      select.value = room.id;
+      select.dispatchEvent(new Event("change"));
+      renderRoomGrid();
+    });
+    grid.appendChild(tile);
+  });
+}
 function prepareSetupWizard(){
   const select = $("#setupRoomSelect");
   select.replaceChildren();
