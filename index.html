@@ -8273,6 +8273,7 @@
         <button data-status="break"    class="statusBtn py-3 rounded-xl bg-slate-100 text-sm font-bold">🟡<br>استراحة</button>
         <button data-status="finished" class="statusBtn py-3 rounded-xl bg-slate-100 text-sm font-bold">🔴<br>إنهاء</button>
       </div>
+      <button id="nurseNoWaitingBtn" type="button" class="w-full mt-2 py-3 rounded-xl bg-sky-100 text-sky-800 text-sm font-bold" aria-pressed="false">لا يوجد انتظار حاليا</button>
       <p class="text-xs text-slate-500 mt-3" id="nurseMeta"></p>
     </div>
     </div>
@@ -10410,6 +10411,7 @@ function renderReceptionDashboard(){
           '</div>' +
           '<div class="reception-card-meta">' +
             '<span class="reception-status-pill"><span class="dot ' + status.dot + '" style="width:7px;height:7px"></span>' + status.label + '</span>' +
+            (data.status === "active" && !data.recallMode && !data.prepared && Number(data.current) > 0 && Number(data.noWaitingNumber) === Number(data.current) && Boolean(data.noWaitingAt) ? '<span class="reception-small-meta" style="color:#047857;font-weight:800">✓ لا يوجد انتظار حاليا</span>' : '') +
             (data.recallMode && !closed ? '<span class="reception-small-meta" style="font-weight:700;color:var(--rc-accent)">وصل الكشف إلى: <b class="num">' + ar(typeof data.previousDisplay === "number" ? data.previousDisplay : current) + '</b></span>' : '') +
             '<span class="reception-small-meta">فائتة: <b class="num">' + ar(pendingMissed) + '</b> • آخر نداء: <b class="num">' + timeStr(data.updatedAt) + '</b></span>' +
           '</div>' +
@@ -14381,7 +14383,9 @@ function applyClinicSnapshot(raw){
     missedTurns: d.missedTurns || {},
     status:   d.status   || "idle",
     prepared: d.prepared === true,
-    updatedAt:d.updatedAt || 0
+    updatedAt:d.updatedAt || 0,
+    noWaitingNumber:typeof d.noWaitingNumber === "number" ? d.noWaitingNumber : null,
+    noWaitingAt:d.noWaitingAt || null
   };
   const changed = lastSeen !== null && lastSeen !== state.current;
   lastSeen = state.current;
@@ -14481,6 +14485,15 @@ function renderAll(numberChanged){
   $("#nurseMeta").textContent = state.doctor !== "—"
     ? "الجلسة الحالية: " + displayedDoctor + (state.period ? " • " + state.period : "") + " • آخر تحديث " + timeStr(state.updatedAt)
     : "لم تبدأ أي جلسة بعد";
+  const noWaitingBtn = $("#nurseNoWaitingBtn");
+  if(noWaitingBtn){
+    const noWaiting = state.status === "active" && state.current > 0 && state.noWaitingNumber === state.current && Boolean(state.noWaitingAt);
+    noWaitingBtn.textContent = noWaiting ? "✓ لا يوجد انتظار حاليا" : "لا يوجد انتظار حاليا";
+    noWaitingBtn.setAttribute("aria-pressed",String(noWaiting));
+    noWaitingBtn.classList.toggle("ring-2",noWaiting);
+    noWaitingBtn.disabled = state.status !== "active" || state.current <= 0 || state.recallMode || state.prepared;
+    noWaitingBtn.classList.toggle("opacity-50",noWaitingBtn.disabled);
+  }
   document.querySelectorAll(".statusBtn").forEach(b=>{
     const on = b.dataset.status === state.status;
     b.classList.toggle("ring-2", on);
@@ -14912,6 +14925,8 @@ function pushNumber(v){
       previousDisplay:null,
       recallMode:false,
       recallNumber:null,
+      noWaitingNumber:null,
+      noWaitingAt:null,
       updatedAt:firebase.database.ServerValue.TIMESTAMP
     };
 
@@ -14952,6 +14967,8 @@ async function markSelectedTurnAsMissed(){
     previousDisplay:null,
     recallMode:false,
     recallNumber:null,
+    noWaitingNumber:null,
+    noWaitingAt:null,
     updatedAt:firebase.database.ServerValue.TIMESTAMP
   };
   updates["missedTurns/" + number] = {
@@ -15085,6 +15102,24 @@ $("#resetSameClinicBtn").addEventListener("click", async ()=>{
 });
 
 
+/* تأكيد التمريض بانتهاء آخر كشف وعدم وجود انتظار، مع منع تكرار تسجيل وقت الانتهاء. */
+$("#nurseNoWaitingBtn").addEventListener("click",async ()=>{
+  if(!canControlCurrentRoom() || isNurseQueueLocked() || state.recallMode || state.prepared || state.current <= 0 || state.status !== "active") return;
+  const number = state.current;
+  const expectedSession = nursingLiveSessionStart;
+  try{
+    const result = await clinicRef.transaction(data=>{
+      if(!data || Number(data.sessionStart || 0) !== expectedSession || data.status !== "active" || Number(data.current) !== number || data.recallMode || data.prepared) return;
+      if(!isAdminUser() && !nursingHandoverMatches(data,currentNursingIdentity())) return;
+      if(Number(data.noWaitingNumber) === number && data.noWaitingAt) return;
+      return {...data,noWaitingNumber:number,noWaitingAt:firebase.database.ServerValue.TIMESTAMP};
+    },undefined,false);
+    if(!result.committed) return void flashSync("تم تسجيل انتهاء هذا الكشف مسبقا أو تغير الدور",false);
+    flashSync("تم تأكيد عدم وجود انتظار",true);
+    writeAuditLog({action:"no_waiting",roomId:DISPLAY_SLOT_ID,clinicName:state.clinicName,nurseName:state.nurse,summary:"انتهاء الكشف رقم " + ar(number) + " ولا يوجد انتظار حاليا"});
+  }catch(e){ flashSync("تعذر تسجيل انتهاء الكشف",false); }
+});
+
 document.querySelectorAll(".statusBtn").forEach(btn=>{
   btn.addEventListener("click", ()=>{
     if(!canControlCurrentRoom()) return void alert("هذا الحساب غير مصرح له بالتحكم في هذه الحجرة");
@@ -15111,7 +15146,7 @@ document.querySelectorAll(".statusBtn").forEach(btn=>{
       return;
     }
 
-    updateCurrentPeriod({ status:s, prepared:false, updatedAt: firebase.database.ServerValue.TIMESTAMP })
+    updateCurrentPeriod({ status:s, prepared:false, noWaitingNumber:null, noWaitingAt:null, updatedAt: firebase.database.ServerValue.TIMESTAMP })
       .then(()=>writeAuditLog({
         action:"clinic_status",
         roomId:DISPLAY_SLOT_ID,
