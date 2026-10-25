@@ -7143,6 +7143,17 @@
   #view-nurse #nurseBookingClose{min-height:48px;margin-top:6px;padding:6px 8px;font-size:13px;line-height:1.35}
   #view-nurse #nurseBookingMessage:empty{display:none}
   #view-nurse #nurseMeta{margin-top:5px;font-size:10px;line-height:1.4}
+  /* Mobile only: status row, booking row, then full-width no-waiting control. */
+  #view-nurse .nursing-status-booking-group{grid-template-columns:minmax(0,1fr);gap:8px}
+  #view-nurse .nursing-status-box{display:contents}
+  #view-nurse .nursing-status-box>h2{grid-row:1;margin:0}
+  #view-nurse .nursing-status-box>.grid{grid-row:2;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+  #view-nurse .nursing-booking-box{grid-row:3;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;align-items:center}
+  #view-nurse #nurseBookingStatus{min-width:0}
+  #view-nurse #nurseBookingClose{min-width:0;margin-top:0}
+  #view-nurse #nurseBookingMessage{grid-column:1/-1;margin-top:0}
+  #view-nurse #nurseNoWaitingBtn{grid-row:4;margin-top:0;padding-top:9px;padding-bottom:9px}
+  #view-nurse #nurseMeta{grid-row:5;margin-top:0}
 }
 </style>
 <style>
