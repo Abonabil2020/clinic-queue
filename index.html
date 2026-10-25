@@ -10410,7 +10410,7 @@ function renderReceptionDashboard(){
             '<strong class="reception-current-number num">' + (data.status === "finished" ? 'انتهت' : closed ? '—' : ar(displayCurrent)) + '</strong>' +
           '</div>' +
           '<div class="reception-card-meta">' +
-            (data.status === "active" && !data.recallMode && !data.prepared && Number(data.current) > 0 && Number(data.noWaitingNumber) === Number(data.current) && Boolean(data.noWaitingAt) ? '<span class="reception-status-pill" style="background:#155E91;color:#fff;border-color:#155E91;font-weight:800">✓ لا يوجد انتظار حاليا</span>' : '<span class="reception-status-pill"><span class="dot ' + status.dot + '" style="width:7px;height:7px"></span>' + status.label + '</span>') +
+            (data.status === "active" && !data.recallMode && !data.prepared && Number(data.current) > 0 && Number(data.noWaitingNumber) === Number(data.current) && Boolean(data.noWaitingAt) ? '<span class="reception-status-pill" style="background:#DC2626;color:#fff;border-color:#DC2626;font-weight:800">✓ لا يوجد انتظار حاليا</span>' : '<span class="reception-status-pill"><span class="dot ' + status.dot + '" style="width:7px;height:7px"></span>' + status.label + '</span>') +
             (data.recallMode && !closed ? '<span class="reception-small-meta" style="font-weight:700;color:var(--rc-accent)">وصل الكشف إلى: <b class="num">' + ar(typeof data.previousDisplay === "number" ? data.previousDisplay : current) + '</b></span>' : '') +
             '<span class="reception-small-meta">فائتة: <b class="num">' + ar(pendingMissed) + '</b> • آخر نداء: <b class="num">' + timeStr(data.updatedAt) + '</b></span>' +
           '</div>' +
