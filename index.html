@@ -2416,6 +2416,8 @@
     width:100%; margin-top:11px; padding:10px 12px; border-radius:11px; background:#7c3aed;
     color:#fff; font-size:12px; font-weight:700;
   }
+  .admin-room-reset{width:100%;margin-top:7px;padding:8px 12px;border:1px solid #fe6565;border-radius:11px;background:#fff1f2;color:#b42332;font-size:12px;font-weight:700}
+  .admin-room-reset:disabled{opacity:.6;cursor:wait}
   @media (max-width:900px){ .admin-room-grid{ grid-template-columns:repeat(2,minmax(0,1fr)); } }
   @media (max-width:600px){
     .admin-shell{ padding:12px; }
@@ -10651,6 +10653,35 @@ function openAdminRoom(roomId){
   location.assign(nextUrl.toString());
 }
 
+const adminRoomResetPending = new Set();
+async function clearAdminRoom(roomId){
+  if(!isAdminUser() || adminRoomResetPending.has(roomId)) return;
+  const room = ROOM_OPTIONS.find(item=>item.id === roomId);
+  if(!room) return;
+  if(!firebaseConnected) return void alert("الاتصال مقطوع. انتظر رجوع الاتصال قبل تصفير العيادة.");
+  const data = adminRoomData(room);
+  if(!confirm("تصفير حجرة " + room.id + " — " + (data.clinicName || data.specialty || room.place) + " بالكامل؟\nسيتم مسح بيانات الفترة والطبيب والتمريض والأدوار والفائت وعدد الحالات الرسمي وحالة الحجز، وإعادتها إلى انتظار التشغيل. لا يمكن التراجع.")) return;
+  adminRoomResetPending.add(roomId);
+  renderAdminDashboard();
+  try{
+    if(!isAdminUser() || !firebaseConnected) throw new Error("unavailable");
+    await firebase.database().ref().update({
+      ["clinics/" + roomId]:null,
+      ["bookingStatus/" + roomId]:null,
+      ["officialCounts/" + roomId]:null
+    });
+    sessionStorage.removeItem("islahQueueSetup:" + roomId);
+    const logged = await writeAuditLog({action:"clinic_reset",roomId,
+      clinicName:data.clinicName || data.specialty || room.place,
+      summary:"تصفير العيادة بالكامل وإعادتها إلى انتظار التشغيل دون بيانات فترة"});
+    if(logged === false) alert("تم تصفير العيادة، لكن تعذر تسجيل الخطوة في السجل.");
+  }catch(error){
+    alert("تعذر تصفير العيادة. تحقق من الاتصال وصلاحيات الحساب.");
+  }finally{
+    adminRoomResetPending.delete(roomId);
+    renderAdminDashboard();
+  }
+}
 function renderAdminDashboard(){
   const grid = $("#adminRoomGrid");
   if(!grid || !isAdminUser()) return;
@@ -10727,7 +10758,14 @@ function renderAdminDashboard(){
     openBtn.textContent = adminRoomIsConfigured(data) ? "فتح الحجرة مباشرة" : "إعداد الحجرة";
     openBtn.addEventListener("click", ()=>openAdminRoom(room.id));
 
-    body.append(doctorEl,nurseEl,meta,openBtn);
+    const resetBtn = document.createElement("button");
+    resetBtn.type = "button";
+    resetBtn.className = "admin-room-reset";
+    resetBtn.textContent = adminRoomResetPending.has(room.id) ? "جارٍ التصفير…" : "تصفير العيادة بالكامل";
+    resetBtn.disabled = adminRoomResetPending.has(room.id);
+    resetBtn.addEventListener("click", ()=>clearAdminRoom(room.id));
+    openBtn.disabled = adminRoomResetPending.has(room.id);
+    body.append(doctorEl,nurseEl,meta,openBtn,resetBtn);
     card.append(head,body);
     grid.appendChild(card);
   });
