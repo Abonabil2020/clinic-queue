@@ -8174,6 +8174,7 @@
     </div>
     <div class="flex items-center gap-2">
       <button id="adminSwitchRoomBtn" type="button" class="hidden-view text-xs bg-white/15 px-3 py-2 rounded-lg">تغيير الحجرة</button>
+      <button id="nursingSwitchRoomBtn" type="button" class="hidden-view text-xs bg-white/15 px-3 py-2 rounded-lg">تبديل العيادة</button>
       <button id="logoutBtn" class="text-xs bg-white/15 px-3 py-2 rounded-lg">تسليم الوردية</button>
     </div>
   </header>
@@ -10797,6 +10798,7 @@ function syncAdminRoomControls(){
   const admin = isAdminUser();
   $("#setupAdminRoomsBtn")?.classList.toggle("hidden-view", !admin);
   $("#adminSwitchRoomBtn")?.classList.toggle("hidden-view", !admin);
+  $("#nursingSwitchRoomBtn")?.classList.toggle("hidden-view", !isSharedNurseUser());
   const logout = $("#logoutBtn");
   if(logout) logout.textContent = admin ? "تسجيل الخروج" : "تسليم الوردية";
 }
@@ -11178,8 +11180,8 @@ function route(){
   if(restoreNursingResume()) return;
   const h = (location.hash || "#/home").replace("#/","");
   if(["nurse","setup","nursing-control"].includes(h) && !nursingAuthReady){
-    if(h === "nurse" && nursingResume){ show("nurse"); }
-    else { show("login"); $("#loginMsg").textContent = "جارٍ استعادة تسجيل الدخول المحفوظ..."; }
+    if(h === "nurse" && (nursingResume || setupData)){ show("nurse"); }
+    else { show("setup"); showNursingAuthWait(); }
     return;
   }
   syncAdminRoomControls();
@@ -11827,6 +11829,16 @@ function rememberNursingRoom(data,nurse){
   sessionStorage.setItem(SETUP_KEY,JSON.stringify(setupData));
   renderBookingStatus();
 }
+function switchNursingRoom(){
+  if(nursingSetupSaving || !isSharedNurseUser()) return;
+  saveNursingResume();
+  nursingSetupDraft = false;
+  nursingSetupMode = "enter";
+  sessionStorage.removeItem(SETUP_ROOM_STEP_KEY);
+  location.hash = "#/setup";
+}
+$("#nursingSwitchRoomBtn").onclick = switchNursingRoom;
+
 function renderNursingRoomSwitch(){
   const wrap = $("#nursingRoomSwitch");
   wrap.replaceChildren();
@@ -11921,6 +11933,16 @@ async function loadNursingPeriod(){
     const data = (await clinicRef.once("value")).val() || {};
     if(serial !== nursingLoadSerial) return;
     nursingPeriod = data;
+    const identity = currentNursingIdentity();
+    if(nursingSetupMode === "enter" && identity && nursingRoomAccess() &&
+       periodIsCurrent(data) && nursingHandoverMatches(data,identity) &&
+       Number(data.sessionStart || 0) === identity.sessionStart){
+      rememberNursingRoom(data,identity.nurse);
+      applyClinicSnapshot(data);
+      location.hash = "#/nurse";
+      route();
+      return;
+    }
     const periodTimestamp = Number(data.sessionStart || data.updatedAt || 0);
     const periodDay = data.operationalDayKey || (periodTimestamp ? operationalDayKey(periodTimestamp) : "");
     const fresh = nursingSetupMode === "new" || periodDay !== operationalDayKey();
