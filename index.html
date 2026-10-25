@@ -7807,22 +7807,6 @@
 #view-tv.tv-third-slideshow .tv-footer{padding-bottom:65px!important}
 }
 </style>
-<style>
-/* ترتيب وتوسيط صفحة عيادات الدور الثالث على الموبايل فقط. */
-@media(max-width:900px){
-#view-tv.tv-third-slideshow #mobileQueueInstructions,#view-tv.tv-third-slideshow .tv-footer{display:none!important}
-#view-tv.tv-third-slideshow .tv-dashboard{padding-bottom:70px!important}
-#view-tv.tv-floor-only.tv-third-slideshow .queue-card-body,#view-tv.tv-floor-only.tv-third-slideshow .queue-card[data-has-missed="false"] .queue-card-body{grid-template-columns:minmax(0,1fr)!important;grid-template-rows:auto auto minmax(140px,1fr) 40px!important;gap:6px!important;text-align:center!important}
-#view-tv.tv-floor-only.tv-third-slideshow .queue-doctor{grid-column:1!important;grid-row:1!important;text-align:center!important;justify-content:center!important;justify-self:stretch!important;width:100%!important;margin:0!important}
-#view-tv.tv-floor-only.tv-third-slideshow .queue-status{grid-column:1!important;grid-row:2!important;display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:center!important;justify-self:stretch!important;gap:6px!important;width:100%!important;min-width:0!important;min-height:28px!important;height:auto!important;padding:4px 8px!important;border-radius:8px!important;box-sizing:border-box!important;white-space:nowrap!important;text-align:center!important;font-size:13px!important;line-height:1.3!important}
-#view-tv.tv-floor-only.tv-third-slideshow .queue-status-label{white-space:nowrap!important}
-#view-tv.tv-floor-only.tv-third-slideshow .queue-number-box{grid-column:1!important;grid-row:3!important;align-items:center!important;justify-content:center!important;text-align:center!important}
-#view-tv.tv-floor-only.tv-third-slideshow .queue-missed-summary{grid-column:1!important;grid-row:4!important;justify-content:center!important;text-align:center!important}
-#view-tv.tv-third-slideshow .queue-clinic-name,#view-tv.tv-third-slideshow .queue-number-label,#view-tv.tv-third-slideshow .queue-number{text-align:center!important}
-#view-tv.tv-third-slideshow #mobileQueueHelpButton{left:50%;right:auto;inset-inline-end:auto;transform:translateX(-50%);width:max-content;max-width:calc(100% - 24px);text-align:center}
-#mobileQueueHelpDialog[open],#mobileQueueHelpDialog h3,#mobileQueueHelpDialog li{text-align:center}
-}
-</style>
 </head>
 <body>
 <div id="networkStatusIndicator" class="network-status-indicator" role="status" aria-live="polite">
@@ -8700,7 +8684,7 @@
     </div>
   </footer>
 
-<button id="mobileQueueHelpButton" class="mobile-queue-help-button" type="button" aria-haspopup="dialog" aria-controls="mobileQueueHelpDialog">تعليمات متابعة الدور</button>
+<button id="mobileQueueHelpButton" class="mobile-queue-help-button" type="button" aria-haspopup="dialog" aria-controls="mobileQueueHelpDialog">تعليمات الدور</button>
 <dialog id="mobileQueueHelpDialog" class="mobile-queue-help-dialog" aria-labelledby="mobileQueueHelpTitle">
 <form method="dialog"><button class="mobile-queue-help-close" aria-label="إغلاق التعليمات">×</button></form>
 <h3 id="mobileQueueHelpTitle">تعليمات متابعة الدور</h3>
