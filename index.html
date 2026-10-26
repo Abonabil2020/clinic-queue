@@ -10842,9 +10842,9 @@ function notifyReceptionDesktop(update){
   if(!receptionDesktopEnabled || !isReceptionUser() || !("Notification" in window) || Notification.permission !== "granted" || (!document.hidden && document.hasFocus())) return;
   try{
     receptionDesktopNotice?.close();
-    const notice = new Notification(update.clinicName,{
-      body:update.detail + "\nالوقت: " + receptionUpdateTime(update.occurredAt),
-      icon:new URL("logo.png",document.baseURI).href,
+    const notice = new Notification("نظام إدارة الأدوار",{
+      body:update.clinicName + "\n" + update.detail + (update.nurseName ? "\nالتمريض: " + update.nurseName : ""),
+      icon:new URL("notification-icon.png",document.baseURI).href,
       dir:"rtl",lang:"ar",tag:"reception-clinic-update"
     });
     receptionDesktopNotice = notice;
@@ -10940,6 +10940,7 @@ function addReceptionUpdate(room, data, detail, kind="queue", occurredAt=data?.u
     id:++receptionUpdateSequence,
     roomId:String(room.id),
     clinicName:labels.clinicName,
+    nurseName:String(data?.nurse || "").trim().replace(/^—$/, ""),
     detail,
     kind,
     isNew:true
@@ -10991,7 +10992,7 @@ function trackReceptionQueueChanges(clinics){
       if(receptionVisible){
         const detail = recallChanged
           ? "إعادة نداء الدور رقم " + ar(current.recallNumber)
-          : "تغيير رقم الكشف: " + ar(previousNumber ?? 0) + " ← " + ar(currentNumber ?? 0);
+          : "تغيير رقم الكشف من " + ar(previousNumber ?? 0) + " إلى " + ar(currentNumber ?? 0);
         if(!statusChanged) addReceptionUpdate(room,current,detail,"queue");
       }
     }
