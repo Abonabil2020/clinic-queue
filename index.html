@@ -7820,7 +7820,15 @@
 #view-tv.tv-third-slideshow .tv-footer{padding-bottom:65px!important}
 }
 </style>
-</head>
+<style>
+#view-tv .continuation-summary{display:flex;align-items:center;justify-content:center;gap:.5em;min-width:0;overflow:hidden;white-space:nowrap;background:#eff6ff;color:#075985;border:1px solid #bae6fd;border-radius:9px;padding:3px 6px;font-weight:700;font-size:clamp(11px,1.7vh,30px)}
+#view-tv .continuation-public{min-width:0;overflow:hidden;text-overflow:ellipsis;font-size:inherit}
+#view-tv.tv-paged .queue-card-body,#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow) .queue-card-body,#view-tv.tv-floor-only.tv-third-slideshow .queue-card-body{grid-template-rows:auto minmax(0,1fr) auto auto!important}
+#view-tv.tv-paged .continuation-summary{grid-column:1/-1!important;grid-row:3!important}
+#view-tv.tv-paged .queue-card .queue-missed-summary{grid-row:4!important}
+#view-tv .queue-card[data-status="finished"] .continuation-summary{visibility:hidden}
+#addContinuation:disabled{opacity:.45}
+</style></head>
 <body>
 <div id="networkStatusIndicator" class="network-status-indicator" role="status" aria-live="polite">
   <span class="network-status-dot" aria-hidden="true"></span>
@@ -8231,6 +8239,11 @@
         <div id="missedTurnsList" class="missed-turns-list"></div>
       </div>
 
+      <div id="continuationCard" class="missed-turns-wrap rounded-2xl shadow-sm p-4 mb-4" style="border-color:#bae6fd;background:#f0f9ff">
+        <div class="flex items-center justify-between gap-2"><h2 class="font-bold">استكمال كشف</h2><button id="addContinuation" type="button" class="px-3 py-2 rounded-lg bg-sky-700 text-white font-bold">إضافة الرقم الحالي</button></div>
+        <div id="continuationList" class="missed-turns-list mt-2"></div>
+        <div id="continuationEmpty" class="text-sm text-slate-500 mt-2">لا يوجد استكمال</div>
+      </div>
       <!-- وضع إعادة الاستدعاء -->
       <div id="recallPanel" class="recall-panel hidden-view rounded-2xl shadow-sm p-4 mb-4">
         <div class="flex items-center justify-between gap-3 mb-3">
@@ -9370,7 +9383,7 @@ function operationalDataForToday(data){
     cleanData.missedTurns = operationalMissedTurnsForToday(cleanData.missedTurns);
 
     const recallKey = String(cleanData.recallNumber ?? "");
-    if(cleanData.recallMode && !cleanData.missedTurns[recallKey]){
+    if(cleanData.recallMode && !(cleanData.recallKind === "continuation" ? (cleanData.continuationTurns || {})[recallKey] : cleanData.missedTurns[recallKey])){
       cleanData.recallMode = false;
       cleanData.recallNumber = null;
       cleanData.previousDisplay = null;
@@ -9381,6 +9394,7 @@ function operationalDataForToday(data){
     }
   }
 
+  if(cleanData.continuationTurns) cleanData.continuationTurns = Object.fromEntries(Object.entries(cleanData.continuationTurns).filter(([,item])=>Number(item?.addedAt)>0 && operationalDayKey(Number(item.addedAt)) === operationalDayKey()));
   return cleanData;
 }
 
@@ -9833,6 +9847,7 @@ function tvActivityRoomSnapshot(clinics){
       status:DASHBOARD_STATUS[data.status] ? data.status : "idle",
       displayCurrent,
       recallMode:Boolean(data.recallMode && typeof data.recallNumber === "number"),
+      recallKind:data.recallKind || "",
       recallNumber:typeof data.recallNumber === "number" ? data.recallNumber : null,
       clinicName:String(data.clinicName || data.specialty || room.place || "").trim(),
       doctor:String(doctorDisplayFromData(data) || "").trim()
@@ -9864,7 +9879,7 @@ function trackTvClinicUpdates(clinics){
     if(roomChanged) noteIndividualRoom(room.id);
 
     if(curr.recallMode && (!prev.recallMode || curr.recallNumber !== prev.recallNumber)){
-      operationalMessage = locationLabel + ": إعادة نداء الدور " + ar(curr.recallNumber);
+      operationalMessage = locationLabel + (curr.recallKind === "continuation" ? ": استكمال كشف رقم " : ": إعادة نداء الدور ") + ar(curr.recallNumber);
     }else if(curr.status !== prev.status){
       const statusMessage = {
         active:"بدأت العيادة العمل",
@@ -9928,6 +9943,7 @@ function createQueueCard(room){
         '<strong class="queue-number num">—</strong>' +
         bookingBadge(room.id) +
       '</div>' +
+      '<div class="continuation-summary"><span>استكمال كشف</span><strong class="continuation-public num">—</strong></div>' +
       '<div class="queue-missed-summary">' +
         '<div class="queue-missed-summary-head"><span>الأدوار الفائتة</span><span class="queue-missed-count num">٠</span></div>' +
         '<div class="queue-missed-public-list"><span class="queue-missed-empty">لا يوجد أدوار فائتة</span></div>' +
@@ -9986,6 +10002,14 @@ function updateQueueCard(room, data){
       : "الكشف الحالي بالداخل";
   card.querySelector(".queue-number").textContent = finished ? "انتهت العيادة" : waitingAtZero ? "في انتظار بدء الكشف" : status === "idle" ? "في انتظار التشغيل" : closed ? "—" : ar(displayCurrent);
 
+  const continuationNumbers = Object.entries(data.continuationTurns || {}).filter(([,v])=>v && v.status !== "done").map(([k])=>Number(k)).filter(n=>Number.isInteger(n)&&n>0).sort((a,b)=>a-b);
+  const summary = card.querySelector(".continuation-public");
+  const shown = continuationNumbers.slice(0,4);
+  summary.textContent = shown.length ? shown.map(ar).join(" · ") + (continuationNumbers.length > 4 ? " +" + ar(continuationNumbers.length - 4) : "") : "—";
+  if(recallMode && data.recallKind === "continuation"){
+    card.querySelector(".queue-status-label").textContent = "استكمال كشف";
+    card.querySelector(".queue-number-label").textContent = "استكمال كشف";
+  }
   /* ملخص الأدوار الفائتة داخل كارت العيادة على شاشة العرض */
   const publicMissed = Object.entries(data.missedTurns || {})
     .map(([key,value])=>({ number:Number(key), ...(value || {}) }))
@@ -10165,7 +10189,7 @@ function receptionStatusInfo(data){
   if(data.status === "finished") return { key:"finished", label:"انتهت العيادة", dot:"bg-red-500" };
   if(data.status === "break") return { key:"break", label:"استراحة مؤقتة", dot:"bg-amber-500" };
   if((data.prepared === true || data.status === "active") && Number(data.current || 0) === 0) return { key:"waiting", label:"◷ في انتظار بدء الكشف", dot:"bg-purple-500" };
-  if(data.recallMode && typeof data.recallNumber === "number") return { key:"active", label:"إعادة استدعاء رقم فائت", dot:"bg-sky-500" };
+  if(data.recallMode && typeof data.recallNumber === "number") return { key:"active", label:data.recallKind === "continuation" ? "استكمال كشف" : "إعادة استدعاء رقم فائت", dot:"bg-sky-500" };
   if(data.status === "active") return { key:"active", label:"جاري الكشف", dot:"bg-emerald-500" };
   return { key:"idle", label:"في انتظار التشغيل", dot:"bg-slate-400" };
 }
@@ -10291,9 +10315,12 @@ function renderReceptionDetail(){
   $("#rcRoomBadge").textContent = "غرفة " + room.id;
   $("#rcDoctor").textContent = doctorDisplayFromData(data);
   $("#rcNurse").textContent = data.nurse && data.nurse !== "—" ? data.nurse : "—";
-  $("#rcNumberLabel").textContent = data.status === "finished" ? "حالة العيادة" : data.recallMode ? "إعادة نداء" : "الرقم بالداخل";
+  $("#rcNumberLabel").textContent = data.status === "finished" ? "حالة العيادة" : data.recallMode ? (data.recallKind === "continuation" ? "استكمال كشف" : "إعادة نداء") : "الرقم بالداخل";
   $("#rcNumber").textContent = data.status === "finished" ? "انتهت" : closed ? "—" : ar(displayCurrent);
   $("#rcNumber").style.fontSize = data.status === "finished" ? "32px" : "58px";
+  let rcBase = document.getElementById("rcContinuationBase");
+  if(!rcBase){ rcBase = document.createElement("div"); rcBase.id = "rcContinuationBase"; rcBase.style.cssText = "font-size:13px;font-weight:700;color:#075985"; $("#rcNumber").insertAdjacentElement("afterend",rcBase); }
+  rcBase.textContent = data.recallMode && data.recallKind === "continuation" ? "وصل الكشف إلى: " + ar(current) : "";
   $("#rcMissedCount").textContent = ar(missed.length);
   $("#rcTime").textContent = timeStr(data.updatedAt);
   $("#rcMissedSectionCount").textContent = ar(missed.length);
@@ -10418,7 +10445,7 @@ function renderReceptionDashboard(){
         '<div class="reception-nurse">التمريض: ' + escapeHtml(nurse) + '</div>' +
         '<div class="reception-card-row">' +
           '<div class="reception-current">' +
-            '<span class="reception-current-label">' + (data.recallMode ? 'إعادة نداء' : 'كشف رقم') + '</span>' +
+            '<span class="reception-current-label">' + (data.recallMode ? (data.recallKind === 'continuation' ? 'استكمال كشف' : 'إعادة نداء') : 'كشف رقم') + '</span>' +
             '<strong class="reception-current-number num">' + (data.status === "finished" ? 'انتهت' : closed ? '—' : ar(displayCurrent)) + '</strong>' +
           '</div>' +
           '<div class="reception-card-meta">' +
@@ -14414,6 +14441,8 @@ function applyClinicSnapshot(raw){
     recallMode: Boolean(d.recallMode),
     recallNumber: typeof d.recallNumber === "number" ? d.recallNumber : null,
     missedTurns: d.missedTurns || {},
+    continuationTurns: d.continuationTurns || {},
+    recallKind: d.recallKind || "",
     status:   d.status   || "idle",
     prepared: d.prepared === true,
     updatedAt:d.updatedAt || 0,
@@ -14498,7 +14527,7 @@ function renderAll(numberChanged){
   paintStatus($("#ptStatus"), state.status, false);
   if(state.recallMode && state.status !== "finished"){
     $("#ptStatus").className = "inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-lg font-bold bg-sky-100 text-sky-700";
-    $("#ptStatus").innerHTML = '<span class="dot bg-sky-500"></span><span>إعادة استدعاء رقم فائت</span>';
+    $("#ptStatus").innerHTML = '<span class="dot bg-sky-500"></span><span>' + (state.recallKind === 'continuation' ? 'استكمال كشف' : 'إعادة استدعاء رقم فائت') + '</span>';
   }
 
   /* --- التمريض --- */
@@ -14535,6 +14564,7 @@ function renderAll(numberChanged){
   });
   syncWheel(state.current);
   renderMissedTurns();
+  renderContinuationTurns();
   renderPatientMissedTurns();
   renderRecallPanel();
   updateNurseQueueLock();
@@ -14601,7 +14631,7 @@ function renderMissedTurns(){
     btn.dataset.turnStatus = item.status || "missed";
     btn.title = item.status === "done" ? "تم الانتهاء من هذا الدور" : (item.status === "recalling" ? "يتم استدعاؤه الآن" : "إعادة استدعاء الدور");
     btn.innerHTML = (item.status === "done" ? "✓ " : item.status === "recalling" ? "↻ " : "") + ar(item.number);
-    btn.disabled = isNurseQueueLocked() || item.status === "done" || (state.recallMode && state.recallNumber !== item.number);
+    btn.disabled = isNurseQueueLocked() || item.status === "done" || (state.recallMode && (state.recallKind === "continuation" || state.recallNumber !== item.number));
     btn.addEventListener("click", ()=> openMissedTurnActions(item.number));
     list.appendChild(btn);
   });
@@ -14612,7 +14642,7 @@ function renderMissedTurns(){
 function openMissedTurnActions(number){
   if(!canControlCurrentRoom() || isNurseQueueLocked()) return;
   const item = (state.missedTurns || {})[String(number)];
-  if(!item || item.status === "done") return;
+  if(!item || item.status === "done" || state.recallKind === "continuation" && state.recallMode) return;
   if(document.getElementById("missedTurnActions")) return;
   const roomId = DISPLAY_SLOT_ID;
   const period = nursingLiveSessionStart;
@@ -14699,6 +14729,10 @@ function renderRecallPanel(){
   const active = state.recallMode && typeof state.recallNumber === "number";
   panel.classList.toggle("hidden-view", !active);
   $("#recallNumber").textContent = active ? ar(state.recallNumber) : "—";
+  const continuationActive = active && state.recallKind === "continuation";
+  panel.querySelector("p.text-xs").textContent = continuationActive ? "استكمال كشف" : "إعادة استدعاء رقم فائت";
+  $("#completeRecallBtn").textContent = continuationActive ? "✓ تم الاستكمال" : "✓ تم الكشف";
+  $("#noShowRecallBtn").textContent = continuationActive ? "لم يحضر للاستكمال" : "لم يحضر";
   const controlsBlocked = active || isNurseQueueLocked();
   wheel.style.pointerEvents = controlsBlocked ? "none" : "auto";
   wheel.style.opacity = controlsBlocked ? ".55" : "1";
@@ -14734,6 +14768,7 @@ async function recallMissedTurn(number){
     previousDisplay,
     recallMode:true,
     recallNumber:number,
+    recallKind:null,
     updatedAt:firebase.database.ServerValue.TIMESTAMP
   };
   updates["missedTurns/" + number + "/status"] = "recalling";
@@ -14750,6 +14785,7 @@ async function recallMissedTurn(number){
 }
 
 async function leaveRecall(mode){
+  if(state.recallKind === "continuation") return leaveContinuation(mode);
   if(!canControlCurrentRoom()) return void alert("هذا الحساب غير مصرح له بالتحكم في هذه الحجرة");
   if(isNurseQueueLocked()) return void flashSync(state.status === "break" ? "العيادة في استراحة" : "العيادة منتهية", false);
   if(!state.recallMode || typeof state.recallNumber !== "number") return;
@@ -15025,6 +15061,67 @@ async function markSelectedTurnAsMissed(){
   }
 }
 
+
+function renderContinuationTurns(){
+  const list = $("#continuationList"), empty = $("#continuationEmpty"), add = $("#addContinuation");
+  if(!list) return;
+  list.innerHTML = "";
+  const entries = Object.keys(state.continuationTurns || {}).map(Number).filter(n=>Number.isInteger(n)&&n>0).sort((a,b)=>a-b);
+  empty.classList.toggle("hidden-view", entries.length>0);
+  add.disabled = isNurseQueueLocked() || state.status !== "active" || state.recallMode || state.current <= 0;
+  entries.forEach(number=>{
+    const b=document.createElement("button"); b.type="button"; b.className="missed-turn-chip"; b.textContent=ar(number);
+    b.disabled=isNurseQueueLocked() || state.recallMode;
+    b.addEventListener("click",()=>continuationActions(number)); list.appendChild(b);
+  });
+}
+async function continuationChange(operation, number){
+  if(!canControlCurrentRoom() || isNurseQueueLocked() || !firebaseConnected) return void flashSync("تعذر التنفيذ، تحقق من الاتصال وحالة العيادة",false);
+  const ref=clinicRef, session=nursingLiveSessionStart, identity=currentNursingIdentity(), admin=isAdminUser();
+  try{
+    const result=await ref.transaction(data=>{
+      if(!data || Number(data.sessionStart||0)!==session || data.status!=="active" || data.prepared || (!admin && !nursingHandoverMatches(data,identity))) return;
+      const list={...(data.continuationTurns||{})}; const key=String(number);
+      if(operation==="add"){
+        if(data.recallMode || Number(data.current)!==number || number<=0 || list[key] || (data.missedTurns||{})[key]?.status === "missed" || (data.missedTurns||{})[key]?.status === "recalling") return;
+        list[key]={status:"waiting",addedAt:firebase.database.ServerValue.TIMESTAMP};
+      }else if(operation==="call"){
+        if(data.recallMode || !list[key]) return;
+        list[key]={...list[key],status:"recalling"}; data.previousDisplay=typeof data.displayCurrent==="number"?data.displayCurrent:data.current;
+        data.recallMode=true; data.recallKind="continuation"; data.recallNumber=number; data.displayCurrent=number;
+      }else if(operation==="delete"){
+        if(data.recallMode || !list[key]) return;
+        delete list[key];
+      }else{
+        if(!data.recallMode || data.recallKind!=="continuation" || data.recallNumber!==number || !list[key]) return;
+        if(operation==="done") delete list[key]; else list[key]={...list[key],status:"waiting"};
+        data.displayCurrent=typeof data.previousDisplay==="number"?data.previousDisplay:data.current;
+        data.recallMode=false; data.recallNumber=null; data.recallKind=null; data.previousDisplay=null;
+      }
+      data.continuationTurns=list; data.updatedAt=firebase.database.ServerValue.TIMESTAMP; return data;
+    },undefined,false);
+    if(!result.committed) return void flashSync("تغيرت حالة العيادة أو الرقم، راجع وحاول مرة أخرى",false);
+    flashSync("تم الحفظ",true);
+    writeAuditLog({action:"continuation_"+operation,roomId:DISPLAY_SLOT_ID,clinicName:state.clinicName,nurseName:state.nurse,summary:"استكمال كشف رقم " + ar(number) + " — " + ({add:"إضافة",call:"نداء",delete:"حذف",done:"تم الاستكمال",back:"رجوع"}[operation]||operation)});
+  }catch(e){flashSync("تعذر الحفظ، تحقق من الاتصال",false)}
+}
+$("#addContinuation").addEventListener("click",()=>{
+  const number=state.current;
+  if(!number || state.recallMode || isNurseQueueLocked()) return;
+  if(confirm("إضافة الرقم " + ar(number) + " إلى استكمال كشف؟")) continuationChange("add",number);
+});
+function continuationActions(number){
+  if(state.recallMode || isNurseQueueLocked()) return;
+  const d=document.createElement("dialog"); d.dir="rtl"; d.style.cssText="position:fixed;inset:0;margin:auto;width:calc(100% - 32px);max-width:360px;padding:20px;border:1px solid #bae6fd;border-radius:16px;background:white;color:#334155;box-shadow:0 16px 60px #0004;font-family:inherit;text-align:center";
+  const h=document.createElement("h2");h.textContent="استكمال كشف رقم " + ar(number);h.style.cssText="font-size:20px;font-weight:700;margin-bottom:16px";d.appendChild(h);
+  const room=DISPLAY_SLOT_ID, session=nursingLiveSessionStart;
+  function action(label,fn){const b=document.createElement("button");b.type="button";b.textContent=label;b.style.cssText="display:block;width:100%;padding:12px;margin-top:10px;border:0;border-radius:12px;font:inherit;font-weight:700;background:#e0f2fe;color:#075985";b.onclick=()=>{d.close();if(room===DISPLAY_SLOT_ID && session===nursingLiveSessionStart) fn()};d.appendChild(b)}
+  action("نداء للاستكمال",()=>continuationChange("call",number));
+  action("إلغاء التسجيل بالغلط",()=>{if(confirm("حذف الرقم " + ar(number) + " من قائمة الاستكمال؟")) continuationChange("delete",number)});
+  action("إغلاق",()=>{});d.addEventListener("close",()=>d.remove(),{once:true});document.body.appendChild(d);d.showModal();
+}
+function leaveContinuation(mode){if(state.recallKind === "continuation" && state.recallMode) return continuationChange(mode === "done" ? "done" : "back",state.recallNumber)}
+
 $("#markNoShowBtn").addEventListener("click", markSelectedTurnAsMissed);
 
 function flashSync(text, ok){
@@ -15164,6 +15261,8 @@ document.querySelectorAll(".statusBtn").forEach(btn=>{
         status:"finished",
         prepared:false,
         missedTurns:null,
+        continuationTurns:null,
+        recallKind:null,
         recallMode:false,
         recallNumber:null,
         previousDisplay:null,
