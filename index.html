@@ -10164,7 +10164,7 @@ function receptionPendingMissed(data){
 function receptionStatusInfo(data){
   if(data.status === "finished") return { key:"finished", label:"انتهت العيادة", dot:"bg-red-500" };
   if(data.status === "break") return { key:"break", label:"استراحة مؤقتة", dot:"bg-amber-500" };
-  if((data.prepared === true || data.status === "active") && Number(data.current || 0) === 0 && data.status !== "idle") return { key:"waiting", label:"◷ في انتظار بدء الكشف", dot:"bg-purple-500" };
+  if((data.prepared === true || data.status === "active") && Number(data.current || 0) === 0) return { key:"waiting", label:"◷ في انتظار بدء الكشف", dot:"bg-purple-500" };
   if(data.recallMode && typeof data.recallNumber === "number") return { key:"active", label:"إعادة استدعاء رقم فائت", dot:"bg-sky-500" };
   if(data.status === "active") return { key:"active", label:"جاري الكشف", dot:"bg-emerald-500" };
   return { key:"idle", label:"في انتظار التشغيل", dot:"bg-slate-400" };
