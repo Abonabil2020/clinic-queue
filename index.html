@@ -7829,7 +7829,10 @@
 #view-tv .queue-card[data-status="finished"] .continuation-summary{visibility:hidden}
 #addContinuation:disabled{opacity:.45}
 </style><style>
-#view-nurse #continuationCard{padding:8px 10px;margin-bottom:8px}
+#view-nurse #continuationCard{padding:6px 8px;margin-bottom:6px;display:flex;align-items:center;flex-wrap:wrap;gap:6px}
+#view-nurse #continuationCard>div:first-child{gap:8px;flex:0 1 auto}
+#view-nurse #continuationList{flex:1 1 130px;justify-content:flex-start}
+#view-nurse #continuationEmpty{flex:1 1 auto}
 #view-nurse #continuationCard h2{font-size:14px}
 #view-nurse #addContinuation{font-size:13px;padding:7px 10px;min-height:40px}
 #view-nurse #continuationList{margin-top:5px;gap:6px}
@@ -8271,6 +8274,11 @@
       </div>
 
       <div id="nurseQueueControls">
+      <div class="direct-turn" style="display:flex;align-items:center;gap:8px;margin:6px 0 10px">
+        <label for="directTurnNumber" style="font-size:13px;font-weight:700;white-space:nowrap">انتقال إلى رقم</label>
+        <input id="directTurnNumber" type="text" inputmode="numeric" autocomplete="off" maxlength="3" placeholder="١ - ٥٠" style="min-width:0;width:90px;height:44px;text-align:center;border:1px solid #cbd5e1;border-radius:9px;background:white;font-size:16px;color:#334155">
+        <button id="directTurnButton" type="button" style="min-height:44px;padding:6px 14px;border-radius:9px;background:#e0f2fe;color:#075985;font-weight:700">انتقال</button>
+      </div>
       <div class="wheel-control-row">
         <div class="relative">
           <div class="wheel-frame"></div>
@@ -14969,7 +14977,8 @@ wheel.addEventListener("touchmove", e=>{
   const deltaY = mobileWheelStartY - currentY;
 
   e.preventDefault();
-  wheel.scrollTop = mobileWheelStartTop + (deltaY * MOBILE_WHEEL_DRAG_FACTOR);
+  const distance = Math.max(-ITEM_H * 3, Math.min(ITEM_H * 3, deltaY * MOBILE_WHEEL_DRAG_FACTOR));
+  wheel.scrollTop = mobileWheelStartTop + distance;
 }, { passive:false });
 
 function finishMobileWheelTouch(){
@@ -15155,6 +15164,17 @@ function flashSync(text, ok){
   setTimeout(()=>{ b.textContent = "متصل"; b.className = "text-xs px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700"; }, 1200);
 }
 
+$("#directTurnButton").addEventListener("click",()=>{
+  if(isNurseQueueLocked() || state.recallMode || wheelWritePending || !canControlCurrentRoom()) return void flashSync("انتظر حتى تصبح العيادة جاهزة",false);
+  if(!firebaseConnected) return void flashSync("لا يوجد اتصال، لم يتغير الرقم",false);
+  const raw = $("#directTurnNumber").value.trim().replace(/[٠-٩]/g,c=>String(c.charCodeAt(0)-1632)).replace(/[۰-۹]/g,c=>String(c.charCodeAt(0)-1776));
+  if(!/^\d+$/.test(raw) || Number(raw)<1 || Number(raw)>MAX_NUMBER) return void alert("أدخل رقمًا من ١ إلى " + ar(MAX_NUMBER));
+  const number=Number(raw);
+  if(number===state.current) return void flashSync("الرقم هو الدور الحالي",true);
+  if(!confirm("سيظهر الرقم " + ar(number) + " للمرضى كرقم الكشف الحالي. هل تريد المتابعة؟")) return;
+  $("#directTurnNumber").value="";
+  pushNumber(number);
+});
 $("#plusBtn").addEventListener("click", ()=> stepNumber(1));
 $("#minusBtn").addEventListener("click", ()=> stepNumber(-1));
 function stepNumber(d){
