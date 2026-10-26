@@ -7829,6 +7829,65 @@
 #view-tv .queue-card[data-status="finished"] .continuation-summary{visibility:hidden}
 #addContinuation:disabled{opacity:.45}
 </style><style>
+  #view-nurse .bg-white{
+  border-radius:18px;
+  box-shadow:0 2px 12px rgba(15,23,42,.06);
+}
+
+#view-nurse .wheel-item{
+  color:#a9b4c3;
+  opacity:.5;
+  transition:color .18s ease,opacity .18s ease,font-size .18s ease;
+}
+#view-nurse .wheel-item.active{
+  color:var(--navy);
+  opacity:1;
+}
+#view-nurse .wheel-frame{
+  box-shadow:0 2px 10px rgba(2,132,199,.12);
+}
+
+#view-nurse .wheel-no-show-btn{
+  border-radius:18px;
+  box-shadow:0 2px 8px rgba(154,52,18,.10);
+  transition:transform .12s ease,box-shadow .12s ease,opacity .15s ease;
+}
+
+#view-nurse #plusBtn,
+#view-nurse #minusBtn{
+  min-height:64px;
+  border-radius:16px;
+  font-size:30px;
+  font-weight:800;
+  transition:transform .12s ease,filter .12s ease,box-shadow .12s ease;
+}
+#view-nurse #plusBtn{ box-shadow:0 5px 14px rgba(243,81,76,.30); }
+#view-nurse #minusBtn{ box-shadow:0 2px 8px rgba(15,23,42,.10); }
+#view-nurse #plusBtn:active:not(:disabled),
+#view-nurse #minusBtn:active:not(:disabled){
+  transform:scale(.96);
+  filter:brightness(.95);
+}
+
+#view-nurse .statusBtn{
+  border-radius:14px;
+  font-weight:800;
+  transition:transform .12s ease,background-color .15s ease;
+}
+#view-nurse .statusBtn:active{ transform:scale(.96); }
+
+#view-nurse #nurseBookingClose:active:not(:disabled),
+#view-nurse #nurseNoWaitingBtn:active:not(:disabled),
+#view-nurse #addContinuation:active:not(:disabled),
+#view-nurse #directTurnButton:active:not(:disabled){
+  transform:scale(.97);
+}
+
+#view-nurse .missed-turn-chip{
+  border-radius:14px;
+  box-shadow:0 1px 4px rgba(15,23,42,.06);
+}
+</style>
 #view-nurse #continuationCard{padding:6px 8px;margin-bottom:6px;display:flex;align-items:center;flex-wrap:wrap;gap:6px}
 #view-nurse #continuationCard>div:first-child{gap:8px;flex:0 1 auto}
 #view-nurse #continuationList{flex:1 1 130px;justify-content:flex-start}
