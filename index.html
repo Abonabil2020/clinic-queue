@@ -9956,7 +9956,7 @@ function updateQueueCard(room, data){
   const displayCurrent = typeof data.displayCurrent === "number" ? data.displayCurrent : current;
   const recallMode = Boolean(data.recallMode && typeof data.recallNumber === "number");
   const closed = status === "finished" || status === "idle";
-  const waitingAtZero = (data.prepared === true || (status === "active" && displayCurrent === 0)) && status !== "finished" && status !== "break";
+  const waitingAtZero = (data.prepared === true || status === "active") && current === 0 && status !== "finished" && status !== "break";
   const clinicName = data.clinicName || data.specialty || room.place;
   const doctor = doctorDisplayFromData(data);
 
@@ -10163,10 +10163,10 @@ function receptionPendingMissed(data){
 
 function receptionStatusInfo(data){
   if(data.status === "finished") return { key:"finished", label:"انتهت العيادة", dot:"bg-red-500" };
-  if(data.prepared === true && data.status !== "break") return { key:"waiting", label:"◷ في انتظار بدء الكشف", dot:"bg-red-400" };
+  if(data.status === "break") return { key:"break", label:"استراحة مؤقتة", dot:"bg-amber-500" };
+  if((data.prepared === true || data.status === "active") && Number(data.current || 0) === 0 && data.status !== "idle") return { key:"waiting", label:"◷ في انتظار بدء الكشف", dot:"bg-red-400" };
   if(data.recallMode && typeof data.recallNumber === "number") return { key:"active", label:"إعادة استدعاء رقم فائت", dot:"bg-sky-500" };
   if(data.status === "active") return { key:"active", label:"جاري الكشف", dot:"bg-emerald-500" };
-  if(data.status === "break") return { key:"break", label:"استراحة مؤقتة", dot:"bg-amber-500" };
   return { key:"idle", label:"في انتظار التشغيل", dot:"bg-slate-400" };
 }
 
