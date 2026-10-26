@@ -10164,7 +10164,7 @@ function receptionPendingMissed(data){
 function receptionStatusInfo(data){
   if(data.status === "finished") return { key:"finished", label:"انتهت العيادة", dot:"bg-red-500" };
   if(data.status === "break") return { key:"break", label:"استراحة مؤقتة", dot:"bg-amber-500" };
-  if((data.prepared === true || data.status === "active") && Number(data.current || 0) === 0 && data.status !== "idle") return { key:"waiting", label:"◷ في انتظار بدء الكشف", dot:"bg-red-400" };
+  if((data.prepared === true || data.status === "active") && Number(data.current || 0) === 0 && data.status !== "idle") return { key:"waiting", label:"◷ في انتظار بدء الكشف", dot:"bg-purple-500" };
   if(data.recallMode && typeof data.recallNumber === "number") return { key:"active", label:"إعادة استدعاء رقم فائت", dot:"bg-sky-500" };
   if(data.status === "active") return { key:"active", label:"جاري الكشف", dot:"bg-emerald-500" };
   return { key:"idle", label:"في انتظار التشغيل", dot:"bg-slate-400" };
@@ -10322,7 +10322,7 @@ function renderReceptionDetail(){
   else if(status.key === "finished") statusEl.classList.add("bg-red-100","text-red-700");
   else if(status.key === "waiting") statusEl.classList.add("reception-waiting-status");
   else statusEl.classList.add("text-slate-600");
-  if(data.recallMode && data.status !== "finished"){
+  if(data.recallMode && status.key === "active"){
     statusEl.className = "inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-sky-100 text-sky-700 font-bold text-sm";
   }
   statusEl.innerHTML = '<span class="dot ' + status.dot + '"></span><span>' + status.label + '</span>';
