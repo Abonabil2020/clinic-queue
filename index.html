@@ -10842,8 +10842,8 @@ function notifyReceptionDesktop(update){
   if(!receptionDesktopEnabled || !isReceptionUser() || !("Notification" in window) || Notification.permission !== "granted" || (!document.hidden && document.hasFocus())) return;
   try{
     receptionDesktopNotice?.close();
-    const notice = new Notification("نظام إدارة الأدوار",{
-      body:update.clinicName + "\n" + update.detail + (update.nurseName ? "\nالتمريض: " + update.nurseName : ""),
+    const notice = new Notification(update.clinicName,{
+      body:update.detail + (update.nurseName ? "\nبواسطة: " + String(update.nurseName).trim().split(/\s+/).slice(0,2).join(" ") : ""),
       icon:new URL("notification-icon.png",document.baseURI).href,
       dir:"rtl",lang:"ar",tag:"reception-clinic-update"
     });
