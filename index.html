@@ -7861,6 +7861,9 @@
 #view-nurse #directTurnDialog{width:min(90vw,360px);padding:18px;border:1px solid #cbd5e1;border-radius:16px;background:white;color:#334155}
 #view-nurse #directTurnDialog::backdrop{background:rgba(15,23,42,.5)}
 #view-nurse #closeDirectTurn{min-height:44px;width:100%;border-radius:9px;background:#f1f5f9;font-weight:bold}
+</style><style>
+#view-nurse #minusBtn,#view-nurse #plusBtn{min-height:58px!important;padding:10px!important}
+#view-nurse #wheel .wheel-item:not(.active){opacity:0!important}
 </style></head>
 <body>
 <div id="networkStatusIndicator" class="network-status-indicator" role="status" aria-live="polite">
@@ -8252,7 +8255,7 @@
         <span id="syncBadge" class="text-xs px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700">متصل</span>
       </div>
 
-      <div class="nurse-quick-actions"><button id="addContinuation" type="button" class="px-3 py-2 rounded-lg bg-sky-700 text-white font-bold">إضافة الرقم الحالي</button><button id="openDirectTurn" type="button">انتقال إلى رقم</button></div>
+      <div class="nurse-quick-actions"><button id="addContinuation" type="button" class="px-3 py-2 rounded-lg bg-sky-700 text-white font-bold">إضافة للاستكمال</button><button id="openDirectTurn" type="button">انتقال إلى رقم</button></div>
       <div class="nursing-displayed-turn mb-3 px-3 py-2.5 rounded-xl bg-sky-50 border border-sky-100 flex items-center justify-between gap-3">
         <span class="text-xs font-bold text-slate-600">المعروض الآن على الشاشات</span>
         <strong id="nurseDisplayedNumber" class="num text-2xl font-bold text-sky-700">—</strong>
@@ -14989,6 +14992,8 @@ const MOBILE_WHEEL_DRAG_FACTOR = 0.48;
 wheel.addEventListener("touchstart", e=>{
   if(isNurseQueueLocked() || state.recallMode || wheelWritePending || e.touches.length !== 1) return;
 
+  wheel.scrollTo({top:wheel.scrollTop,behavior:"auto"});
+  wheel.style.scrollSnapType = "none";
   mobileWheelTouchActive = true;
   mobileWheelStartY = e.touches[0].clientY;
   mobileWheelStartTop = wheel.scrollTop;
@@ -15010,12 +15015,15 @@ function finishMobileWheelTouch(){
   mobileWheelTouchActive = false;
 
   const target = wheelValue();
-  wheel.scrollTo({ top: target * ITEM_H, behavior:"smooth" });
+  wheel.scrollTo({ top: target * ITEM_H, behavior:"auto" });
+  wheel.style.scrollSnapType = "";
 }
 
 wheel.addEventListener("touchend", finishMobileWheelTouch, { passive:true });
 wheel.addEventListener("touchcancel", ()=>{
   mobileWheelTouchActive = false;
+  wheel.style.scrollSnapType = "";
+  syncWheel(state.current);
 }, { passive:true });
 
 /* الكتابة في قاعدة البيانات مع Debounce */
