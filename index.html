@@ -7872,6 +7872,8 @@
 #view-nurse .wheel-control-row>.relative{grid-column:1;grid-row:1;min-width:0}
 #view-nurse .nurse-wheel-actions{grid-column:2;grid-row:1;display:flex;flex-direction:column;gap:6px;min-width:0}
 #view-nurse .nurse-wheel-actions #markNoShowBtn{width:100%;min-height:70px;padding:6px;line-height:1.2;background:#fff1f0;color:#a33535;border:1px solid #efb5b1}
+#view-nurse #missedTurnsCard{background:#fff1f0!important;border-color:#efb5b1!important}
+#view-nurse #continuationCard{background:#edf8f1!important;border-color:#acd8bb!important}
 #view-nurse .nurse-wheel-actions #markNoShowNumber{display:none}
 #view-nurse .nurse-wheel-actions #addContinuation{width:100%;min-height:70px;padding:6px!important;white-space:normal;overflow-wrap:normal;line-height:1.25;font-size:13px!important;background:#edf8f1;color:#276749;border:1px solid #acd8bb}
 </style></head>
@@ -8278,7 +8280,7 @@
       <div id="missedTurnsCard" class="missed-turns-wrap rounded-2xl shadow-sm p-4 mb-4">
         <div class="flex items-center justify-between gap-3 mb-3">
           <div>
-            <h2 class="font-bold">الأدوار الفائتة</h2>
+            <h2 class="font-bold">استدعاء الأدوار الفائتة</h2>
           </div>
           <span id="missedTurnsCount" class="shrink-0 min-w-8 h-8 px-2 rounded-full bg-orange-100 text-orange-700 font-bold flex items-center justify-center num">٠</span>
         </div>
@@ -8287,7 +8289,7 @@
       </div>
 
       <div id="continuationCard" class="missed-turns-wrap rounded-2xl shadow-sm p-4 mb-4" style="border-color:#bae6fd;background:#f0f9ff">
-        <div class="flex items-center justify-between gap-2"><h2 class="font-bold">استكمال كشف</h2></div>
+        <div class="flex items-center justify-between gap-2"><h2 class="font-bold">استدعاء استكمال كشف</h2></div>
         <div id="continuationList" class="missed-turns-list mt-2"></div>
         <div id="continuationEmpty" class="text-sm text-slate-500 mt-2">لا يوجد استكمال</div>
       </div>
@@ -8326,7 +8328,7 @@
             <span>لم يحضر للكشف</span>
             <strong id="markNoShowNumber" class="selected-turn num">—</strong>
           </button>
-          <button id="addContinuation" type="button" class="px-3 py-2 rounded-lg bg-sky-700 text-white font-bold">استكمال كشف / إجراء</button>
+          <button id="addContinuation" type="button" class="px-3 py-2 rounded-lg bg-sky-700 text-white font-bold">له استكمال كشف / إجراء</button>
         </div>
       </div>
 
