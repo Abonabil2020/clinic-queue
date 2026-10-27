@@ -7871,8 +7871,9 @@
 #view-nurse .wheel-control-row::before{content:none}
 #view-nurse .wheel-control-row>.relative{grid-column:1;grid-row:1;min-width:0}
 #view-nurse .nurse-wheel-actions{grid-column:2;grid-row:1;display:flex;flex-direction:column;gap:6px;min-width:0}
-#view-nurse .nurse-wheel-actions #markNoShowBtn{width:100%;min-height:70px;padding:6px;line-height:1.2;background:#edf6fc;color:#24577b;border:1px solid #a8cbe4}
-#view-nurse .nurse-wheel-actions #addContinuation{width:100%;min-height:70px;padding:6px!important;white-space:normal;overflow-wrap:normal;line-height:1.25;font-size:13px!important;background:#dceefa;color:#24577b;border:1px solid #a8cbe4}
+#view-nurse .nurse-wheel-actions #markNoShowBtn{width:100%;min-height:70px;padding:6px;line-height:1.2;background:#fff1f0;color:#a33535;border:1px solid #efb5b1}
+#view-nurse .nurse-wheel-actions #markNoShowNumber{display:none}
+#view-nurse .nurse-wheel-actions #addContinuation{width:100%;min-height:70px;padding:6px!important;white-space:normal;overflow-wrap:normal;line-height:1.25;font-size:13px!important;background:#edf8f1;color:#276749;border:1px solid #acd8bb}
 </style></head>
 <body>
 <div id="networkStatusIndicator" class="network-status-indicator" role="status" aria-live="polite">
@@ -14948,7 +14949,7 @@ wheel.addEventListener("scroll", ()=>{
   clearTimeout(settleTimer);
   const scrollPeriod = nursingLiveSessionStart;
   settleTimer = setTimeout(()=>{
-    if(suppressWrite || nursingSetupSaving || location.hash !== "#/nurse" || scrollPeriod !== nursingLiveSessionStart) return;
+    if(suppressWrite || mobileWheelTouchActive || dragging || nursingSetupSaving || location.hash !== "#/nurse" || scrollPeriod !== nursingLiveSessionStart) return;
     const v = wheelValue();
     if(v !== state.current) pushNumber(v);
   }, 180);
@@ -14999,7 +15000,7 @@ wheel.addEventListener("wheel", e=>{
 let mobileWheelTouchActive = false;
 let mobileWheelStartY = 0;
 let mobileWheelStartTop = 0;
-const MOBILE_WHEEL_DRAG_FACTOR = 0.35;
+const MOBILE_WHEEL_DRAG_FACTOR = 0.75;
 
 wheel.addEventListener("touchstart", e=>{
   if(isNurseQueueLocked() || state.recallMode || wheelWritePending || e.touches.length !== 1) return;
@@ -15012,7 +15013,10 @@ wheel.addEventListener("touchstart", e=>{
 }, { passive:true });
 
 wheel.addEventListener("touchmove", e=>{
-  if(!mobileWheelTouchActive || e.touches.length !== 1) return;
+  if(!mobileWheelTouchActive || e.touches.length !== 1){
+    if(isNurseQueueLocked() || state.recallMode || wheelWritePending) e.preventDefault();
+    return;
+  }
 
   const currentY = e.touches[0].clientY;
   const deltaY = mobileWheelStartY - currentY;
@@ -15027,8 +15031,8 @@ function finishMobileWheelTouch(){
   mobileWheelTouchActive = false;
 
   const target = wheelValue();
-  wheel.scrollTo({ top: target * ITEM_H, behavior:"auto" });
   wheel.style.scrollSnapType = "";
+  wheel.scrollTo({ top: target * ITEM_H, behavior:"smooth" });
 }
 
 wheel.addEventListener("touchend", finishMobileWheelTouch, { passive:true });
