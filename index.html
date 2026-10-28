@@ -7087,6 +7087,14 @@
   #view-nurse>.p-4>.grid{margin-top:8px}
 }
 
+/* Clinic hours: nursing entry and reception display only. */
+.clinic-hours-fields{margin:12px 0;padding:12px;border:1px solid #bae6fd;border-radius:12px;background:#f0f9ff;color:#334155}
+.clinic-hours-row{display:flex;align-items:center;gap:8px;margin-top:9px}
+.clinic-hours-row label{width:30px;font-weight:700}
+.clinic-hours-row input{width:100%;min-width:0;flex:1;padding:10px;border:1px solid #cbd5e1;border-radius:9px;background:white;text-align:center;font-size:18px;color:#0f172a}
+.clinic-hours-row select{padding:10px 4px;border-radius:9px;background:white;color:#334155}
+.clinic-hours-fields small{display:block;margin-top:8px;color:#64748b}
+.clinic-hours-display{font-size:13px;font-weight:700;color:#0369a1;margin-top:5px;white-space:normal}
 </style>
 <style>
 /* Requested control spacing and persistent missed-turn strip. */
@@ -8198,7 +8206,7 @@
 
         </div>
         <div id="nursingPeriodPreview" class="mb-4 p-3 rounded-xl bg-sky-50" hidden></div>
-        <div data-setup-step="4" hidden><p id="setupReviewTitle" class="mb-2" style="font-weight:700;color:#334155">البيانات الجديدة قبل الحفظ</p><p id="setupReviewHint" class="text-sm text-slate-600 mb-3">راجع البيانات التالية؛ لم يتم حفظها بعد.</p><div id="setupReview" class="setup-wizard-review"></div></div>
+        <div data-setup-step="4" hidden><p id="setupReviewTitle" class="mb-2" style="font-weight:700;color:#334155">البيانات الجديدة قبل الحفظ</p><p id="setupReviewHint" class="text-sm text-slate-600 mb-3">راجع البيانات التالية؛ لم يتم حفظها بعد.</p><div id="setupReview" class="setup-wizard-review"></div><div id="setupHoursWrap"><div class="clinic-hours-fields"><strong>موعد العيادة</strong><div class="clinic-hours-row"><label for="setupHoursFrom">من</label><input id="setupHoursFrom" type="text" inputmode="numeric" autocomplete="off" maxlength="5" placeholder="٥ أو ٥٣٠" aria-label="من موعد العيادة"><select id="setupHoursFromMeridiem" aria-label="من صباحًا أو مساءً"><option value="am">صباحًا</option><option value="pm">مساءً</option></select></div><div class="clinic-hours-row"><label for="setupHoursTo">إلى</label><input id="setupHoursTo" type="text" inputmode="numeric" autocomplete="off" maxlength="5" placeholder="٥ أو ٥٣٠" aria-label="إلى موعد العيادة"><select id="setupHoursToMeridiem" aria-label="إلى صباحًا أو مساءً"><option value="am">صباحًا</option><option value="pm">مساءً</option></select></div><small>أرقام فقط: ٥ = ٥:٠٠، ٥٣٠ = ٥:٣٠</small></div></div></div>
       </div>
       <p id="setupMsg" class="text-red-600 text-sm mb-3 min-h-[20px]"></p>
 
@@ -8222,6 +8230,7 @@
 <!-- ============================================================
      3) واجهة التمريض
 ============================================================ -->
+<dialog id="clinicHoursDialog" class="rounded-2xl p-4" style="width:min(400px,90vw)"><h3 class="font-bold">تعديل موعد العيادة</h3><div class="clinic-hours-fields"><strong>موعد العيادة</strong><div class="clinic-hours-row"><label for="editHoursFrom">من</label><input id="editHoursFrom" type="text" inputmode="numeric" autocomplete="off" maxlength="5" placeholder="٥ أو ٥٣٠" aria-label="من موعد العيادة"><select id="editHoursFromMeridiem" aria-label="من صباحًا أو مساءً"><option value="am">صباحًا</option><option value="pm">مساءً</option></select></div><div class="clinic-hours-row"><label for="editHoursTo">إلى</label><input id="editHoursTo" type="text" inputmode="numeric" autocomplete="off" maxlength="5" placeholder="٥ أو ٥٣٠" aria-label="إلى موعد العيادة"><select id="editHoursToMeridiem" aria-label="إلى صباحًا أو مساءً"><option value="am">صباحًا</option><option value="pm">مساءً</option></select></div><small>أرقام فقط: ٥ = ٥:٠٠، ٥٣٠ = ٥:٣٠</small></div><p id="clinicHoursMessage" role="status" class="text-sm text-red-600"></p><button id="saveClinicHours" type="button" class="px-4 py-2 bg-sky-600 text-white rounded-lg">حفظ</button> <button id="cancelClinicHours" type="button" class="px-4 py-2 bg-slate-100 rounded-lg">إلغاء</button></dialog>
 <section id="view-nurse" class="hidden-view min-h-screen pb-10">
   <header class="text-white px-5 py-4 flex items-center justify-between" style="background:var(--navy)">
     <div>
@@ -8245,6 +8254,7 @@
         </div>
         <div id="nurseOfficialCount" aria-label="عدد الحالات المقرر"></div>
       </div>
+      <div class="clinic-hours-display"><span id="nurseHoursText"></span> <button id="editClinicHours" type="button" class="px-2 py-1 rounded-lg bg-sky-50">تعديل الموعد</button></div>
       <div id="nursingRoomSwitch" class="flex flex-wrap gap-2 mt-2" style="display:none"></div>
       <div class="official-options-row">
       <details class="mt-2 border-t border-slate-100 pt-2">
@@ -8938,7 +8948,7 @@
         </div>
         <div class="reception-detail-body">
           <p class="text-xs text-slate-500">الطبيب</p>
-          <p id="rcDoctor" class="text-lg font-bold text-slate-800">—</p>
+          <p id="rcDoctor" class="text-lg font-bold text-slate-800">—</p><p id="rcClinicHours" class="clinic-hours-display"></p>
 
           <p class="text-xs text-slate-500 mt-3">التمريض المسؤول</p>
           <p id="rcNurse" class="font-bold text-sky-800">—</p>
@@ -10371,6 +10381,7 @@ function renderReceptionDetail(){
   $("#rcLocation").textContent = room.floorName + " — " + room.place;
   $("#rcRoomBadge").textContent = "غرفة " + room.id;
   $("#rcDoctor").textContent = doctorDisplayFromData(data);
+  $("#rcClinicHours").textContent = clinicHoursLabel(data.clinicHours);
   $("#rcNurse").textContent = data.nurse && data.nurse !== "—" ? data.nurse : "—";
   $("#rcNumberLabel").textContent = data.status === "finished" ? "حالة العيادة" : data.recallMode ? (data.recallKind === "continuation" ? "استكمال كشف" : "إعادة نداء") : "الرقم بالداخل";
   $("#rcNumber").textContent = data.status === "finished" ? "انتهت" : closed ? "—" : ar(displayCurrent);
@@ -10499,6 +10510,7 @@ function renderReceptionDashboard(){
       '</div>' +
       '<div class="reception-card-body">' + bookingBadge(room.id) +
         '<div class="reception-doctor">' + escapeHtml(doctor) + '</div>' +
+        '<div class="clinic-hours-display">' + escapeHtml(clinicHoursLabel(data.clinicHours)) + '</div>' +
         '<div class="reception-nurse">التمريض: ' + escapeHtml(nurse) + '</div>' +
         '<div class="reception-card-row">' +
           '<div class="reception-current">' +
@@ -11951,6 +11963,7 @@ function renderNursingSetup(){
   const ready = Boolean(auth.currentUser) && selected && nursingPeriod !== null;
   const existing = ready && periodIsCurrent(nursingPeriod);
   const takeover = existing && nursingSetupMode === "enter";
+  $("#setupHoursWrap").hidden = takeover;
   if(!ready) setupWizardStep = 0;
   else if(setupWizardStep === 0) setupWizardStep = takeover ? 3 : 1;
   document.querySelectorAll("#setupWizard [data-setup-step]").forEach(panel=>{
@@ -12018,6 +12031,7 @@ async function loadNursingPeriod(){
     const data = (await clinicRef.once("value")).val() || {};
     if(serial !== nursingLoadSerial) return;
     nursingPeriod = data;
+    fillClinicHours("setupHours", nursingSetupMode === "edit" ? data.clinicHours : null);
     const identity = currentNursingIdentity();
     if(nursingSetupMode === "enter" && identity && nursingRoomAccess() &&
        periodIsCurrent(data) && nursingHandoverMatches(data,identity) &&
@@ -12378,6 +12392,8 @@ $("#saveSetupBtn").addEventListener("click", async ()=>{
   if(!nurse || !selectableNurseNames().includes(nurse)) return void (msg.textContent = "اختر اسمك من قائمة التمريض");
   const takeover = nursingSetupMode === "enter" && periodIsCurrent(nursingPeriod);
   const edit = nursingSetupMode === "edit";
+  const clinicHours = takeover ? nursingPeriod.clinicHours : readClinicHours("setupHours");
+  if(!takeover && !clinicHours) return void (msg.textContent = "أدخل موعد بداية ونهاية العيادة بشكل صحيح، وحدد صباحًا أو مساءً. النهاية يجب أن تكون بعد البداية.");
   const clinic = findSpecialtyById($("#setupClinic").value);
   const doctor = $("#setupDoctor").value.trim();
   if(!takeover && (!clinic || !selectableDoctorNames(clinic.id).includes(doctor))) return void (msg.textContent = "اختر العيادة والطبيب من قائمة أطباء التخصص");
@@ -12401,7 +12417,7 @@ $("#saveSetupBtn").addEventListener("click", async ()=>{
       const result = await clinicRef.transaction(data=>{
         if(!periodIsCurrent(data || {}) || !nursingPeriodMatches(before,data)) return;
         if(edit && !isAdminUser() && !nursingHandoverMatches(data,editingIdentity)) return;
-        return {...data,nurse,handoverId,...(edit ? {clinicName:clinic.name,specialty:clinic.name,doctor,doctorDisplayName:doctorDisplayName(doctor)} : {}),updatedAt:firebase.database.ServerValue.TIMESTAMP};
+        return {...data,nurse,handoverId,...(edit ? {clinicName:clinic.name,specialty:clinic.name,doctor,doctorDisplayName:doctorDisplayName(doctor),clinicHours} : {}),updatedAt:firebase.database.ServerValue.TIMESTAMP};
       },undefined,false);
       if(!result.committed) throw new Error("period-changed");
       saved = result.snapshot.val();
@@ -12410,7 +12426,7 @@ $("#saveSetupBtn").addEventListener("click", async ()=>{
       const latest = (await clinicRef.once("value")).val() || {};
       if(!nursingPeriodMatches(before,latest)) throw new Error("period-changed");
       clearTimeout(writeTimer);
-      await resetCurrentClinic({periodId:expectedPeriodId,handoverId,prepared:true,status:"idle",clinicName:clinic.name,specialty:clinic.name,doctor,doctorDisplayName:doctorDisplayName(doctor),nurse,roomNumber:DISPLAY_SLOT_ID,floor:CURRENT_ROOM.floorName,location:"عيادة رقم " + DISPLAY_SLOT_ID + " — " + CURRENT_ROOM.floorName});
+      await resetCurrentClinic({periodId:expectedPeriodId,handoverId,clinicHours,prepared:true,status:"idle",clinicName:clinic.name,specialty:clinic.name,doctor,doctorDisplayName:doctorDisplayName(doctor),nurse,roomNumber:DISPLAY_SLOT_ID,floor:CURRENT_ROOM.floorName,location:"عيادة رقم " + DISPLAY_SLOT_ID + " — " + CURRENT_ROOM.floorName});
       saved = (await clinicRef.once("value")).val();
     }
     if(!saved || roomId !== DISPLAY_SLOT_ID || saved.nurse !== nurse || saved.handoverId !== handoverId ||
@@ -14488,6 +14504,7 @@ function applyClinicSnapshot(raw){
     clinicName:d.clinicName || d.specialty || "—",
     doctor:   d.doctor   || "—",
     doctorDisplayName:d.doctorDisplayName || "",
+    clinicHours:d.clinicHours || null,
     nurse:    d.nurse    || "—",
     period:   d.period   || "",
     location: d.location || "عيادة رقم " + DISPLAY_SLOT_ID + " — " + CURRENT_ROOM.floorName,
@@ -14593,6 +14610,8 @@ function renderAll(numberChanged){
   const displayedDoctor = doctorDisplayFromData(state);
   $("#panelDoctor").textContent = displayedDoctor;
   $("#panelNurse").textContent = state.nurse;
+  $("#nurseHoursText").textContent = clinicHoursLabel(state.clinicHours);
+  $("#editClinicHours").disabled = !canControlCurrentRoom();
   $("#nurseDisplayedNumber").dataset.waiting = state.prepared || (state.displayCurrent === 0 && state.status !== "finished" && state.status !== "break") ? "true" : "false";
   $("#nurseDisplayedNumber").textContent = state.prepared || (state.displayCurrent === 0 && state.status !== "finished" && state.status !== "break")
     ? "⌛ في انتظار بدء الكشف"
@@ -15315,7 +15334,7 @@ $("#resetSameClinicBtn").addEventListener("click", async ()=>{
     if(DISPLAY_SLOT_ID !== roomId || !canControlCurrentRoom() || (!isAdminUser() && !nursingHandoverMatches(latest)) || Number(latest.sessionStart || 0) !== sessionStart) throw new Error("period-changed");
     nursingSetupSaving = true;
     clearTimeout(writeTimer); wheelWritePending = false; clearTimeout(settleTimer);
-    await resetCurrentClinic({clinicName:latest.clinicName,specialty:latest.specialty || latest.clinicName,doctor:latest.doctor,doctorDisplayName:latest.doctorDisplayName || doctorDisplayName(latest.doctor),nurse:latest.nurse,period:latest.period || "",roomNumber:roomId,floor:latest.floor || CURRENT_ROOM.floorName,location:latest.location || "عيادة رقم " + roomId + " — " + CURRENT_ROOM.floorName,prepared:latest.prepared === true,status:latest.prepared === true ? "idle" : "active"});
+    await resetCurrentClinic({clinicHours:latest.clinicHours || null,clinicName:latest.clinicName,specialty:latest.specialty || latest.clinicName,doctor:latest.doctor,doctorDisplayName:latest.doctorDisplayName || doctorDisplayName(latest.doctor),nurse:latest.nurse,period:latest.period || "",roomNumber:roomId,floor:latest.floor || CURRENT_ROOM.floorName,location:latest.location || "عيادة رقم " + roomId + " — " + CURRENT_ROOM.floorName,prepared:latest.prepared === true,status:latest.prepared === true ? "idle" : "active"});
     const saved = (await ref.once("value")).val();
     if(DISPLAY_SLOT_ID === roomId){
       rememberNursingRoom(saved,currentNursingIdentity()?.nurse || saved.nurse);
@@ -15356,6 +15375,7 @@ document.querySelectorAll(".statusBtn").forEach(btn=>{
   btn.addEventListener("click", ()=>{
     if(!canControlCurrentRoom()) return void alert("هذا الحساب غير مصرح له بالتحكم في هذه الحجرة");
     const s = btn.dataset.status;
+    if(s === "active" && !validClinicHours(state.clinicHours)) return void alert("أدخل موعد العيادة أولًا من زر تعديل الموعد ثم شغّل العيادة.");
 
     if(s === "finished"){
       if(!confirm("سيتم إنهاء العيادة وتصفير جميع الأدوار الفائتة وإخفائها من شاشة المرضى. متابعة؟")) return;
@@ -15929,6 +15949,67 @@ window.officialCounts = (()=>{
   auth.onAuthStateChanged(()=>sync(activeView));
   return {sync,render};
 })();
+
+
+/* Entered clinic hours, independent of actual session timestamps. */
+function parseClinicHour(value,meridiem){
+  const raw=String(value).trim().replace(/[٠-٩]/g,c=>String('٠١٢٣٤٥٦٧٨٩'.indexOf(c))).replace(/[۰-۹]/g,c=>String('۰۱۲۳۴۵۶۷۸۹'.indexOf(c)));
+  let h,m;
+  if(/^\d{1,2}$/.test(raw)){h=Number(raw);m=0;}
+  else if(/^\d{3,4}$/.test(raw)){h=Number(raw.slice(0,-2));m=Number(raw.slice(-2));}
+  else if(/^\d{1,2}:\d{2}$/.test(raw)){[h,m]=raw.split(':').map(Number);}
+  else return null;
+  if(h<1||h>12||m<0||m>59||!['am','pm'].includes(meridiem))return null;
+  return (h%12)*60+m+(meridiem==='pm'?720:0);
+}
+function validClinicHours(v){return v&&Number.isInteger(v.from)&&Number.isInteger(v.to)&&v.from>=0&&v.to<1440&&v.to>v.from;}
+function clinicHourText(minutes){return ar(Math.floor(minutes/60)%12||12)+':'+String(minutes%60).padStart(2,'0').replace(/[0-9]/g,c=>'٠١٢٣٤٥٦٧٨٩'[Number(c)])+' '+(minutes<720?'ص':'م');}
+function clinicHoursLabel(v){return validClinicHours(v)?'موعد العيادة: من '+clinicHourText(v.from)+' إلى '+clinicHourText(v.to):'موعد العيادة: لم يُحدد';}
+function fillClinicHours(prefix,v){
+  const defaultMeridiem=Number(new Intl.DateTimeFormat('en-GB',{timeZone:'Africa/Cairo',hour:'2-digit',hourCycle:'h23'}).format(new Date()))<12?'am':'pm';
+  for(const [key,value] of [['From',v?.from],['To',v?.to]]){
+    document.getElementById(prefix+key).value=Number.isInteger(value)?String(Math.floor(value/60)%12||12)+':'+String(value%60).padStart(2,'0'):'';
+    document.getElementById(prefix+key+'Meridiem').value=Number.isInteger(value)?(value<720?'am':'pm'):defaultMeridiem;
+  }
+}
+function readClinicHours(prefix){
+  const v={from:parseClinicHour(document.getElementById(prefix+'From').value,document.getElementById(prefix+'FromMeridiem').value),to:parseClinicHour(document.getElementById(prefix+'To').value,document.getElementById(prefix+'ToMeridiem').value)};
+  return validClinicHours(v)?v:null;
+}
+for(const prefix of ['setupHours','editHours'])for(const key of ['From','To']){
+  const input=document.getElementById(prefix+key);
+  input.addEventListener('focus',()=>input.select());
+  input.addEventListener('blur',()=>{
+    const value=parseClinicHour(input.value,document.getElementById(prefix+key+'Meridiem').value);
+    if(value!==null)input.value=String(Math.floor(value/60)%12||12)+':'+String(value%60).padStart(2,'0');
+  });
+}
+let clinicHoursEditContext=null;
+document.getElementById('editClinicHours').onclick=()=>{
+  if(!canControlCurrentRoom())return;
+  clinicHoursEditContext={room:DISPLAY_SLOT_ID,session:nursingLiveSessionStart,period:nursingPeriod?.periodId||'',ref:clinicRef,identity:currentNursingIdentity(),admin:isAdminUser(),version:JSON.stringify(state.clinicHours||null)};
+  fillClinicHours('editHours',state.clinicHours);
+  document.getElementById('clinicHoursMessage').textContent='';
+  document.getElementById('clinicHoursDialog').showModal();
+};
+document.getElementById('cancelClinicHours').onclick=()=>document.getElementById('clinicHoursDialog').close();
+document.getElementById('saveClinicHours').onclick=async()=>{
+  const hours=readClinicHours('editHours'),message=document.getElementById('clinicHoursMessage'),button=document.getElementById('saveClinicHours'),c=clinicHoursEditContext;
+  if(!hours){message.textContent='أدخل الموعدين بشكل صحيح؛ النهاية يجب أن تكون بعد البداية مع مراجعة صباحًا ومساءً.';return;}
+  if(!c||c.room!==DISPLAY_SLOT_ID||c.session!==nursingLiveSessionStart||!canControlCurrentRoom()||!firebaseConnected){message.textContent='راجع اتصالك والفترة الحالية ثم افتح التعديل من جديد.';return;}
+  button.disabled=true;document.getElementById('cancelClinicHours').disabled=true;
+  message.textContent='جارٍ الحفظ...';
+  try{
+    const result=await c.ref.transaction(data=>{
+      if(!data||Number(data.sessionStart||0)!==c.session||!periodIsCurrent(data)||(!c.admin&&!nursingHandoverMatches(data,c.identity))||JSON.stringify(data.clinicHours||null)!==c.version)return;
+      return {...data,clinicHours:hours};
+    },undefined,false);
+    if(!result.committed)throw new Error('changed');
+    document.getElementById('clinicHoursDialog').close();
+  }catch(e){message.textContent='تعذر الحفظ أو تغيّرت بيانات الفترة. أغلق التعديل وافتحه من جديد للمراجعة.';}
+  finally{button.disabled=false;document.getElementById('cancelClinicHours').disabled=false;}
+};
+window.addEventListener('hashchange',()=>document.getElementById('clinicHoursDialog').close());
 
 route();
 </script>
