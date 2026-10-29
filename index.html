@@ -8131,7 +8131,35 @@
 #view-nurse #continuationCard{background:#edf8f1!important;border-color:#acd8bb!important}
 #view-nurse .nurse-wheel-actions #markNoShowNumber{display:none}
 #view-nurse .nurse-wheel-actions #addContinuation{width:100%;min-height:70px;padding:6px!important;white-space:normal;overflow-wrap:normal;line-height:1.25;font-size:13px!important;background:#edf8f1;color:#276749;border:1px solid #acd8bb}
-</style></head>
+</style>
+<style id="tv-flexible-text-layout">
+/* TV only: keep text in normal flow and fit it to the available card space. */
+#view-tv#view-tv .queue-card:not(.tv-page-hidden){display:flex!important;flex-direction:column!important;min-width:0!important;min-height:0!important}
+#view-tv#view-tv .queue-card-title{position:relative!important;display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;align-items:center!important;gap:clamp(4px,.6vw,16px)!important;flex:0 0 auto!important;height:auto!important;min-height:0!important;max-height:none!important;padding:clamp(4px,.7vh,12px) clamp(5px,.7vw,16px)!important}
+#view-tv#view-tv .queue-clinic-name{position:static!important;inset:auto!important;transform:none!important;width:100%!important;max-width:100%!important;height:auto!important;max-height:none!important;min-width:0!important;margin:0!important;line-height:1.25!important;white-space:normal!important;overflow-wrap:anywhere!important;display:block!important;-webkit-line-clamp:unset!important;overflow:visible!important}
+#view-tv#view-tv .room-badge{position:static!important;inset:auto!important;transform:none!important;margin:0!important;min-width:0!important;max-width:100%!important;white-space:nowrap!important;line-height:1.25!important;font-size:clamp(11px,2.4vh,38px)!important}
+#view-tv#view-tv .queue-card-body,#view-tv#view-tv .queue-card[data-has-missed="false"] .queue-card-body{position:relative!important;display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,.7fr)!important;grid-template-rows:auto minmax(0,1fr) auto auto!important;align-content:stretch!important;align-items:center!important;justify-items:stretch!important;flex:1 1 0!important;width:100%!important;height:auto!important;min-width:0!important;min-height:0!important;box-sizing:border-box!important;padding:clamp(4px,.65vh,12px) clamp(5px,.7vw,16px)!important;gap:clamp(3px,.45vh,10px) clamp(4px,.6vw,14px)!important}
+#view-tv#view-tv .queue-doctor,#view-tv#view-tv .queue-status{position:static!important;inset:auto!important;transform:none!important;float:none!important;width:auto!important;height:auto!important;min-width:0!important;min-height:0!important;max-width:100%!important;max-height:none!important;margin:0!important;line-height:1.3!important;white-space:normal!important;overflow-wrap:anywhere!important;overflow:visible!important;text-overflow:clip!important;align-self:center!important}
+#view-tv#view-tv .queue-doctor{grid-column:1!important;grid-row:1!important;padding:0!important;text-align:right!important;font-size:clamp(12px,2.6vh,44px)!important}
+#view-tv#view-tv .queue-status{grid-column:2!important;grid-row:1!important;display:flex!important;align-items:center!important;justify-self:end!important;gap:.35em!important;padding:.2em .4em!important;font-size:clamp(10px,1.7vh,28px)!important}
+#view-tv#view-tv .queue-status-label{min-width:0!important;white-space:normal!important;line-height:1.3!important;overflow-wrap:anywhere!important}
+#view-tv#view-tv .queue-status-dot{flex:0 0 auto!important}
+#view-tv#view-tv .queue-number-box{grid-column:1/-1!important;grid-row:2!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;align-self:stretch!important;min-width:0!important;min-height:0!important;height:auto!important;max-height:100%!important;box-sizing:border-box!important;padding:clamp(3px,.5vh,10px)!important;gap:clamp(2px,.35vh,8px)!important;overflow:visible!important}
+#view-tv#view-tv .queue-number-label{flex:0 0 auto!important;width:100%!important;min-height:0!important;height:auto!important;max-height:none!important;line-height:1.25!important;white-space:normal!important;overflow-wrap:anywhere!important;margin:0!important;padding:0!important;overflow:visible!important}
+#view-tv#view-tv .queue-number{flex:0 1 auto!important;width:auto!important;min-width:0!important;min-height:0!important;height:auto!important;max-height:none!important;max-width:100%!important;line-height:1.15!important;white-space:normal!important;overflow-wrap:anywhere!important;margin:0!important;padding:0!important;overflow:visible!important;text-overflow:clip!important}
+#view-tv#view-tv .queue-card[data-waiting="true"] .queue-number,#view-tv#view-tv .queue-card[data-status="idle"] .queue-number,#view-tv#view-tv .queue-card[data-status="finished"] .queue-number{font-size:clamp(13px,3.8vh,64px)!important}
+#view-tv#view-tv .queue-number-box .booking-badge{position:static!important;flex:0 0 auto!important;max-width:100%!important;white-space:normal!important;line-height:1.2!important}
+#view-tv#view-tv .continuation-summary{grid-column:1/-1!important;grid-row:3!important;min-width:0!important;min-height:0!important;height:auto!important;max-height:none!important;line-height:1.3!important;white-space:normal!important;flex-wrap:wrap!important;overflow:visible!important;font-size:clamp(10px,1.7vh,28px)!important;padding:.15em .4em!important}
+#view-tv#view-tv .queue-missed-summary{grid-column:1/-1!important;grid-row:4!important;display:flex!important;align-items:center!important;flex-wrap:wrap!important;min-width:0!important;min-height:0!important;height:auto!important;max-height:none!important;box-sizing:border-box!important;gap:.3em!important;padding:.2em .4em!important;overflow:visible!important}
+#view-tv#view-tv .queue-missed-summary-head,#view-tv#view-tv .queue-missed-empty,#view-tv#view-tv .queue-public-more{font-size:clamp(10px,1.7vh,28px)!important;line-height:1.25!important;white-space:normal!important}
+#view-tv#view-tv .queue-missed-public-list{flex:1 1 35%!important;min-width:0!important;display:flex!important;flex-wrap:wrap!important;align-items:center!important;gap:.25em!important;overflow:visible!important}
+#view-tv#view-tv .queue-public-chip,#view-tv#view-tv .queue-missed-count{height:auto!important;min-height:0!important;min-width:1.35em!important;line-height:1.2!important;font-size:clamp(11px,2.2vh,36px)!important;padding:.05em .25em!important}
+@media(max-width:900px){
+#view-tv#view-tv .queue-card-body{flex-basis:auto!important;grid-template-rows:auto minmax(90px,1fr) auto auto!important}
+#view-tv#view-tv .queue-card[data-has-missed="false"] .queue-card-body{grid-template-rows:auto minmax(90px,1fr) auto auto!important}
+}
+</style>
+</head>
 <body>
 <div id="networkStatusIndicator" class="network-status-indicator" role="status" aria-live="polite">
   <span class="network-status-dot" aria-hidden="true"></span>
@@ -10383,83 +10411,58 @@ function scheduleTvTextFit(){
 function fitTvText(){
   const tv = $("#view-tv");
   if(!tv || tv.classList.contains("hidden-view")) return;
+  const visible = node=>node && node.getClientRects().length && getComputedStyle(node).visibility !== "hidden";
+  const px = value=>parseFloat(value) || 0;
+  function fit(node,width,height){
+    if(!visible(node) || width <= 0 || height <= 0) return;
+    const initial = px(getComputedStyle(node).fontSize);
+    if(!initial) return;
+    let low = 1, high = initial;
+    for(let i=0;i<12;i++){
+      const size = (low+high)/2;
+      node.style.setProperty("font-size",size+"px","important");
+      if(node.scrollWidth <= width+1 && node.scrollHeight <= height+1) low=size;
+      else high=size;
+    }
+    node.style.setProperty("font-size",low+"px","important");
+  }
   tv.querySelectorAll(".queue-card").forEach(card=>{
-    if(!card.getClientRects().length) return;
-    const title = card.querySelector(".queue-card-title");
-    const badge = card.querySelector(".room-badge");
-    const name = card.querySelector(".queue-clinic-name");
-    const doctor = card.querySelector(".queue-doctor");
-    const status = card.querySelector(".queue-status");
-    // Symmetric clearance keeps the specialty centered and clear of the badge.
+    if(!visible(card)) return;
+    const name=card.querySelector(".queue-clinic-name");
+    const doctor=card.querySelector(".queue-doctor");
+    const status=card.querySelector(".queue-status");
+    const label=card.querySelector(".queue-number-label");
+    const number=card.querySelector(".queue-number");
+    const title=card.querySelector(".queue-card-title");
+    const body=card.querySelector(".queue-card-body");
+    const box=card.querySelector(".queue-number-box");
+    [name,doctor,status,label,number].forEach(node=>node.style.removeProperty("font-size"));
     name.style.removeProperty("max-width");
-    const clearance = badge.getBoundingClientRect().width + 16;
-    name.style.setProperty("max-width", Math.max(1,title.clientWidth - clearance * 2) + "px", "important");
-    [name,doctor,card.querySelector(".queue-number-label"),card.querySelector(".queue-number")].forEach(el=>{
-      el.style.removeProperty("font-size");
-      if(el === doctor) el.style.removeProperty("white-space");
-      // Keep the queue number at its responsive CSS size.
-      if(el === card.querySelector(".queue-number")){
-        if(tv.classList.contains("tv-floor-only") && tv.classList.contains("tv-floor-third") && !tv.classList.contains("tv-third-slideshow") && /^[0-9٠-٩۰-۹]+$/.test(el.textContent.trim())){
-          const box = el.parentElement;
-          const style = getComputedStyle(box);
-          const label = box.querySelector(".queue-number-label");
-          const booking = box.querySelector(".booking-badge");
-          const visibleHeight = node=>node && node.getClientRects().length ? node.offsetHeight : 0;
-          const space = box.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom)
-            - visibleHeight(label) - visibleHeight(booking) - (parseFloat(style.rowGap) || 0) * 2 - 4;
-          const width = box.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight) - 4;
-          if(space > 0 && width > 0){
-            let low = 1, high = Math.max(space * 2,width * 2);
-            for(let i=0;i<10;i++){
-              const size = (low + high) / 2;
-              el.style.setProperty("font-size",size + "px","important");
-              if(el.scrollWidth <= width && el.scrollHeight <= space) low = size;
-              else high = size;
-            }
-            el.style.setProperty("font-size",low + "px","important");
-          }
-          return;
-        }
-        if(tv.classList.contains("tv-paged")){
-          const box = el.parentElement;
-          const label = card.querySelector(".queue-number-label");
-          const badge = box.querySelector(".booking-badge");
-          const space = box.clientHeight - label.offsetHeight - (badge && badge.getClientRects().length ? badge.offsetHeight : 0) - 12;
-          const size = parseFloat(getComputedStyle(el).fontSize);
-          if(space > 0 && el.scrollHeight > space) el.style.setProperty("font-size",Math.max(32,size*space/el.scrollHeight) + "px","important");
-        }
-        return;
-      }
-      const original = parseFloat(getComputedStyle(el).fontSize);
-      let availableWidth = el.clientWidth;
-      if(el === doctor){
-        // Fit the doctor's name by its own width; an auto-sized grid row is not a height limit.
-        if(availableWidth <= 0 || !Number.isFinite(original) || original <= 0) return;
-        let low = Math.min(original, Math.max(16, original * .65)), high = original;
-        for(let i=0;i<12;i++){
-          const size = (low + high) / 2;
-          el.style.setProperty("font-size", size + "px", "important");
-          if(el.scrollWidth <= availableWidth + 1) low = size;
-          else high = size;
-        }
-        el.style.setProperty("font-size", low + "px", "important");
-        el.style.setProperty("white-space", el.scrollWidth > availableWidth + 1 ? "normal" : "nowrap", "important");
-        return;
-      }
-      const availableHeight = el === name
-        ? title.clientHeight - 8
-        : el === card.querySelector(".queue-number")
-          ? Math.max(1,el.parentElement.clientHeight - card.querySelector(".queue-number-label").offsetHeight - 24)
-          : el.clientHeight;
-      let low = 1, high = original;
-      for(let i=0;i<12;i++){
-        const size = (low+high)/2;
-        el.style.setProperty("font-size",size+"px","important");
-        if(el.scrollWidth <= availableWidth+1 && el.scrollHeight <= availableHeight+1) low=size;
-        else high=size;
-      }
-      el.style.setProperty("font-size",low+"px","important");
+    doctor.style.removeProperty("white-space");
+    // These rows grow with their text. Only shrink to fit their own grid cell width.
+    [name,doctor,status,label].forEach(node=>{
+      if(visible(node)) fit(node,node.clientWidth,Infinity);
     });
+    // Reserve space for both lower strips before fitting the main number or status message.
+    const boxStyle=getComputedStyle(box);
+    const siblings=Array.from(box.children).filter(node=>node!==number && visible(node));
+    const availableWidth=box.clientWidth-px(boxStyle.paddingLeft)-px(boxStyle.paddingRight);
+    const availableHeight=box.clientHeight-px(boxStyle.paddingTop)-px(boxStyle.paddingBottom)
+      -siblings.reduce((sum,node)=>sum+node.getBoundingClientRect().height,0)
+      -px(boxStyle.rowGap)*siblings.length;
+    fit(number,availableWidth,availableHeight);
+    // If an unusually small viewport needs more room, reduce the upper text rows together.
+    for(let pass=0;pass<8 && body.scrollHeight>body.clientHeight+1;pass++){
+      [name,doctor,status,label].forEach(node=>{
+        const size=px(getComputedStyle(node).fontSize);
+        if(size>1) node.style.setProperty("font-size",Math.max(1,size*.88)+"px","important");
+      });
+      const current=getComputedStyle(box);
+      const space=box.clientHeight-px(current.paddingTop)-px(current.paddingBottom)
+        -siblings.reduce((sum,node)=>sum+node.getBoundingClientRect().height,0)
+        -px(current.rowGap)*siblings.length;
+      fit(number,box.clientWidth-px(current.paddingLeft)-px(current.paddingRight),space);
+    }
   });
 }
 window.addEventListener("resize",scheduleTvTextFit);
