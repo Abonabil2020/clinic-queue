@@ -6142,7 +6142,10 @@
 
 
 /* Four-room TV pages and readable updates; scoped to the TV display only. */
-#view-tv.tv-floor-only.tv-paged .queue-card.tv-page-hidden{display:none!important}
+#view-tv.tv-floor-only.tv-paged .queue-card.tv-page-hidden,
+#view-tv.tv-floor-only.tv-paged.tv-floor-third .queue-card.tv-page-hidden{display:none!important}
+#view-tv.tv-paged.tv-floor-ground:not(.tv-individual) #tvRoom109{order:1}
+#view-tv.tv-paged.tv-floor-ground:not(.tv-individual) #tvRoom320{order:2}
 #view-tv.tv-paged .tv-dashboard{grid-template-rows:minmax(0,1fr)!important;min-height:0}
 #view-tv.tv-paged .floor-section{grid-template-rows:5.5vh minmax(0,1fr)!important;min-height:0}
 #view-tv.tv-paged .floor-title{font-size:clamp(20px,2.8vh,64px)!important;min-width:0!important}
@@ -9657,7 +9660,7 @@ const TV_INDIVIDUAL_MS = 5000;
 const TV_PAGES = [
   {floor:"third", title:"الدور الثالث — صفحة ١", rooms:["301","303","307","308"]},
   {floor:"third", title:"الدور الثالث — صفحة ٢", rooms:["309","310","311","312"]},
-  {floor:"ground", title:"الدور الأرضي — صفحة ٣", rooms:["104","105","320","109"]}
+  {floor:"ground", title:"الدور الأرضي — صفحة ٣", rooms:["104","105","109","320"]}
 ];
 let tvPageIndex = 0;
 let tvPageTimer = null;
