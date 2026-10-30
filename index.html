@@ -8344,6 +8344,51 @@
 #view-nurse #nurseOfficialCount .official-count-form button[type="submit"]{flex:1;height:50px;font-size:18px;border-radius:10px}
 #view-nurse #nurseOfficialCount .official-count-cancel{width:50px;height:50px;font-size:24px;border-radius:10px}
 </style>
+<style id="reception-comfortable-layout">
+/* Reception layout only; colors, content and behavior remain inherited. */
+#view-reception{padding:clamp(10px,1.2vw,24px)!important;min-height:100vh;min-height:100dvh;height:auto!important}
+#view-reception .reception-shell{width:100%;max-width:none;min-width:0;box-sizing:border-box}
+#view-reception .reception-topbar{margin-bottom:14px}
+#view-reception .reception-toolbar{gap:12px;padding:12px;margin-bottom:12px;grid-template-columns:auto minmax(0,1fr) auto}
+#view-reception .reception-filter-group{flex-wrap:wrap;gap:7px}
+#view-reception .reception-closed-panel{display:flex;flex-wrap:wrap;align-items:center;gap:10px 20px;height:auto;min-height:0;margin:12px 0;padding:12px 14px}
+#view-reception .reception-closed-head{flex:0 0 auto;gap:14px;margin:0}
+#view-reception .reception-closed-list{flex:1 1 280px;min-width:0;gap:8px}
+#view-reception .reception-closed-item{flex:0 1 auto;max-width:100%;padding:8px 12px}
+#view-reception .reception-closed-clinic{font-size:13px;line-height:1.6;overflow-wrap:anywhere}
+#view-reception .reception-closed-room,#view-reception .reception-closed-doctor{font-size:11px;line-height:1.6}
+#view-reception .reception-floor-groups{gap:22px;padding-bottom:20px}
+#view-reception .reception-floor-section{padding:12px;border-radius:16px}
+#view-reception .reception-floor-section .reception-floor-heading{margin-bottom:12px;min-height:40px}
+#view-reception .reception-floor-clinic-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,310px),1fr));gap:16px;align-items:stretch}
+#view-reception .reception-clinic-card{min-width:0;height:auto}
+#view-reception .reception-card-head{padding:12px;gap:12px}
+#view-reception .reception-card-name{font-size:18px;line-height:1.5;overflow-wrap:anywhere}
+#view-reception .reception-room-name{font-size:12px;line-height:1.5;margin-top:3px}
+#view-reception .reception-card-body{padding:12px 14px 14px}
+#view-reception .reception-clinic-card .booking-badge{padding:8px 10px;font-size:12px;line-height:1.6;margin-bottom:8px;white-space:normal}
+#view-reception .reception-doctor{font-size:17px;line-height:1.65;white-space:normal;overflow-wrap:anywhere}
+#view-reception .reception-nurse{font-size:13px;line-height:1.65;white-space:normal;overflow-wrap:anywhere;margin-top:9px;padding:8px 10px}
+#view-reception .official-count-badge{margin-top:9px;font-size:12px;line-height:1.6}
+#view-reception .reception-card-row{grid-template-columns:92px minmax(0,1fr);gap:12px;margin-top:12px}
+#view-reception .reception-current{min-height:78px;padding:8px 4px}
+#view-reception .reception-card-meta{gap:9px}
+#view-reception .reception-small-meta{font-size:12px;line-height:1.65;overflow-wrap:anywhere}
+#view-reception .reception-status-pill{font-size:12px;line-height:1.5;white-space:normal}
+@media(max-width:1000px){
+#view-reception .reception-toolbar{grid-template-columns:auto minmax(0,1fr)}
+#view-reception .reception-toolbar .reception-filter-group{grid-column:1/-1}
+}
+@media(max-width:600px){
+#view-reception .reception-floor-section{padding:9px}
+#view-reception .reception-floor-clinic-grid{gap:12px}
+#view-reception .reception-card-head{padding:10px}
+#view-reception .reception-card-body{padding:10px 12px 12px}
+#view-reception .reception-closed-panel{gap:10px;padding:10px}
+#view-reception .reception-closed-head{width:100%}
+#view-reception .reception-closed-item{flex:1 1 180px}
+}
+</style>
 </head>
 <body>
 <div id="networkStatusIndicator" class="network-status-indicator" role="status" aria-live="polite">
