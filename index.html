@@ -8229,6 +8229,40 @@
 #view-mobile .mf-color-guide ul{display:flex;flex-wrap:wrap;gap:10px 16px;list-style:none;padding:0;margin:0}
 #view-mobile .mf-color-guide li{display:flex;align-items:center;gap:7px;font-size:14px;line-height:1.6}
 #view-mobile .mf-color-dot{width:13px;height:13px;flex:0 0 13px;border-radius:50%}
+
+
+/* Compact public mobile cards; TV and control views are unaffected. */
+#view-mobile{padding:10px 10px 24px}
+#view-mobile .mf-brand{padding:8px 0}
+#view-mobile .mf-brand img{width:160px}
+#view-mobile .mf-brand p{font-size:20px;margin:8px 0 0}
+#view-mobile .mf-top h1{font-size:20px;margin:10px 0}
+#view-mobile .mf-tabs{gap:6px;margin:8px 0}
+#view-mobile .mf-tabs a{padding:7px 9px;font-size:13px}
+#view-mobile .mf-help{padding:10px 12px;margin:10px 0;line-height:1.7;font-size:14px}
+#view-mobile .mf-help h2{font-size:16px;margin-bottom:4px}
+#view-mobile .mf-color-guide{padding:10px 12px;margin:10px 0}
+#view-mobile .mf-color-guide h2{font-size:15px;margin-bottom:6px}
+#view-mobile .mf-color-guide ul{gap:5px 12px}
+#view-mobile .mf-color-guide li{font-size:12px}
+#view-mobile .mf-floor{font-size:18px;margin:14px 0 8px;padding:7px 12px}
+#view-mobile .mq-card{margin:8px 0;border-radius:14px}
+#view-mobile .mq-card-title{padding:8px 10px;gap:8px}
+#view-mobile .mq-clinic-name{font-size:18px;line-height:1.35}
+#view-mobile .mq-room-badge{font-size:12px;padding:3px 6px}
+#view-mobile .mq-card-body{padding:9px;gap:6px}
+#view-mobile .mq-doctor{font-size:17px;line-height:1.4}
+#view-mobile .mq-status{font-size:12px}
+#view-mobile .mq-number-box{padding:8px 6px;gap:3px}
+#view-mobile .mq-number-label{font-size:13px}
+#view-mobile .mq-number{font-size:54px}
+#view-mobile .mq-card[data-waiting="true"] .mq-number,#view-mobile .mq-card[data-status="finished"] .mq-number{font-size:22px;line-height:1.4}
+#view-mobile .mq-missed-summary,#view-mobile .mq-continuation-summary{padding:7px 9px;font-size:13px}
+#view-mobile .mq-missed-summary-head{font-size:13px;margin-bottom:4px}
+#view-mobile .mq-missed-empty{font-size:12px}
+#view-mobile .mq-public-chip{font-size:18px;padding:2px 7px}
+#view-mobile .mq-card[data-status="active"][data-recall="true"][data-waiting="false"]{--mq-ink:#075985;--mq-soft:#e0f2fe;--mq-head:#0369a1}
+#view-mobile .mf-empty{padding:16px 12px;background:#fff;border:1px solid #e2e8f0;border-radius:12px;font-size:15px;line-height:1.7;text-align:center}
 </style>
 </head>
 <body>
@@ -9142,7 +9176,7 @@
 <!-- ============================================================
      شاشة QR المجمعة لمتابعة أدوار العيادات
 ============================================================ -->
-<section id="view-mobile" class="hidden-view" dir="rtl"><div class="mf-brand"><img src="logo.png" alt="مجمع الإصلاح الطبي" class="portal-logo" onerror="this.style.display='none'"><p>متابعة أدوار العيادات</p></div><div class="mf-top"><h1>متابعة الدور</h1></div><nav class="mf-tabs" aria-label="اختيار الدور"><a href="#/mobile" data-mf-mode="all">كل العيادات · ١٢</a><a href="#/mobile-third" data-mf-mode="third">الدور الثالث · ٨</a><a href="#/mobile-ground" data-mf-mode="ground">الدور الأرضي · ٤</a></nav><aside class="mf-help"><h2>تعليمات متابعة الدور</h2><p>قبل دورك بحالتين: تواجد أمام العيادة.</p><p>فاتك دورك؟ يرجى إبلاغنا بوصولك.</p><p>بعد تسجيل حضورك تنتظر دخول حالتين، ثم تدخل.</p></aside><aside class="mf-color-guide" aria-label="دلالات ألوان العيادات"><h2>دلالات الألوان</h2><ul><li><span class="mf-color-dot" style="background:#15803d" aria-hidden="true"></span><span>تعمل الآن</span></li><li><span class="mf-color-dot" style="background:#c58b32" aria-hidden="true"></span><span>استراحة مؤقتة</span></li><li><span class="mf-color-dot" style="background:#c93443" aria-hidden="true"></span><span>انتهت العيادة</span></li><li><span class="mf-color-dot" style="background:#8561a6" aria-hidden="true"></span><span>في انتظار بدء الكشف</span></li><li><span class="mf-color-dot" style="background:#64748b" aria-hidden="true"></span><span>في انتظار التشغيل</span></li></ul></aside><p id="mf-connection" role="status"></p><div id="mf-clinics" aria-live="polite">جارٍ تحميل بيانات العيادات…</div></section>
+<section id="view-mobile" class="hidden-view" dir="rtl"><div class="mf-brand"><img src="logo.png" alt="مجمع الإصلاح الطبي" class="portal-logo" onerror="this.style.display='none'"><p>متابعة أدوار العيادات</p></div><div class="mf-top"><h1>متابعة الدور</h1></div><nav class="mf-tabs" aria-label="اختيار الدور"><a href="#/mobile" data-mf-mode="all">كل العيادات · ١٢</a><a href="#/mobile-third" data-mf-mode="third">الدور الثالث · ٨</a><a href="#/mobile-ground" data-mf-mode="ground">الدور الأرضي · ٤</a></nav><aside class="mf-help"><h2>تعليمات متابعة الدور</h2><p>قبل دورك بحالتين: تواجد أمام العيادة.</p><p>فاتك دورك؟ يرجى إبلاغنا بوصولك.</p><p>بعد تسجيل حضورك تنتظر دخول حالتين، ثم تدخل.</p></aside><aside class="mf-color-guide" aria-label="دلالات ألوان العيادات"><h2>دلالات الألوان</h2><ul><li><span class="mf-color-dot" style="background:#15803d" aria-hidden="true"></span><span>تعمل الآن</span></li><li><span class="mf-color-dot" style="background:#c58b32" aria-hidden="true"></span><span>استراحة مؤقتة</span></li><li><span class="mf-color-dot" style="background:#c93443" aria-hidden="true"></span><span>انتهت العيادة</span></li><li><span class="mf-color-dot" style="background:#8561a6" aria-hidden="true"></span><span>لم يبدأ الكشف بعد</span></li><li><span class="mf-color-dot" style="background:#0369a1" aria-hidden="true"></span><span>استدعاء دور فائت / استكمال</span></li></ul></aside><p id="mf-connection" role="status"></p><div id="mf-clinics" aria-live="polite">جارٍ تحميل بيانات العيادات…</div></section>
 <section id="view-qr" class="hidden-view">
   <div class="qr-display-shell">
     <header class="qr-display-header">
@@ -11638,7 +11672,7 @@ function updateMobileQueueCard(room, data, card){
   const displayCurrent = typeof data.displayCurrent === "number" ? data.displayCurrent : current;
   const recallMode = Boolean(data.recallMode && typeof data.recallNumber === "number");
   const closed = status === "finished" || status === "idle";
-  const waitingAtZero = (data.prepared === true || status === "active") && current === 0 && status !== "finished" && status !== "break";
+  const waitingAtZero = (data.prepared === true || status === "active" || status === "idle") && current === 0 && status !== "finished" && status !== "break";
   const clinicName = data.clinicName || data.specialty || room.place;
   const doctor = doctorDisplayFromData(data);
 
@@ -11653,7 +11687,7 @@ function updateMobileQueueCard(room, data, card){
   card.querySelector(".mq-status-label").textContent = finished
     ? "انتهت العيادة"
     : waitingAtZero
-      ? "في انتظار بدء الكشف"
+      ? "لم يبدأ الكشف بعد"
       : recallMode
       ? "إعادة استدعاء رقم فائت"
       : status === "active"
@@ -11666,7 +11700,7 @@ function updateMobileQueueCard(room, data, card){
     : recallMode
       ? "إعادة نداء دور فائت"
       : "الكشف الحالي بالداخل";
-  card.querySelector(".mq-number").textContent = finished ? "انتهت العيادة" : waitingAtZero ? "في انتظار بدء الكشف" : status === "idle" ? "في انتظار التشغيل" : closed ? "—" : ar(displayCurrent);
+  card.querySelector(".mq-number").textContent = finished ? "انتهت العيادة" : waitingAtZero ? "لم يبدأ الكشف بعد" : status === "idle" ? "لم يبدأ الكشف بعد" : closed ? "—" : ar(displayCurrent);
 
   const continuationNumbers = Object.entries(data.continuationTurns || {}).filter(([,v])=>v && v.status !== "done").map(([k])=>Number(k)).filter(n=>Number.isInteger(n)&&n>0).sort((a,b)=>a-b);
   const summary = card.querySelector(".mq-continuation-public");
@@ -11727,7 +11761,13 @@ function renderMobileFollow(){
  if(!Object.keys(receptionClinicsData).length&&!firebaseConnected){box.textContent='في انتظار الاتصال لتحميل بيانات العيادات…';return;}
  ['third','ground'].filter(f=>mode==='all'||f===mode).forEach(f=>{
  const title=make('h2','mf-floor',f==='third'?'عيادات الدور الثالث':'عيادات الدور الأرضي');title.dataset.floor=f;box.append(title);
- ROOM_OPTIONS.filter(r=>r.floor===f).forEach(room=>{const card=createMobileQueueCard(room);updateMobileQueueCard(room,receptionDataForRoom(room),card);box.append(card);});
+ const visibleRooms=ROOM_OPTIONS.filter(r=>r.floor===f).filter(room=>{
+   const d=receptionDataForRoom(room);
+   const named=value=>typeof value==='string' && value.trim()!=='' && value.trim()!=='—';
+   return named(d.clinicName||d.specialty) && named(d.doctor);
+ });
+ if(!visibleRooms.length) box.append(make('p','mf-empty','لا توجد عيادات مُعلنة حاليًا في هذا الدور'));
+ visibleRooms.forEach(room=>{const card=createMobileQueueCard(room);updateMobileQueueCard(room,receptionDataForRoom(room),card);box.append(card);});
  });
 }
 
