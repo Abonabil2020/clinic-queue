@@ -11898,7 +11898,7 @@ function route(){
       location.hash = "#/setup";
     }
     if(!nursingRoomAccess()){ showNursingLogin(); }
-    else if(h === "nurse" && currentNursingIdentity() && (setupData || restoreNursingSetupFromIdentity())){
+    else if(h === "nurse" && (isAdminUser() || currentNursingIdentity()) && (setupData || restoreNursingSetupFromIdentity())){
       if(nursingRoomLoaded && !isAdminUser() && !nursingHandoverMatches({handoverId:nursingLiveHandoverId})){ requireNursingHandover(); return; }
       show("nurse"); renderNursingRoomSwitch(); saveNursingResume();
     }
@@ -15141,7 +15141,7 @@ function applyClinicSnapshot(raw){
       requireNursingHandover();
       return;
     }
-    if(entry && !periodIsCurrent(d)){
+    if(entry && !isAdminUser() && !periodIsCurrent(d)){
       persistNursingSessionItem(SETUP_ROOM_STEP_KEY,DISPLAY_SLOT_ID);
       nursingSetupMode = "enter";
       alert("بيانات الفترة الحالية لم تعد صالحة للتحكم. راجع الحجرة والفترة المسجلة قبل الاستلام؛ لم يتم تصفير الأدوار من هذا الجهاز.");
