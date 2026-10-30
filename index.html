@@ -8399,6 +8399,14 @@
 #view-tv#view-tv .queue-card[data-waiting="true"] .queue-status{background:#f3edfb!important;color:#7352a1!important}
 #view-tv#view-tv .queue-card[data-waiting="true"] .queue-status-dot{background:#9370bd!important}
 </style>
+
+<style id="tv-distance-readability">
+/* TV only: larger reading targets; existing fitTvText keeps numbers within their box. */
+#view-tv#view-tv .queue-doctor{font-size:clamp(14px,3.1vh,54px)!important}
+#view-tv#view-tv .queue-card[data-status="active"][data-waiting="false"] .queue-number,
+#view-tv#view-tv .queue-card[data-status="break"][data-waiting="false"] .queue-number{font-size:clamp(64px,22vh,400px)!important}
+#view-tv#view-tv .queue-public-chip,#view-tv#view-tv .queue-missed-count{font-size:clamp(13px,2.7vh,44px)!important}
+</style>
 </head>
 <body>
 <div id="networkStatusIndicator" class="network-status-indicator" role="status" aria-live="polite">
