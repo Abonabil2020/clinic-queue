@@ -8223,6 +8223,12 @@
 #view-mobile .mq-missed-empty{font-size:14px;color:#64748b}
 #view-mobile .mq-continuation-summary{order:4;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px;border-radius:12px;border:1px solid #bbdfca;background:#edf8f1;color:#276749;font-size:15px;font-weight:700}
 #view-mobile .mq-booking{font-size:14px;font-weight:700;color:#b42332;text-align:center}
+
+#view-mobile .mf-color-guide{padding:14px;margin:16px 0;background:#fff;border:1px solid #e2e8f0;border-radius:14px}
+#view-mobile .mf-color-guide h2{font-size:17px;font-weight:800;margin:0 0 10px}
+#view-mobile .mf-color-guide ul{display:flex;flex-wrap:wrap;gap:10px 16px;list-style:none;padding:0;margin:0}
+#view-mobile .mf-color-guide li{display:flex;align-items:center;gap:7px;font-size:14px;line-height:1.6}
+#view-mobile .mf-color-dot{width:13px;height:13px;flex:0 0 13px;border-radius:50%}
 </style>
 </head>
 <body>
@@ -9136,7 +9142,7 @@
 <!-- ============================================================
      شاشة QR المجمعة لمتابعة أدوار العيادات
 ============================================================ -->
-<section id="view-mobile" class="hidden-view" dir="rtl"><div class="mf-brand"><img src="logo.png" alt="مجمع الإصلاح الطبي" class="portal-logo" onerror="this.style.display='none'"><p>متابعة أدوار العيادات</p></div><div class="mf-top"><h1>متابعة الدور</h1></div><nav class="mf-tabs" aria-label="اختيار الدور"><a href="#/mobile" data-mf-mode="all">كل العيادات · ١٢</a><a href="#/mobile-third" data-mf-mode="third">الدور الثالث · ٨</a><a href="#/mobile-ground" data-mf-mode="ground">الدور الأرضي · ٤</a></nav><aside class="mf-help"><h2>تعليمات متابعة الدور</h2><p>قبل دورك بحالتين: تواجد أمام العيادة.</p><p>فاتك دورك؟ يرجى إبلاغنا بوصولك.</p><p>بعد تسجيل حضورك تنتظر دخول حالتين، ثم تدخل.</p></aside><p id="mf-connection" role="status"></p><div id="mf-clinics" aria-live="polite">جارٍ تحميل بيانات العيادات…</div></section>
+<section id="view-mobile" class="hidden-view" dir="rtl"><div class="mf-brand"><img src="logo.png" alt="مجمع الإصلاح الطبي" class="portal-logo" onerror="this.style.display='none'"><p>متابعة أدوار العيادات</p></div><div class="mf-top"><h1>متابعة الدور</h1></div><nav class="mf-tabs" aria-label="اختيار الدور"><a href="#/mobile" data-mf-mode="all">كل العيادات · ١٢</a><a href="#/mobile-third" data-mf-mode="third">الدور الثالث · ٨</a><a href="#/mobile-ground" data-mf-mode="ground">الدور الأرضي · ٤</a></nav><aside class="mf-help"><h2>تعليمات متابعة الدور</h2><p>قبل دورك بحالتين: تواجد أمام العيادة.</p><p>فاتك دورك؟ يرجى إبلاغنا بوصولك.</p><p>بعد تسجيل حضورك تنتظر دخول حالتين، ثم تدخل.</p></aside><aside class="mf-color-guide" aria-label="دلالات ألوان العيادات"><h2>دلالات الألوان</h2><ul><li><span class="mf-color-dot" style="background:#15803d" aria-hidden="true"></span><span>تعمل الآن</span></li><li><span class="mf-color-dot" style="background:#c58b32" aria-hidden="true"></span><span>استراحة مؤقتة</span></li><li><span class="mf-color-dot" style="background:#c93443" aria-hidden="true"></span><span>انتهت العيادة</span></li><li><span class="mf-color-dot" style="background:#8561a6" aria-hidden="true"></span><span>في انتظار بدء الكشف</span></li><li><span class="mf-color-dot" style="background:#64748b" aria-hidden="true"></span><span>في انتظار التشغيل</span></li></ul></aside><p id="mf-connection" role="status"></p><div id="mf-clinics" aria-live="polite">جارٍ تحميل بيانات العيادات…</div></section>
 <section id="view-qr" class="hidden-view">
   <div class="qr-display-shell">
     <header class="qr-display-header">
