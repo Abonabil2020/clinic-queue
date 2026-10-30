@@ -8186,6 +8186,43 @@
 #view-mobile .mf-number strong{display:block;font-size:56px;line-height:1.3;font-weight:800}
 #view-mobile .mf-number.mf-message strong{font-size:23px}
 #view-mobile .mf-strip{padding:9px 0;border-top:1px solid #edf0f4;overflow-wrap:anywhere}
+
+#view-home .portal-shortcuts{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px!important}
+#view-home .portal-shortcuts .portal-shortcut{display:flex!important;flex-direction:column!important;justify-content:center!important;text-align:center!important;gap:6px!important;padding:10px 5px!important;min-height:88px!important;height:100%!important}
+#view-home .portal-shortcuts .portal-shortcut-icon{width:30px!important;height:30px!important;padding:5px!important}
+#view-home .portal-shortcuts .portal-shortcut-icon svg{width:100%!important;height:100%!important}
+#view-home .portal-shortcuts .portal-shortcut-text strong{font-size:13px!important;line-height:1.5!important;white-space:normal!important}
+#view-home .portal-shortcuts .portal-shortcut-text small,#view-home .portal-shortcuts .portal-shortcut-arrow{display:none!important}
+#view-mobile{background:linear-gradient(135deg,#fff,#f1f5f9);max-width:760px}
+#view-mobile .mf-brand{text-align:center;padding:16px 0;border-bottom:1px solid #e2e8f0}
+#view-mobile .mf-brand img{width:190px;max-width:70%;height:auto;margin:auto}
+#view-mobile .mf-brand p{font-size:22px;color:#8d2345;font-weight:800;margin:12px 0 0}
+#view-mobile .mf-floor{text-align:center;background:linear-gradient(135deg,#7f1d3d,#b53a5d);color:#fff;border-radius:30px;padding:10px 18px;margin:24px 0 12px}
+#view-mobile .mf-floor[data-floor="ground"]{background:linear-gradient(135deg,#374151,#64748b)}
+#view-mobile .mq-card{display:flex;flex-direction:column;height:auto;min-height:0;margin:12px 0;border:1px solid #cbd5e1;border-radius:17px;overflow:hidden;background:white;box-shadow:0 5px 14px #0f172a10;--mq-ink:#64748b;--mq-soft:#f1f5f9;--mq-head:#64748b}
+#view-mobile .mq-card[data-status="active"]{--mq-ink:#166534;--mq-soft:#ecfdf5;--mq-head:#15803d}
+#view-mobile .mq-card[data-waiting="true"]{--mq-ink:#7136a3;--mq-soft:#f5f0fc;--mq-head:#8561a6}
+#view-mobile .mq-card[data-status="finished"]{--mq-ink:#b42332;--mq-soft:#fff1f2;--mq-head:#c93443}
+#view-mobile .mq-card[data-status="break"]{--mq-ink:#92400e;--mq-soft:#fff8eb;--mq-head:#c58b32}
+#view-mobile .mq-card-title{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px;background:var(--mq-head);color:#fff}
+#view-mobile .mq-clinic-name{font-size:20px;font-weight:800;line-height:1.4;margin:0;overflow-wrap:anywhere}
+#view-mobile .mq-room-badge{font-size:14px;font-weight:700;white-space:nowrap;padding:4px 8px;border-radius:8px;background:#ffffff25}
+#view-mobile .mq-card-body{padding:12px;display:flex;flex-direction:column;gap:9px}
+#view-mobile .mq-doctor{font-size:19px;font-weight:700;line-height:1.5;margin:0}
+#view-mobile .mq-status{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--mq-ink);margin:0}
+#view-mobile .mq-status-dot{width:9px;height:9px;background:var(--mq-head);border-radius:50%;flex-shrink:0}
+#view-mobile .mq-number-box{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px 8px;gap:8px;background:var(--mq-soft);border:1px solid #e2e8f0;border-radius:14px;color:var(--mq-ink)}
+#view-mobile .mq-number-label{font-size:15px;font-weight:700}
+#view-mobile .mq-number{font-size:66px;line-height:1.2;font-weight:800;text-align:center}
+#view-mobile .mq-card[data-waiting="true"] .mq-number,#view-mobile .mq-card[data-status="idle"] .mq-number,#view-mobile .mq-card[data-status="finished"] .mq-number{font-size:26px;line-height:1.6}
+#view-mobile .mq-missed-summary{order:3;background:#fff4ef;border:1px solid #fed7aa;padding:10px;border-radius:12px}
+#view-mobile .mq-missed-summary-head{display:flex;align-items:center;justify-content:space-between;font-size:15px;font-weight:700;margin-bottom:6px}
+#view-mobile .mq-missed-public-list{display:flex;gap:6px;flex-wrap:wrap}
+#view-mobile .mq-public-chip{font-size:21px;font-weight:700;border-radius:8px;padding:3px 9px;background:#ffedd5;color:#9a3412}
+#view-mobile .mq-public-chip[data-turn-status="done"]{background:#dcfce7;color:#166534}
+#view-mobile .mq-missed-empty{font-size:14px;color:#64748b}
+#view-mobile .mq-continuation-summary{order:4;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px;border-radius:12px;border:1px solid #bbdfca;background:#edf8f1;color:#276749;font-size:15px;font-weight:700}
+#view-mobile .mq-booking{font-size:14px;font-weight:700;color:#b42332;text-align:center}
 </style>
 </head>
 <body>
@@ -8216,7 +8253,7 @@
     </header>
 
     <nav class="portal-shortcuts" aria-label="روابط المتابعة والعرض">
-<a href="#/mobile" class="portal-shortcut" title="متابعة الأدوار على الجوال"><span class="portal-shortcut-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M10 5h4M11 19h2"/></svg></span><span class="portal-shortcut-text"><strong>متابعة الأدوار على الجوال</strong><small>كل العيادات أو الدور الثالث أو الأرضي</small></span><span class="portal-shortcut-arrow" aria-hidden="true">←</span></a>
+<a href="#/mobile" class="portal-shortcut" title="متابعة الأدوار على الجوال"><span class="portal-shortcut-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M10 5h4M11 19h2"/></svg></span><span class="portal-shortcut-text"><strong>عرض شاشات الجوال</strong><small>كل العيادات أو الدور الثالث أو الأرضي</small></span><span class="portal-shortcut-arrow" aria-hidden="true">←</span></a>
 
       <a href="#/qr" class="portal-shortcut qr-shortcut" title="QR متابعة العيادات">
         <span class="portal-shortcut-icon" aria-hidden="true">
@@ -8228,7 +8265,7 @@
           </svg>
         </span>
         <span class="portal-shortcut-text">
-          <strong>QR متابعة العيادات</strong>
+          <strong>Qr المتابعة</strong>
           <small>فتح شاشة أكواد المتابعة</small>
         </span>
         <span class="portal-shortcut-arrow" aria-hidden="true">←</span>
@@ -8244,7 +8281,7 @@
             </svg>
           </span>
           <span class="portal-shortcut-text">
-            <strong>شاشة عرض متابعة الأدوار</strong>
+            <strong>عرض شاشات العرض</strong>
             <small>اختر شاشة العرض المطلوبة</small>
           </span>
           <span class="portal-shortcut-arrow portal-tv-menu-arrow" aria-hidden="true">⌄</span>
@@ -9099,7 +9136,7 @@
 <!-- ============================================================
      شاشة QR المجمعة لمتابعة أدوار العيادات
 ============================================================ -->
-<section id="view-mobile" class="hidden-view" dir="rtl"><div class="mf-top"><h1>متابعة أدوار العيادات</h1><a href="#/home">الرئيسية</a></div><nav class="mf-tabs" aria-label="اختيار الدور"><a href="#/mobile" data-mf-mode="all">كل العيادات · ١٢</a><a href="#/mobile-third" data-mf-mode="third">الدور الثالث · ٨</a><a href="#/mobile-ground" data-mf-mode="ground">الدور الأرضي · ٤</a></nav><aside class="mf-help"><h2>تعليمات متابعة الدور</h2><p>قبل دورك بحالتين: تواجد أمام العيادة.</p><p>فاتك دورك؟ يرجى إبلاغنا بوصولك.</p><p>بعد تسجيل حضورك تنتظر دخول حالتين، ثم تدخل.</p></aside><p id="mf-connection" role="status"></p><div id="mf-clinics" aria-live="polite">جارٍ تحميل بيانات العيادات…</div></section>
+<section id="view-mobile" class="hidden-view" dir="rtl"><div class="mf-brand"><img src="logo.png" alt="مجمع الإصلاح الطبي" class="portal-logo" onerror="this.style.display='none'"><p>متابعة أدوار العيادات</p></div><div class="mf-top"><h1>متابعة الدور</h1><a href="#/home">الرئيسية</a></div><nav class="mf-tabs" aria-label="اختيار الدور"><a href="#/mobile" data-mf-mode="all">كل العيادات · ١٢</a><a href="#/mobile-third" data-mf-mode="third">الدور الثالث · ٨</a><a href="#/mobile-ground" data-mf-mode="ground">الدور الأرضي · ٤</a></nav><aside class="mf-help"><h2>تعليمات متابعة الدور</h2><p>قبل دورك بحالتين: تواجد أمام العيادة.</p><p>فاتك دورك؟ يرجى إبلاغنا بوصولك.</p><p>بعد تسجيل حضورك تنتظر دخول حالتين، ثم تدخل.</p></aside><p id="mf-connection" role="status"></p><div id="mf-clinics" aria-live="polite">جارٍ تحميل بيانات العيادات…</div></section>
 <section id="view-qr" class="hidden-view">
   <div class="qr-display-shell">
     <header class="qr-display-header">
@@ -9526,6 +9563,7 @@ let browserOnline = navigator.onLine;
 let firebaseConnected = false;
 
 function updateNetworkStatusIndicator(){
+  if(document.getElementById("view-mobile") && !document.getElementById("view-mobile").classList.contains("hidden-view")) renderMobileFollow();
   const indicator = document.getElementById("networkStatusIndicator");
   const statusText = document.getElementById("networkStatusText");
   if(!indicator) return;
@@ -9892,6 +9930,7 @@ function bookingBadge(roomId){
   return '<span class="booking-badge" data-booking-room="' + roomId + '" data-booking="' + info.key + '">' + info.label + '</span>';
 }
 function renderBookingStatus(){
+  if(document.getElementById("view-mobile") && !document.getElementById("view-mobile").classList.contains("hidden-view")) renderMobileFollow();
   document.querySelectorAll("[data-booking-room]").forEach(el=>{
     const info = bookingInfo(el.dataset.bookingRoom);
     el.dataset.booking = info.key;
@@ -11557,6 +11596,121 @@ function show(v){
 }
 
 /* Independent public mobile renderer: no TV markup, CSS or writes. */
+function createMobileQueueCard(room){
+  const card = document.createElement("article");
+  card.id = "mobileRoom" + room.id;
+  card.className = "mq-card";
+  card.dataset.status = "idle";
+  card.dataset.floor = room.floor;
+  card.innerHTML =
+    '<div class="mq-card-title">' +
+      '<h3 class="mq-clinic-name">' + room.place + '</h3>' +
+      '<span class="mq-room-badge">غرفة ' + room.id + '</span>' +
+    '</div>' +
+    '<div class="mq-card-body">' +
+      '<p class="mq-doctor">—</p>' +
+      '<p class="mq-status"><span class="mq-status-dot"></span><span class="mq-status-label">في انتظار التشغيل</span></p>' +
+      '<div class="mq-number-box">' +
+        '<span class="mq-number-label">الكشف الحالي بالداخل</span>' +
+        '<strong class="mq-number num">—</strong>' +
+        '<span class="mq-booking"></span>' +
+      '</div>' +
+      '<div class="mq-continuation-summary"><span>استكمال كشف</span><strong class="mq-continuation-public num">—</strong></div>' +
+      '<div class="mq-missed-summary">' +
+        '<div class="mq-missed-summary-head"><span>الأدوار الفائتة</span><span class="mq-missed-count num">٠</span></div>' +
+        '<div class="mq-missed-public-list"><span class="mq-missed-empty">لا يوجد أدوار فائتة</span></div>' +
+      '</div>' +
+    '</div>';
+  return card;
+}
+
+function updateMobileQueueCard(room, data, card){
+  if(!card) return false;
+
+  const status = DASHBOARD_STATUS[data.status] ? data.status : "idle";
+  const current = typeof data.current === "number" ? data.current : 0;
+  const displayCurrent = typeof data.displayCurrent === "number" ? data.displayCurrent : current;
+  const recallMode = Boolean(data.recallMode && typeof data.recallNumber === "number");
+  const closed = status === "finished" || status === "idle";
+  const waitingAtZero = (data.prepared === true || status === "active") && current === 0 && status !== "finished" && status !== "break";
+  const clinicName = data.clinicName || data.specialty || room.place;
+  const doctor = doctorDisplayFromData(data);
+
+  card.dataset.clinicName = clinicName;
+  card.dataset.hasDoctor = doctor && doctor !== "—" && doctor !== "لا يوجد طبيب مسجل" ? "true" : "false";
+  card.dataset.status = status;
+  card.dataset.recall = recallMode ? "true" : "false";
+  card.dataset.waiting = waitingAtZero ? "true" : "false";
+  card.querySelector(".mq-clinic-name").textContent = clinicName;
+  card.querySelector(".mq-doctor").textContent = doctor;
+  const finished = status === "finished";
+  card.querySelector(".mq-status-label").textContent = finished
+    ? "انتهت العيادة"
+    : waitingAtZero
+      ? "في انتظار بدء الكشف"
+      : recallMode
+      ? "إعادة استدعاء رقم فائت"
+      : status === "active"
+        ? "تعمل الآن"
+        : DASHBOARD_STATUS[status];
+  card.querySelector(".mq-number-label").textContent = finished
+    ? "حالة العيادة"
+    : waitingAtZero || status === "idle"
+      ? ""
+    : recallMode
+      ? "إعادة نداء دور فائت"
+      : "الكشف الحالي بالداخل";
+  card.querySelector(".mq-number").textContent = finished ? "انتهت العيادة" : waitingAtZero ? "في انتظار بدء الكشف" : status === "idle" ? "في انتظار التشغيل" : closed ? "—" : ar(displayCurrent);
+
+  const continuationNumbers = Object.entries(data.continuationTurns || {}).filter(([,v])=>v && v.status !== "done").map(([k])=>Number(k)).filter(n=>Number.isInteger(n)&&n>0).sort((a,b)=>a-b);
+  const summary = card.querySelector(".mq-continuation-public");
+  const shown = continuationNumbers.slice(0,4);
+  summary.textContent = shown.length ? shown.map(ar).join(" · ") + (continuationNumbers.length > 4 ? " +" + ar(continuationNumbers.length - 4) : "") : "—";
+  if(recallMode && data.recallKind === "continuation"){
+    card.querySelector(".mq-status-label").textContent = "استكمال كشف";
+    card.querySelector(".mq-number-label").textContent = "استكمال كشف";
+  }
+  /* ملخص الأدوار الفائتة داخل كارت العيادة على شاشة العرض */
+  const publicMissed = Object.entries(data.missedTurns || {})
+    .map(([key,value])=>({ number:Number(key), ...(value || {}) }))
+    .filter(item=>Number.isFinite(item.number) && item.number > 0);
+  const publicPending = publicMissed.filter(item=>item.status !== "done").sort((a,b)=>a.number-b.number);
+  const publicDone = publicMissed.filter(item=>item.status === "done")
+    .sort((a,b)=>(b.completedAt || 0) - (a.completedAt || 0));
+  const pendingLimit = Math.min(publicPending.length, 4);
+  const visiblePublicTurns = publicPending.slice(0, pendingLimit)
+    .concat(publicDone.slice(0, Math.max(0, 5 - pendingLimit)));
+  const missedCountEl = card.querySelector(".mq-missed-count");
+  const missedListEl = card.querySelector(".mq-missed-public-list");
+  card.dataset.hasMissed = publicMissed.length ? "true" : "false";
+  missedCountEl.textContent = ar(publicPending.length);
+  missedListEl.innerHTML = "";
+  if(!publicMissed.length){
+    missedListEl.innerHTML = '<span class="mq-missed-empty">لا يوجد أدوار فائتة</span>';
+  }else{
+    visiblePublicTurns.forEach(item=>{
+      const chip = document.createElement("span");
+      chip.className = "mq-public-chip";
+      chip.dataset.turnStatus = item.status || "missed";
+      chip.textContent = item.status === "done"
+        ? "✓ " + ar(item.number)
+        : item.status === "recalling"
+          ? "↻ " + ar(item.number)
+          : ar(item.number);
+      chip.title = item.status === "done" ? "انتهى" : item.status === "recalling" ? "يتم استدعاؤه الآن" : "دور فائت";
+      missedListEl.appendChild(chip);
+    });
+    if(publicPending.length > 4){
+      const more = document.createElement("span");
+      more.className = "mq-public-more";
+      more.textContent = "+" + ar(publicPending.length - 4);
+      missedListEl.appendChild(more);
+    }
+  }
+
+  card.querySelector('.mq-booking').textContent = data.status === 'finished' || bookingStateForToday(room.id).closed === true ? 'الحجز مغلق' : '';
+}
+
 function renderMobileFollow(){
  const root=document.getElementById('view-mobile');
  const mode=location.hash==='#/mobile-third'?'third':location.hash==='#/mobile-ground'?'ground':'all';
@@ -11566,25 +11720,8 @@ function renderMobileFollow(){
  const make=(tag,cls,value)=>{const el=document.createElement(tag);if(cls)el.className=cls;if(value!==undefined)el.textContent=value;return el;};
  if(!Object.keys(receptionClinicsData).length&&!firebaseConnected){box.textContent='في انتظار الاتصال لتحميل بيانات العيادات…';return;}
  ['third','ground'].filter(f=>mode==='all'||f===mode).forEach(f=>{
- box.append(make('h2','mf-floor',f==='third'?'عيادات الدور الثالث':'عيادات الدور الأرضي'));
- ROOM_OPTIONS.filter(r=>r.floor===f).forEach(room=>{
- const d=receptionDataForRoom(room), status=receptionStatusInfo(d);
- const card=make('article','mf-card');card.dataset.status=status.key;
- const head=make('div','mf-head');head.append(make('h3','',d.clinicName||d.specialty||room.place),make('span','mf-room','غرفة '+ar(room.id)));
- const body=make('div','mf-body');body.append(make('p','',doctorDisplayFromData(d)),make('p','mf-status',status.label));
- const current=Number(d.current)||0;
- const message=['idle','waiting','finished','break'].includes(status.key);
- const number=make('div','mf-number'+(message?' mf-message':''));
- number.append(make('span','',message?'حالة العيادة':d.recallMode?(d.recallKind==='continuation'?'استكمال كشف / إجراء':'إعادة نداء دور فائت'):'جاري الكشف — الرقم بالداخل'),make('strong','',message?status.label:ar(typeof d.displayCurrent==='number'?d.displayCurrent:current)));
- body.append(number);
- if(d.recallMode)body.append(make('p','','وصل الكشف إلى: '+ar(current)));
- if(d.noWaitingNumber===current&&d.noWaitingAt&&status.key==='active')body.append(make('p','mf-strip','لا يوجد انتظار حاليًا'));
- if(bookingStateForToday(room.id).closed===true||d.status==='finished')body.append(make('p','mf-strip','الحجز مغلق'));
- const missed=receptionPendingMissed(d).map(x=>ar(x.number));
- const continuation=Object.entries(d.continuationTurns||{}).filter(([k,v])=>v&&v.status!=='done').map(([k])=>ar(k));
- body.append(make('p','mf-strip','الأدوار الفائتة: '+(missed.join('، ')||'لا توجد')),make('p','mf-strip','استكمال كشف / إجراء: '+(continuation.join('، ')||'لا يوجد')));
- card.append(head,body);box.append(card);
- });
+ const title=make('h2','mf-floor',f==='third'?'عيادات الدور الثالث':'عيادات الدور الأرضي');title.dataset.floor=f;box.append(title);
+ ROOM_OPTIONS.filter(r=>r.floor===f).forEach(room=>{const card=createMobileQueueCard(room);updateMobileQueueCard(room,receptionDataForRoom(room),card);box.append(card);});
  });
 }
 
