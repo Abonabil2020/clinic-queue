@@ -8321,6 +8321,29 @@
 #view-mobile #mf-help-dialog ol{padding-right:22px;line-height:1.9;font-size:16px;margin:0}
 #view-mobile #mf-help-dialog li{margin:10px 0}
 </style>
+
+<style id="nursing-number-buttons-layout">
+#view-nurse .nursing-displayed-turn{flex-wrap:nowrap;padding:10px 12px;gap:10px}
+#view-nurse #nurseDisplayedNumber{font-size:28px!important;line-height:1.25}
+#view-nurse .nursing-step-buttons{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin:6px 0 12px}
+#view-nurse .nursing-step-buttons button{border-radius:14px;font-weight:700;touch-action:manipulation;min-width:0}
+#view-nurse #plusBtn{background:var(--navy);color:white;font-size:28px;min-height:60px!important}
+#view-nurse #minusBtn{background:#f1f5f9;color:#64748b;font-size:23px;min-height:60px!important}
+#view-nurse .nursing-step-buttons button:disabled,#view-nurse #directTurnButton:disabled{opacity:.5;cursor:wait}
+#view-nurse #directTurnDialog{box-sizing:border-box;width:100%;padding:12px;border-radius:12px;background:#f8fafc;margin:0 0 20px}
+#view-nurse #directTurnDialog summary{cursor:pointer;font-size:14px;font-weight:700;min-height:24px}
+#view-nurse .direct-turn{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px}
+#view-nurse .direct-turn label{flex-basis:100%;font-size:13px;font-weight:700}
+#view-nurse #directTurnNumber{width:0;flex:1;min-width:70px;min-height:48px;border:1px solid #cbd5e1;border-radius:10px;text-align:center;font-size:20px;background:white}
+#view-nurse #directTurnButton{min-height:48px;padding:8px 20px;border-radius:10px;background:#e0f2fe;color:#075985;font-weight:700}
+#view-nurse #nurseQueueControls .nurse-wheel-actions{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}
+#view-nurse .nurse-wheel-actions #markNoShowBtn,#view-nurse .nurse-wheel-actions #addContinuation{min-height:66px;font-size:14px!important;padding:10px!important;border-radius:12px}
+#view-nurse #nurseOfficialCount .official-count-form{position:absolute;top:calc(100% + 8px);left:0;box-sizing:border-box;width:min(310px,calc(100vw - 36px));padding:16px;gap:10px;border:1px solid #f0b9b9;border-radius:16px;background:white;box-shadow:0 12px 32px #0f172a26;z-index:20}
+#view-nurse #nurseOfficialCount:has(.official-count-form:not([hidden])){z-index:30}
+#view-nurse #nurseOfficialCount .official-count-form input{width:100%;height:54px;font-size:24px;border-radius:10px}
+#view-nurse #nurseOfficialCount .official-count-form button[type="submit"]{flex:1;height:50px;font-size:18px;border-radius:10px}
+#view-nurse #nurseOfficialCount .official-count-cancel{width:50px;height:50px;font-size:24px;border-radius:10px}
+</style>
 </head>
 <body>
 <div id="networkStatusIndicator" class="network-status-indicator" role="status" aria-live="polite">
@@ -8719,7 +8742,6 @@
       <div class="nursing-displayed-turn mb-3 px-3 py-2.5 rounded-xl bg-sky-50 border border-sky-100 flex items-center justify-between gap-3">
         <span class="text-xs font-bold text-slate-600">المعروض الآن على الشاشات</span>
         <strong id="nurseDisplayedNumber" class="num text-2xl font-bold text-sky-700">—</strong>
-        <button id="openDirectTurn" type="button">انتقال سريع لرقم الكشف</button>
       </div>
 
       <button id="startPreparedClinicBtn" type="button" class="hidden-view w-full mb-3 px-3 py-3 rounded-xl text-white font-bold" style="background:var(--teal)">بدء العيادة</button>
@@ -8762,16 +8784,18 @@
       </div>
 
       <div id="nurseQueueControls">
-      <dialog id="directTurnDialog" dir="rtl"><div class="direct-turn" style="display:flex;align-items:center;gap:8px;margin:6px 0 10px">
-        <label for="directTurnNumber" style="font-size:13px;font-weight:700;white-space:nowrap">انتقال إلى رقم</label>
-        <input id="directTurnNumber" type="text" inputmode="numeric" autocomplete="off" maxlength="3" placeholder="١ - ٥٠" style="min-width:0;width:90px;height:44px;text-align:center;border:1px solid #cbd5e1;border-radius:9px;background:white;font-size:16px;color:#334155">
-        <button id="directTurnButton" type="button" style="min-height:44px;padding:6px 14px;border-radius:9px;background:#e0f2fe;color:#075985;font-weight:700">انتقال</button>
-      </div><button id="closeDirectTurn" type="button">إغلاق</button></dialog>
-      <div class="wheel-control-row">
-        <div class="relative">
-          <div class="wheel-frame"></div>
-          <div id="wheel"></div>
+        <div class="nursing-step-buttons">
+          <button id="plusBtn" type="button" aria-label="زيادة رقم الدور واحدًا">+١</button>
+          <button id="minusBtn" type="button" aria-label="الرجوع رقمًا واحدًا مع التأكيد">−١</button>
         </div>
+        <details id="directTurnDialog" dir="rtl">
+          <summary>تصحيح رقم الدور ▾</summary>
+          <div class="direct-turn">
+            <label for="directTurnNumber">انتقال إلى رقم</label>
+            <input id="directTurnNumber" type="text" inputmode="numeric" autocomplete="off" maxlength="3" placeholder="١ - ٥٠">
+            <button id="directTurnButton" type="button">انتقال</button>
+          </div>
+        </details>
         <div class="nurse-wheel-actions">
           <button id="markNoShowBtn" type="button" class="wheel-no-show-btn" title="إضافة الرقم المحدد إلى الأدوار الفائتة">
             <span>لم يحضر للكشف</span>
@@ -8779,12 +8803,6 @@
           </button>
           <button id="addContinuation" type="button" class="px-3 py-2 rounded-lg bg-sky-700 text-white font-bold">له استكمال كشف / إجراء</button>
         </div>
-      </div>
-
-      <div class="grid grid-cols-2 gap-3 mt-4">
-        <button id="minusBtn" class="py-4 rounded-xl bg-slate-100 text-3xl font-bold active:bg-slate-200">−١</button>
-        <button id="plusBtn" class="py-4 rounded-xl text-3xl font-bold text-white active:opacity-80" style="background:var(--navy)">+١</button>
-      </div>
       </div>
     </div>
 
@@ -15188,8 +15206,8 @@ function updateNurseQueueLock(){
   wheel.style.pointerEvents = blocked ? "none" : "auto";
   wheel.style.opacity = blocked ? ".55" : "1";
 
-  $("#plusBtn").disabled = blocked;
-  $("#minusBtn").disabled = blocked;
+  $("#plusBtn").disabled = blocked || wheelWritePending;
+  $("#minusBtn").disabled = blocked || wheelWritePending;
   $("#plusBtn").classList.toggle("opacity-50", blocked);
   $("#minusBtn").classList.toggle("opacity-50", blocked);
 
@@ -15421,8 +15439,8 @@ function renderRecallPanel(){
   const controlsBlocked = active || isNurseQueueLocked();
   wheel.style.pointerEvents = controlsBlocked ? "none" : "auto";
   wheel.style.opacity = controlsBlocked ? ".55" : "1";
-  $("#plusBtn").disabled = controlsBlocked;
-  $("#minusBtn").disabled = controlsBlocked;
+  $("#plusBtn").disabled = controlsBlocked || wheelWritePending;
+  $("#minusBtn").disabled = controlsBlocked || wheelWritePending;
   $("#plusBtn").classList.toggle("opacity-50", controlsBlocked);
   $("#minusBtn").classList.toggle("opacity-50", controlsBlocked);
   $("#completeRecallBtn").disabled = isNurseQueueLocked();
@@ -15511,37 +15529,11 @@ $("#returnPreviousBtn").addEventListener("click", ()=> leaveRecall("missed"));
 /* ==========================================================
    ⑤  بكرة الأرقام (Interactive Wheel)
    ========================================================== */
-const wheel = $("#wheel");
-const ITEM_H = 80;
-let wheelReady = false, suppressWrite = false, writeTimer = null, settleTimer = null;
-let wheelSyncTimer = null;
+const wheel = document.createElement("div");
+let suppressWrite = false, writeTimer = null, settleTimer = null;
 let wheelWritePending = false;
-
-(function buildWheel(){
-  const pad = Math.max(0, ((wheel.clientHeight || 240) - ITEM_H) / 2);
-  let html = '<div style="height:' + pad + 'px"></div>';
-  for(let i = 0; i <= MAX_NUMBER; i++) html += '<div class="wheel-item" data-n="' + i + '">' + (i === 0 ? '⌛ في انتظار بدء الكشف' : ar(i)) + '</div>';
-  html += '<div style="height:' + pad + 'px"></div>';
-  wheel.innerHTML = html;
-  wheelReady = true;
-})();
-
-new ResizeObserver(()=>{
-  const pad = Math.max(0,(wheel.clientHeight - ITEM_H)/2);
-  if(wheel.firstElementChild) wheel.firstElementChild.style.height = pad + "px";
-  if(wheel.lastElementChild) wheel.lastElementChild.style.height = pad + "px";
-}).observe(wheel);
-function wheelValue(){ return Math.round(wheel.scrollTop / ITEM_H); }
-
-function highlight(){
-  const v = wheelValue();
-  const zero = wheel.querySelector('.wheel-item[data-n="0"]');
-  if(zero){ zero.dataset.waiting = state.status === "break" || state.status === "finished" ? "false" : "true"; zero.textContent = zero.dataset.waiting === "true" ? "⌛ في انتظار بدء الكشف" : ar(0); }
-  wheel.querySelectorAll(".wheel-item").forEach(el=>{
-    el.classList.toggle("active", Number(el.dataset.n) === v);
-  });
-  updateNoShowButton(v);
-}
+function wheelValue(){ return Number(state.current) || 0; }
+function syncWheel(){ updateNoShowButton(wheelValue()); }
 
 function updateNoShowButton(number = wheelValue()){
   const btn = $("#markNoShowBtn");
@@ -15551,7 +15543,7 @@ function updateNoShowButton(number = wheelValue()){
   number = Number(number);
   num.textContent = Number.isFinite(number) ? ar(number) : "—";
   const item = (state.missedTurns || {})[String(number)];
-  const unavailable = isNurseQueueLocked() || state.recallMode || !number || item?.status === "missed" || item?.status === "recalling" || item?.status === "done";
+  const unavailable = wheelWritePending || isNurseQueueLocked() || state.recallMode || !number || item?.status === "missed" || item?.status === "recalling" || item?.status === "done";
   btn.disabled = Boolean(unavailable);
 
   const label = btn.querySelector("span");
@@ -15561,118 +15553,16 @@ function updateNoShowButton(number = wheelValue()){
   else label.textContent = "لم يحضر للكشف";
 }
 
-function syncWheel(n){
-  if(!wheelReady) return;
-  if((mobileWheelTouchActive || dragging || wheelWritePending) && !isNurseQueueLocked() && !state.recallMode) return;
-  n = Math.max(0, Math.min(MAX_NUMBER, Number(n) || 0));
-  if(wheelValue() === n){ highlight(); return; }
-  suppressWrite = true;
-  wheel.scrollTo({ top:n * ITEM_H, behavior:"auto" });
-  highlight();
-  clearTimeout(settleTimer);
-  clearTimeout(wheelSyncTimer);
-  wheelSyncTimer = setTimeout(()=>{ clearTimeout(settleTimer); suppressWrite = false; }, 220);
-}
-
-wheel.addEventListener("scroll", ()=>{
-  highlight();
-  clearTimeout(settleTimer);
-  const scrollPeriod = nursingLiveSessionStart;
-  settleTimer = setTimeout(()=>{
-    if(suppressWrite || mobileWheelTouchActive || dragging || nursingSetupSaving || location.hash !== "#/nurse" || scrollPeriod !== nursingLiveSessionStart) return;
-    const v = wheelValue();
-    if(v !== state.current) pushNumber(v);
-  }, 180);
-}, { passive:true });
-
-/* السحب بالماوس على الكمبيوتر */
-let dragging = false, startY = 0, startTop = 0;
-wheel.addEventListener("mousedown", e=>{
-  if(isNurseQueueLocked() || state.recallMode || wheelWritePending) return;
-  e.preventDefault();
-  dragging = true; startY = e.clientY; startTop = wheel.scrollTop;
-  wheel.classList.add("dragging");
-});
-window.addEventListener("mousemove", e=>{
-  if(!dragging) return;
-  e.preventDefault();
-  wheel.scrollTop = startTop + Math.max(-ITEM_H, Math.min(ITEM_H, (startY - e.clientY) * 0.35));
-}, { passive:false });
-window.addEventListener("mouseup", ()=>{
-  if(!dragging) return;
-  dragging = false;
-  wheel.classList.remove("dragging");
-  wheel.scrollTo({ top: wheelValue() * ITEM_H, behavior:"smooth" });
-});
-
-/* عجلة الماوس / التاتش باد: حركة واحدة = رقم واحد فقط */
-let desktopWheelGestureLocked = false;
-let desktopWheelGestureTimer = null;
-
-wheel.addEventListener("wheel", e=>{
-  if(isNurseQueueLocked() || state.recallMode || wheelWritePending) return;
-
-  e.preventDefault();
-  clearTimeout(desktopWheelGestureTimer);
-
-  if(!desktopWheelGestureLocked && Math.abs(e.deltaY) >= 2){
-    desktopWheelGestureLocked = true;
-    stepNumber(e.deltaY > 0 ? 1 : -1);
-  }
-
-  desktopWheelGestureTimer = setTimeout(()=>{
-    desktopWheelGestureLocked = false;
-  }, 260);
-}, { passive:false });
-
-/* الموبايل:
-   حركة البكرة أبطأ وبحد أقصى رقم واحد لكل سحبة. */
-let mobileWheelTouchActive = false;
-let mobileWheelStartY = 0;
-let mobileWheelStartTop = 0;
-const MOBILE_WHEEL_DRAG_FACTOR = 0.75;
-
-wheel.addEventListener("touchstart", e=>{
-  if(isNurseQueueLocked() || state.recallMode || wheelWritePending || e.touches.length !== 1) return;
-
-  wheel.scrollTo({top:wheel.scrollTop,behavior:"auto"});
-  wheel.style.scrollSnapType = "none";
-  mobileWheelTouchActive = true;
-  mobileWheelStartY = e.touches[0].clientY;
-  mobileWheelStartTop = wheel.scrollTop;
-}, { passive:true });
-
-wheel.addEventListener("touchmove", e=>{
-  if(!mobileWheelTouchActive || e.touches.length !== 1){
-    if(isNurseQueueLocked() || state.recallMode || wheelWritePending) e.preventDefault();
-    return;
-  }
-
-  const currentY = e.touches[0].clientY;
-  const deltaY = mobileWheelStartY - currentY;
-
-  e.preventDefault();
-  const distance = Math.max(-ITEM_H, Math.min(ITEM_H, deltaY * MOBILE_WHEEL_DRAG_FACTOR));
-  wheel.scrollTop = mobileWheelStartTop + distance;
-}, { passive:false });
-
-function finishMobileWheelTouch(){
-  if(!mobileWheelTouchActive) return;
-  mobileWheelTouchActive = false;
-
-  const target = wheelValue();
-  wheel.style.scrollSnapType = "";
-  wheel.scrollTo({ top: target * ITEM_H, behavior:"smooth" });
-}
-
-wheel.addEventListener("touchend", finishMobileWheelTouch, { passive:true });
-wheel.addEventListener("touchcancel", ()=>{
-  mobileWheelTouchActive = false;
-  wheel.style.scrollSnapType = "";
-  syncWheel(state.current);
-}, { passive:true });
-
 /* الكتابة في قاعدة البيانات مع Debounce */
+function renderNursingNumberPending(){
+  const blocked = wheelWritePending || isNurseQueueLocked() || state.recallMode;
+  for(const id of ["plusBtn","minusBtn","directTurnButton","addContinuation"]){
+    const button = document.getElementById(id);
+    if(button) button.disabled = Boolean(blocked);
+  }
+  $("#plusBtn").textContent = wheelWritePending ? "جارٍ الحفظ…" : "+١";
+  updateNoShowButton(wheelValue());
+}
 function pushNumber(v){
   if(location.hash !== "#/nurse" || nursingSetupSaving) return;
   if(!canControlCurrentRoom()) return void flashSync("الحساب غير مصرح لهذه الحجرة", false);
@@ -15684,6 +15574,7 @@ function pushNumber(v){
   const expectedSession = nursingLiveSessionStart;
   const expectedRoom = DISPLAY_SLOT_ID;
   wheelWritePending = true;
+  renderNursingNumberPending();
   clearTimeout(writeTimer);
   writeTimer = setTimeout(()=>{
     const updates = {
@@ -15703,6 +15594,7 @@ function pushNumber(v){
     updateCurrentPeriod(updates,expectedSession,true)
       .then(result=>{
         wheelWritePending = false;
+        renderNursingNumberPending();
         if(expectedRoom === DISPLAY_SLOT_ID && expectedSession === nursingLiveSessionStart){
           applyClinicSnapshot(result.snapshot.val());
           flashSync("تم حفظ الرقم",true);
@@ -15717,6 +15609,7 @@ function pushNumber(v){
       })
       .catch(()=>{
         wheelWritePending = false;
+        renderNursingNumberPending();
         if(expectedRoom === DISPLAY_SLOT_ID && expectedSession === nursingLiveSessionStart){
           syncWheel(state.current);
           flashSync("تعذّر الحفظ، راجع الرقم واتصال الإنترنت", false);
@@ -15726,6 +15619,7 @@ function pushNumber(v){
 }
 
 async function markSelectedTurnAsMissed(){
+  if(wheelWritePending) return void flashSync("انتظر تأكيد حفظ الرقم",false);
   if(!canControlCurrentRoom()) return void flashSync("الحساب غير مصرح لهذه الحجرة", false);
   if(isNurseQueueLocked()) return void flashSync(state.status === "break" ? "العيادة في استراحة" : "العيادة منتهية", false);
   if(state.recallMode) return void flashSync("أنهِ إعادة الاستدعاء أولًا", false);
@@ -15844,8 +15738,6 @@ function flashSync(text, ok){
   setTimeout(()=>{ b.textContent = "متصل"; b.className = "text-xs px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700"; }, 1200);
 }
 
-$("#openDirectTurn").addEventListener("click",()=>{ if(!isNurseQueueLocked() && !state.recallMode) $("#directTurnDialog").showModal(); });
-$("#closeDirectTurn").addEventListener("click",()=>$("#directTurnDialog").close());
 $("#directTurnButton").addEventListener("click",()=>{
   if(isNurseQueueLocked() || state.recallMode || wheelWritePending || !canControlCurrentRoom()) return void flashSync("انتظر حتى تصبح العيادة جاهزة",false);
   if(!firebaseConnected) return void flashSync("لا يوجد اتصال، لم يتغير الرقم",false);
@@ -15855,7 +15747,7 @@ $("#directTurnButton").addEventListener("click",()=>{
   if(number===state.current) return void flashSync("الرقم هو الدور الحالي",true);
   if(!confirm("سيظهر الرقم " + ar(number) + " للمرضى كرقم الكشف الحالي. هل تريد المتابعة؟")) return;
   $("#directTurnNumber").value="";
-  $("#directTurnDialog").close();
+  $("#directTurnDialog").open = false;
   pushNumber(number);
 });
 $("#plusBtn").addEventListener("click", ()=> stepNumber(1));
@@ -15866,9 +15758,8 @@ function stepNumber(d){
   if(wheelWritePending) return void flashSync("انتظر تأكيد حفظ الرقم",false);
   if(!firebaseConnected) return void flashSync("لا يوجد اتصال، لم يتغير الرقم",false);
   const v = Math.max(0, Math.min(MAX_NUMBER, state.current + d));
-  suppressWrite = true;
-  wheel.scrollTo({ top:v * ITEM_H, behavior:"smooth" });
-  setTimeout(()=>{ suppressWrite = false; }, 400);
+  if(v === state.current) return;
+  if(d < 0 && !confirm("تأكيد الرجوع من رقم " + ar(state.current) + " إلى رقم " + ar(v) + "؟")) return;
   pushNumber(v);
   if(navigator.vibrate) navigator.vibrate(12);
 }
