@@ -8263,6 +8263,63 @@
 #view-mobile .mq-public-chip{font-size:18px;padding:2px 7px}
 #view-mobile .mq-card[data-status="active"][data-recall="true"][data-waiting="false"]{--mq-ink:#075985;--mq-soft:#e0f2fe;--mq-head:#0369a1}
 #view-mobile .mf-empty{padding:16px 12px;background:#fff;border:1px solid #e2e8f0;border-radius:12px;font-size:15px;line-height:1.7;text-align:center}
+
+/* Patient-facing mobile presentation only. */
+#view-mobile{max-width:760px;padding:12px 10px calc(148px + env(safe-area-inset-bottom));background:linear-gradient(165deg,#fffaf9 0,#f5f7fb 500px,#f8fafc 100%);min-height:100vh}
+#view-mobile .mf-patient-header{position:relative;isolation:isolate;overflow:hidden;text-align:center;padding:22px 16px 0;border:1px solid #ead8de;border-radius:26px;background:linear-gradient(135deg,#fff 20%,#fff0f1 100%);box-shadow:0 10px 28px #7f1d3d0c}
+#view-mobile .mf-patient-header:before,#view-mobile .mf-patient-header:after{content:"";position:absolute;z-index:-1;width:270px;height:270px;border:1px solid #a3334e17;border-radius:50%;pointer-events:none}
+#view-mobile .mf-patient-header:before{top:-170px;right:-125px;border-width:22px}
+#view-mobile .mf-patient-header:after{bottom:-190px;left:-130px;border-width:32px}
+#view-mobile .mf-logo{display:block;width:190px;max-width:65%;height:auto;max-height:95px;object-fit:contain;margin:0 auto 12px}
+#view-mobile .mf-welcome{font-size:12px;color:#7c6670;margin:0 0 6px}
+#view-mobile .mf-patient-header h1{font-size:clamp(23px,6vw,32px);font-weight:800;color:#852544;line-height:1.45;margin:0 0 16px}
+#view-mobile .mf-time-panel{display:flex;align-items:center;justify-content:center;gap:20px;width:fit-content;max-width:100%;margin:0 auto 16px;padding:10px 22px;background:#ffffffd9;border:1px solid #eee0e5;border-radius:18px;box-shadow:0 3px 12px #7f1d3d06}
+#view-mobile .mf-time-main{display:flex;flex-direction:column;gap:3px;padding-left:20px;border-left:1px solid #e9dce1}
+#view-mobile #mf-clock{font-size:27px;line-height:1.3;color:#243449;font-weight:800;white-space:nowrap;font-variant-numeric:tabular-nums}
+#view-mobile .mf-time-main span{font-size:11px;color:#7a8291}
+#view-mobile .mf-day-main{display:flex;flex-direction:column;gap:4px}
+#view-mobile #mf-day{color:#a3334e;font-size:19px}
+#view-mobile #mf-date{font-size:12px;color:#64748b}
+#view-mobile .mf-header-foot{margin:0 -16px;background:linear-gradient(110deg,#7e2442,#ad3c5a);color:white;padding:8px;font-size:12px}
+#view-mobile .mf-select-heading{font-size:17px;font-weight:800;margin:18px 2px 9px;color:#334155}
+#view-mobile .mf-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:0 0 12px}
+#view-mobile .mf-tabs a{display:flex;align-items:center;justify-content:center;text-align:center;font-size:13px;line-height:1.6;padding:8px 5px;min-height:48px;border-radius:12px}
+#view-mobile .mf-legend{padding:0;background:#fff;overflow:hidden}
+#view-mobile .mf-legend summary{display:flex;justify-content:space-between;align-items:center;cursor:pointer;list-style:none;padding:12px 14px;font-size:15px;font-weight:800;color:#475569}
+#view-mobile .mf-legend summary::-webkit-details-marker{display:none}
+#view-mobile .mf-legend[open] summary{border-bottom:1px solid #edf0f5}
+#view-mobile .mf-legend[open] summary>span{transform:rotate(180deg)}
+#view-mobile .mf-legend ul{display:flex;flex-direction:column;gap:0;padding:0 14px}
+#view-mobile .mf-legend li{align-items:flex-start;gap:10px;padding:11px 0;border-bottom:1px solid #f1f5f9;font-size:14px}
+#view-mobile .mf-legend li:last-child{border:0}
+#view-mobile .mf-legend .mf-color-dot{margin-top:5px}
+#view-mobile .mf-legend li strong{font-size:14px;color:#334155}
+#view-mobile .mf-legend li p{font-size:12px;line-height:1.7;color:#64748b;margin:3px 0 0}
+#view-mobile #mf-connection{display:flex;align-items:center;gap:8px;font-size:12px;color:#287346;margin:12px 3px}
+#view-mobile #mf-connection:before{content:"";width:9px;height:9px;flex:0 0 9px;border-radius:50%;background:#22a45b;box-shadow:0 0 0 4px #22a45b12;animation:mf-live-pulse 2s ease-in-out infinite}
+#view-mobile #mf-connection[data-connection="offline"]{color:#b42332;background:#fff1f2;padding:10px;border:1px solid #fecdd3;border-radius:10px}
+#view-mobile #mf-connection[data-connection="offline"]:before{background:#d43b4c;animation:none;box-shadow:none}
+@keyframes mf-live-pulse{50%{box-shadow:0 0 0 7px #22a45b00;opacity:.55}}
+@media(prefers-reduced-motion:reduce){#view-mobile #mf-connection:before{animation:none}}
+#view-mobile .mf-floor{display:flex;align-items:center;gap:10px;text-align:right;background:linear-gradient(100deg,#fff,#fff1f5);color:#862846;border:1px solid #ead5dc;border-right:5px solid #a3334e;border-radius:15px;box-shadow:0 3px 12px #7f1d3d05;font-size:19px;padding:11px 13px;margin:20px 0 10px}
+#view-mobile .mf-floor:after{content:"";flex:1;height:1px;background:linear-gradient(to left,#b34c6b66,transparent)}
+#view-mobile .mf-floor[data-floor="ground"]{background:linear-gradient(100deg,#fff,#edf3f9);color:#40566e;border-color:#d4dfeb;border-right-color:#64748b}
+#view-mobile .mf-floor[data-floor="ground"]:after{background:linear-gradient(to left,#64748b66,transparent)}
+#view-mobile .mf-bottom-actions{position:fixed;z-index:90;bottom:0;left:0;right:0;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:#ffffffed;border-top:1px solid #e2e8f0;box-shadow:0 -5px 24px #3341550b;backdrop-filter:blur(12px)}
+#view-mobile .mf-social{display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;font-size:10px;line-height:1.5;color:#526174;font-weight:700}
+#view-mobile .mf-facebook{grid-column:1;grid-row:1}
+#view-mobile .mf-whatsapp{grid-column:3;grid-row:1}
+#view-mobile .mf-social-circle{display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:50%;font-size:29px;font-family:Arial,sans-serif;background:#eef4ff;color:#1877f2;border:1px solid #d6e5ff}
+#view-mobile .mf-whatsapp .mf-social-circle{background:#eaf9ef;color:#168746;border-color:#ccebd7}
+#view-mobile .mf-social-circle svg{width:25px;height:25px}
+#view-mobile #mf-help-open{grid-column:2;grid-row:1;border:1px solid #ead2da;background:#fff6f8;color:#8d2c49;padding:10px 12px;min-height:44px;border-radius:24px;font-size:13px;font-weight:800;cursor:pointer}
+#view-mobile #mf-help-dialog{position:fixed;inset:0;margin:auto;width:calc(100% - 32px);max-width:430px;max-height:80dvh;overflow:auto;border:1px solid #eed8df;border-radius:22px;padding:20px;color:#334155;background:#fff;box-shadow:0 20px 80px #17203340;direction:rtl}
+#view-mobile #mf-help-dialog::backdrop{background:#15223555;backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)}
+#view-mobile .mf-dialog-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:14px}
+#view-mobile .mf-dialog-top h2{font-size:20px;font-weight:800;color:#8d2c49;margin:0}
+#view-mobile #mf-help-close{width:44px;height:44px;border:0;border-radius:50%;background:#f9edf1;color:#8d2c49;font-size:28px;cursor:pointer;flex-shrink:0}
+#view-mobile #mf-help-dialog ol{padding-right:22px;line-height:1.9;font-size:16px;margin:0}
+#view-mobile #mf-help-dialog li{margin:10px 0}
 </style>
 </head>
 <body>
@@ -9176,7 +9233,14 @@
 <!-- ============================================================
      شاشة QR المجمعة لمتابعة أدوار العيادات
 ============================================================ -->
-<section id="view-mobile" class="hidden-view" dir="rtl"><div class="mf-brand"><img src="logo.png" alt="مجمع الإصلاح الطبي" class="portal-logo" onerror="this.style.display='none'"><p>متابعة أدوار العيادات</p></div><div class="mf-top"><h1>متابعة الدور</h1></div><nav class="mf-tabs" aria-label="اختيار الدور"><a href="#/mobile" data-mf-mode="all">كل العيادات · ١٢</a><a href="#/mobile-third" data-mf-mode="third">الدور الثالث · ٨</a><a href="#/mobile-ground" data-mf-mode="ground">الدور الأرضي · ٤</a></nav><aside class="mf-help"><h2>تعليمات متابعة الدور</h2><p>قبل دورك بحالتين: تواجد أمام العيادة.</p><p>فاتك دورك؟ يرجى إبلاغنا بوصولك.</p><p>بعد تسجيل حضورك تنتظر دخول حالتين، ثم تدخل.</p></aside><aside class="mf-color-guide" aria-label="دلالات ألوان العيادات"><h2>دلالات الألوان</h2><ul><li><span class="mf-color-dot" style="background:#15803d" aria-hidden="true"></span><span>تعمل الآن</span></li><li><span class="mf-color-dot" style="background:#c58b32" aria-hidden="true"></span><span>استراحة مؤقتة</span></li><li><span class="mf-color-dot" style="background:#c93443" aria-hidden="true"></span><span>انتهت العيادة</span></li><li><span class="mf-color-dot" style="background:#8561a6" aria-hidden="true"></span><span>لم يبدأ الكشف بعد</span></li><li><span class="mf-color-dot" style="background:#0369a1" aria-hidden="true"></span><span>استدعاء دور فائت / استكمال</span></li></ul></aside><p id="mf-connection" role="status"></p><div id="mf-clinics" aria-live="polite">جارٍ تحميل بيانات العيادات…</div></section>
+<section id="view-mobile" class="hidden-view" dir="rtl">
+<header class="mf-patient-header"><div class="mf-header-glow" aria-hidden="true"></div><img src="logo.png" alt="مجمع الإصلاح الطبي" class="mf-logo"><p class="mf-welcome">أهلًا بكم في مجمع الإصلاح الطبي</p><h1>متابعة أدوار العيادات</h1><div class="mf-time-panel"><div class="mf-time-main"><time id="mf-clock">—</time><span>الوقت الآن</span></div><div class="mf-day-main"><strong id="mf-day">—</strong><time id="mf-date">—</time></div></div><div class="mf-header-foot">متابعة ميسّرة… لزيارة أكثر راحة</div></header>
+<div class="mf-select-heading">اختر طريقة العرض</div><nav class="mf-tabs" aria-label="اختر طريقة العرض"><a href="#/mobile" data-mf-mode="all">كل العيادات</a><a href="#/mobile-third" data-mf-mode="third">عيادات الدور الثالث</a><a href="#/mobile-ground" data-mf-mode="ground">عيادات الدور الأرضي</a></nav>
+<details class="mf-color-guide mf-legend"><summary>دلالات الألوان <span aria-hidden="true">⌄</span></summary><ul><li><span class="mf-color-dot" style="background:#15803d" aria-hidden="true"></span><div><strong>تعمل الآن</strong><p>العيادة الآن تعمل</p></div></li><li><span class="mf-color-dot" style="background:#c58b32" aria-hidden="true"></span><div><strong>استراحة مؤقتة</strong><p>الدكتور غير متواجد في فترة استراحة</p></div></li><li><span class="mf-color-dot" style="background:#c93443" aria-hidden="true"></span><div><strong>انتهت العيادة</strong><p>الدكتور انصرف من العيادة</p></div></li><li><span class="mf-color-dot" style="background:#8561a6" aria-hidden="true"></span><div><strong>لم يبدأ الكشف بعد</strong><p>في انتظار حضور الدكتور للبدء</p></div></li><li><span class="mf-color-dot" style="background:#0369a1" aria-hidden="true"></span><div><strong>استدعاء دور فائت أو استكمال كشف</strong><p>استدعاء من مرّ عليه دوره أو له استكمال كشف / إجراء</p></div></li></ul></details>
+<p id="mf-connection" role="status" aria-live="polite"></p><div id="mf-clinics">جارٍ تحميل بيانات العيادات…</div>
+<nav class="mf-bottom-actions" aria-label="التواصل والتعليمات"><a class="mf-social mf-facebook" href="https://www.facebook.com/islahmedicalcomplex" target="_blank" rel="noopener noreferrer" aria-label="فيسبوك: لمتابعة الجدول اليومي وآخر التحديثات"><span class="mf-social-circle" aria-hidden="true">f</span><span>لمتابعة الجدول اليومي<br>وآخر التحديثات</span></a><button type="button" id="mf-help-open"><span aria-hidden="true">ⓘ</span> التعليمات</button><a class="mf-social mf-whatsapp" href="https://wa.me/201000620720" target="_blank" rel="noopener noreferrer" aria-label="واتساب المجمع للاستفسارات"><span class="mf-social-circle" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 11.5a8 8 0 0 1-11.5 7.2L4 20l1.3-4.5A8 8 0 1 1 20 11.5Z"/><path d="M9 7.5c-.8 1.3.4 4 2.1 5.5 1.3 1.1 3.2 1.9 4.2.9l.5-1.1-2.2-1-1 .8c-1.1-.6-1.9-1.4-2.4-2.4l.7-1-1-2Z"/></svg></span><span>للاستفسارات</span></a></nav>
+<dialog id="mf-help-dialog" aria-labelledby="mf-help-title"><div class="mf-dialog-top"><h2 id="mf-help-title">تعليمات متابعة الدور</h2><button type="button" id="mf-help-close" aria-label="إغلاق التعليمات" autofocus>×</button></div><ol><li><strong>قبل دورك بحالتين:</strong> تواجد أمام العيادة.</li><li><strong>فاتك دورك؟</strong> يرجى إبلاغنا بوصولك.</li><li><strong>بعد تسجيل حضورك:</strong> تنتظر دخول حالتين، ثم تدخل.</li></ol></dialog>
+</section>
 <section id="view-qr" class="hidden-view">
   <div class="qr-display-shell">
     <header class="qr-display-header">
@@ -11755,7 +11819,10 @@ function renderMobileFollow(){
  const root=document.getElementById('view-mobile');
  const mode=location.hash==='#/mobile-third'?'third':location.hash==='#/mobile-ground'?'ground':'all';
  root.querySelectorAll('[data-mf-mode]').forEach(a=>{if(a.dataset.mfMode===mode)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
- document.getElementById('mf-connection').textContent=firebaseConnected?'الأرقام تتحدث تلقائيًا':'الاتصال غير مؤكد — قد تكون البيانات المعروضة غير محدثة';
+ const mobileOnline=firebaseConnected && navigator.onLine!==false;
+ const indicator=document.getElementById('mf-connection');
+ indicator.dataset.connection=mobileOnline?'online':'offline';
+ indicator.textContent=mobileOnline?'متصل بمتابعة الأدوار':'الاتصال منقطع — البيانات المعروضة قد تكون غير محدثة';
  const box=document.getElementById('mf-clinics');box.replaceChildren();
  const make=(tag,cls,value)=>{const el=document.createElement(tag);if(cls)el.className=cls;if(value!==undefined)el.textContent=value;return el;};
  if(!Object.keys(receptionClinicsData).length&&!firebaseConnected){box.textContent='في انتظار الاتصال لتحميل بيانات العيادات…';return;}
@@ -16519,6 +16586,33 @@ route();
   button.addEventListener("click",()=>{if(!dialog.open) dialog.showModal();});
   window.addEventListener("hashchange",()=>{if(dialog.open) dialog.close();});
   window.matchMedia("(max-width:900px)").addEventListener("change",event=>{if(!event.matches && dialog.open) dialog.close();});
+})();
+</script>
+
+<script id="mobile-patient-interactions">
+/* Mobile-only clock and native modal; no queue writes or TV handlers. */
+(()=>{
+ const root=document.getElementById('view-mobile');
+ const dialog=document.getElementById('mf-help-dialog');
+ const open=document.getElementById('mf-help-open');
+ const close=document.getElementById('mf-help-close');
+ let scrollPosition=0,previousOverflow='',overflowLocked=false;
+ function unlock(){if(!overflowLocked)return;document.body.style.overflow=previousOverflow;overflowLocked=false;window.scrollTo(0,scrollPosition);}
+ open.addEventListener('click',()=>{
+  if(dialog.open)return;
+  scrollPosition=window.scrollY;previousOverflow=document.body.style.overflow;
+  dialog.showModal();document.body.style.overflow='hidden';overflowLocked=true;
+ });
+ close.addEventListener('click',()=>dialog.close());
+ dialog.addEventListener('close',unlock);
+ new MutationObserver(()=>{if(root.classList.contains('hidden-view')&&dialog.open){dialog.close();unlock();}}).observe(root,{attributes:true,attributeFilter:['class']});
+ const clock=new Intl.DateTimeFormat('ar-EG',{timeZone:'Africa/Cairo',hour:'numeric',minute:'2-digit',hour12:true});
+ const day=new Intl.DateTimeFormat('ar-EG',{timeZone:'Africa/Cairo',weekday:'long'});
+ const date=new Intl.DateTimeFormat('ar-EG',{timeZone:'Africa/Cairo',day:'numeric',month:'long',year:'numeric'});
+ function tick(){if(root.classList.contains('hidden-view'))return;const now=new Date();document.getElementById('mf-clock').textContent=clock.format(now);document.getElementById('mf-day').textContent=day.format(now);document.getElementById('mf-date').textContent=date.format(now);}
+ tick();setInterval(tick,1000);
+ new MutationObserver(tick).observe(root,{attributes:true,attributeFilter:['class']});
+ for(const event of ['online','offline'])window.addEventListener(event,()=>{if(root.classList.contains('hidden-view'))return;const indicator=document.getElementById('mf-connection');const online=firebaseConnected&&navigator.onLine!==false;indicator.dataset.connection=online?'online':'offline';indicator.textContent=online?'متصل بمتابعة الأدوار':'الاتصال منقطع — البيانات المعروضة قد تكون غير محدثة';});
 })();
 </script>
 </body>
