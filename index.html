@@ -8389,6 +8389,16 @@
 #view-reception .reception-closed-item{flex:1 1 180px}
 }
 </style>
+<style id="tv-prepared-waiting-purple">
+/* Only TV cards awaiting the first examination. */
+#view-tv#view-tv .queue-card[data-waiting="true"]{--state-ink:#7352a1;--state-soft:#f3edfb;--state-border:#d8c6ee;--state-heading:#8561a6;border-color:#d8c6ee!important}
+#view-tv#view-tv .queue-card[data-waiting="true"] .queue-card-title{background:linear-gradient(135deg,#7352a1,#9370bd)!important;color:#fff!important}
+#view-tv#view-tv .queue-card[data-waiting="true"] .queue-clinic-name,#view-tv#view-tv .queue-card[data-waiting="true"] .room-badge{color:#fff!important}
+#view-tv#view-tv .queue-card[data-waiting="true"] .queue-number-box{background:#f3edfb!important;border-color:#d8c6ee!important}
+#view-tv#view-tv .queue-card[data-waiting="true"] .queue-number,#view-tv#view-tv .queue-card[data-waiting="true"] .queue-number-label{color:#7352a1!important}
+#view-tv#view-tv .queue-card[data-waiting="true"] .queue-status{background:#f3edfb!important;color:#7352a1!important}
+#view-tv#view-tv .queue-card[data-waiting="true"] .queue-status-dot{background:#9370bd!important}
+</style>
 </head>
 <body>
 <div id="networkStatusIndicator" class="network-status-indicator" role="status" aria-live="polite">
