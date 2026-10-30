@@ -8159,6 +8159,34 @@
 #view-tv#view-tv .queue-card[data-has-missed="false"] .queue-card-body{grid-template-rows:auto minmax(90px,1fr) auto auto!important}
 }
 </style>
+
+<style id="mobile-follow-styles">
+#view-mobile{max-width:760px;margin:auto;padding:16px 12px 32px;color:#253348;direction:rtl;height:auto;overflow:visible}
+#view-mobile *{box-sizing:border-box}
+#view-mobile .mf-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+#view-mobile h1{font-size:24px;font-weight:800;margin:16px 0}
+#view-mobile a{color:#a3334e;text-decoration:none}
+#view-mobile .mf-tabs{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+#view-mobile .mf-tabs a{padding:10px 13px;border:1px solid #e1bac4;border-radius:12px;background:#fff;font-weight:700}
+#view-mobile .mf-tabs a[aria-current="page"]{background:#a3334e;color:#fff}
+#view-mobile .mf-help{background:#fff8eb;border:1px solid #edce91;border-radius:16px;padding:16px;line-height:1.9;margin:16px 0}
+#view-mobile .mf-help h2{font-weight:800;font-size:18px;margin:0 0 8px}
+#view-mobile .mf-floor{font-size:21px;font-weight:800;margin:24px 0 12px}
+#view-mobile .mf-card{background:white;border:1px solid #d9e0e9;border-radius:16px;margin:12px 0;overflow:hidden;box-shadow:0 3px 12px #14223909}
+#view-mobile .mf-head{display:flex;justify-content:space-between;align-items:center;gap:10px;background:#f1f4f8;padding:13px}
+#view-mobile .mf-head h3{font-size:19px;font-weight:800;margin:0;overflow-wrap:anywhere}
+#view-mobile .mf-room{white-space:nowrap;font-weight:700;font-size:14px}
+#view-mobile .mf-body{padding:14px;line-height:1.7}
+#view-mobile .mf-status{display:inline-block;padding:4px 9px;border-radius:8px;background:#edf0f4;margin:8px 0;font-size:14px}
+#view-mobile .mf-card[data-status="active"] .mf-status{background:#e6f5eb;color:#166534}
+#view-mobile .mf-card[data-status="waiting"] .mf-status{background:#f1eafa;color:#7136a3}
+#view-mobile .mf-card[data-status="finished"] .mf-status{background:#fff0f0;color:#aa283b}
+#view-mobile .mf-card[data-status="break"] .mf-status{background:#fff5d9;color:#855300}
+#view-mobile .mf-number{text-align:center;padding:14px 8px;background:#f7f9fc;border-radius:12px;margin:8px 0}
+#view-mobile .mf-number strong{display:block;font-size:56px;line-height:1.3;font-weight:800}
+#view-mobile .mf-number.mf-message strong{font-size:23px}
+#view-mobile .mf-strip{padding:9px 0;border-top:1px solid #edf0f4;overflow-wrap:anywhere}
+</style>
 </head>
 <body>
 <div id="networkStatusIndicator" class="network-status-indicator" role="status" aria-live="polite">
@@ -8188,6 +8216,8 @@
     </header>
 
     <nav class="portal-shortcuts" aria-label="روابط المتابعة والعرض">
+<a href="#/mobile" class="portal-shortcut" title="متابعة الأدوار على الجوال"><span class="portal-shortcut-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M10 5h4M11 19h2"/></svg></span><span class="portal-shortcut-text"><strong>متابعة الأدوار على الجوال</strong><small>كل العيادات أو الدور الثالث أو الأرضي</small></span><span class="portal-shortcut-arrow" aria-hidden="true">←</span></a>
+
       <a href="#/qr" class="portal-shortcut qr-shortcut" title="QR متابعة العيادات">
         <span class="portal-shortcut-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -9069,6 +9099,7 @@
 <!-- ============================================================
      شاشة QR المجمعة لمتابعة أدوار العيادات
 ============================================================ -->
+<section id="view-mobile" class="hidden-view" dir="rtl"><div class="mf-top"><h1>متابعة أدوار العيادات</h1><a href="#/home">الرئيسية</a></div><nav class="mf-tabs" aria-label="اختيار الدور"><a href="#/mobile" data-mf-mode="all">كل العيادات · ١٢</a><a href="#/mobile-third" data-mf-mode="third">الدور الثالث · ٨</a><a href="#/mobile-ground" data-mf-mode="ground">الدور الأرضي · ٤</a></nav><aside class="mf-help"><h2>تعليمات متابعة الدور</h2><p>قبل دورك بحالتين: تواجد أمام العيادة.</p><p>فاتك دورك؟ يرجى إبلاغنا بوصولك.</p><p>بعد تسجيل حضورك تنتظر دخول حالتين، ثم تدخل.</p></aside><p id="mf-connection" role="status"></p><div id="mf-clinics" aria-live="polite">جارٍ تحميل بيانات العيادات…</div></section>
 <section id="view-qr" class="hidden-view">
   <div class="qr-display-shell">
     <header class="qr-display-header">
@@ -11377,6 +11408,7 @@ function handleAllClinicsSnapshot(snapshot){
   );
 
   receptionClinicsData = clinics;
+  if(!$("#view-mobile").classList.contains("hidden-view")) renderMobileFollow();
   trackReceptionQueueChanges(clinics);
 
   const tvVisible = !$("#view-tv").classList.contains("hidden-view");
@@ -11404,7 +11436,7 @@ function stopAllClinicsListener(){
 }
 
 function syncAllClinicsListenerForView(viewName){
-  if(["tv","reception","admin","qr"].includes(viewName)){
+  if(["mobile","tv","reception","admin","qr"].includes(viewName)){
     startAllClinicsListener();
   }else{
     stopAllClinicsListener();
@@ -11480,7 +11512,7 @@ function isAdminUser(user = auth.currentUser){
 }
 
 const VIEWS = [
-  "home","login","setup","nurse","tv","qr","reception","patient","reception-login",
+  "mobile","home","login","setup","nurse","tv","qr","reception","patient","reception-login",
   "staff-manager-login","staff-manager","admin-login","admin"
 ];
 const SETUP_KEY = "islahQueueSetup:" + DISPLAY_SLOT_ID;
@@ -11523,6 +11555,39 @@ function show(v){
     renderTvDashboardFromClinics(receptionClinicsData, false);
   }
 }
+
+/* Independent public mobile renderer: no TV markup, CSS or writes. */
+function renderMobileFollow(){
+ const root=document.getElementById('view-mobile');
+ const mode=location.hash==='#/mobile-third'?'third':location.hash==='#/mobile-ground'?'ground':'all';
+ root.querySelectorAll('[data-mf-mode]').forEach(a=>{if(a.dataset.mfMode===mode)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
+ document.getElementById('mf-connection').textContent=firebaseConnected?'الأرقام تتحدث تلقائيًا':'الاتصال غير مؤكد — قد تكون البيانات المعروضة غير محدثة';
+ const box=document.getElementById('mf-clinics');box.replaceChildren();
+ const make=(tag,cls,value)=>{const el=document.createElement(tag);if(cls)el.className=cls;if(value!==undefined)el.textContent=value;return el;};
+ if(!Object.keys(receptionClinicsData).length&&!firebaseConnected){box.textContent='في انتظار الاتصال لتحميل بيانات العيادات…';return;}
+ ['third','ground'].filter(f=>mode==='all'||f===mode).forEach(f=>{
+ box.append(make('h2','mf-floor',f==='third'?'عيادات الدور الثالث':'عيادات الدور الأرضي'));
+ ROOM_OPTIONS.filter(r=>r.floor===f).forEach(room=>{
+ const d=receptionDataForRoom(room), status=receptionStatusInfo(d);
+ const card=make('article','mf-card');card.dataset.status=status.key;
+ const head=make('div','mf-head');head.append(make('h3','',d.clinicName||d.specialty||room.place),make('span','mf-room','غرفة '+ar(room.id)));
+ const body=make('div','mf-body');body.append(make('p','',doctorDisplayFromData(d)),make('p','mf-status',status.label));
+ const current=Number(d.current)||0;
+ const message=['idle','waiting','finished','break'].includes(status.key);
+ const number=make('div','mf-number'+(message?' mf-message':''));
+ number.append(make('span','',message?'حالة العيادة':d.recallMode?(d.recallKind==='continuation'?'استكمال كشف / إجراء':'إعادة نداء دور فائت'):'جاري الكشف — الرقم بالداخل'),make('strong','',message?status.label:ar(typeof d.displayCurrent==='number'?d.displayCurrent:current)));
+ body.append(number);
+ if(d.recallMode)body.append(make('p','','وصل الكشف إلى: '+ar(current)));
+ if(d.noWaitingNumber===current&&d.noWaitingAt&&status.key==='active')body.append(make('p','mf-strip','لا يوجد انتظار حاليًا'));
+ if(bookingStateForToday(room.id).closed===true||d.status==='finished')body.append(make('p','mf-strip','الحجز مغلق'));
+ const missed=receptionPendingMissed(d).map(x=>ar(x.number));
+ const continuation=Object.entries(d.continuationTurns||{}).filter(([k,v])=>v&&v.status!=='done').map(([k])=>ar(k));
+ body.append(make('p','mf-strip','الأدوار الفائتة: '+(missed.join('، ')||'لا توجد')),make('p','mf-strip','استكمال كشف / إجراء: '+(continuation.join('، ')||'لا يوجد')));
+ card.append(head,body);box.append(card);
+ });
+ });
+}
+
 function route(){
   if(restoreNursingResume()) return;
   const h = (location.hash || "#/home").replace("#/","");
@@ -11532,7 +11597,8 @@ function route(){
     return;
   }
   syncAdminRoomControls();
-  if(h === "home")      { show("home"); }
+  if(["mobile","mobile-third","mobile-ground"].includes(h)){ show("mobile"); renderMobileFollow(); }
+  else if(h === "home")      { show("home"); }
   else if(h === "tv")   { setTvDisplayMode("all"); show("tv"); startClock(); }
   else if(h === "tv-slideshow") { setTvDisplayMode("slideshow"); show("tv"); startClock(); }
   else if(h === "tv-individual") { location.replace("#/tv"); return; }
@@ -15860,7 +15926,7 @@ auth.onAuthStateChanged(user=>{
     sessionStorage.removeItem(SETUP_KEY);
     setupData = null;
     const currentView = (location.hash || "#/home").replace("#/","");
-    if(!["home","nurse","setup","nursing-control","tv","tv-slideshow","tv-individual","tv-third","tv-third-slideshow","tv-ground","qr","reception","patient","clinics-manager","nursing-manager","staff-manager-login","staff-manager","admin-login","admin"].includes(currentView)){
+    if(!["mobile","mobile-third","mobile-ground","home","nurse","setup","nursing-control","tv","tv-slideshow","tv-individual","tv-third","tv-third-slideshow","tv-ground","qr","reception","patient","clinics-manager","nursing-manager","staff-manager-login","staff-manager","admin-login","admin"].includes(currentView)){
       location.hash = "#/home";
     }
     route();
@@ -15882,7 +15948,7 @@ auth.onAuthStateChanged(user=>{
 
   if(isAdminUser(user)){
     const currentView = (location.hash || "#/home").replace("#/", "");
-    if(!["home","tv","tv-slideshow","tv-individual","tv-third","tv-third-slideshow","tv-ground","qr","patient","admin","admin-login","setup","nurse"].includes(currentView)) location.hash = "#/admin";
+    if(!["mobile","mobile-third","mobile-ground","home","tv","tv-slideshow","tv-individual","tv-third","tv-third-slideshow","tv-ground","qr","patient","admin","admin-login","setup","nurse"].includes(currentView)) location.hash = "#/admin";
     syncAdminRoomControls();
     route();
     return;
@@ -15892,7 +15958,7 @@ auth.onAuthStateChanged(user=>{
     stopAdminAuditListener();
     stopAdminPresenceListener();
     const currentView = (location.hash || "#/home").replace("#/", "");
-    if(!["home","tv","tv-slideshow","tv-individual","tv-third","tv-third-slideshow","tv-ground","qr","patient","staff-manager","staff-manager-login"].includes(currentView)) location.hash = "#/staff-manager";
+    if(!["mobile","mobile-third","mobile-ground","home","tv","tv-slideshow","tv-individual","tv-third","tv-third-slideshow","tv-ground","qr","patient","staff-manager","staff-manager-login"].includes(currentView)) location.hash = "#/staff-manager";
     route();
     return;
   }
@@ -15901,13 +15967,13 @@ auth.onAuthStateChanged(user=>{
     stopAdminAuditListener();
     stopAdminPresenceListener();
     const currentView = (location.hash || "#/home").replace("#/", "");
-    if(!["home", "tv", "tv-slideshow", "tv-individual", "tv-third", "tv-third-slideshow", "tv-ground", "qr", "patient"].includes(currentView)) location.hash = "#/reception";
+    if(!["mobile","mobile-third","mobile-ground","home", "tv", "tv-slideshow", "tv-individual", "tv-third", "tv-third-slideshow", "tv-ground", "qr", "patient"].includes(currentView)) location.hash = "#/reception";
     route();
     return;
   }
 
   const currentView = (location.hash || "#/home").replace("#/","");
-  if(!["home","tv","tv-slideshow","tv-individual","tv-third","tv-third-slideshow","tv-ground","qr","reception","patient"].includes(currentView)){
+  if(!["mobile","mobile-third","mobile-ground","home","tv","tv-slideshow","tv-individual","tv-third","tv-third-slideshow","tv-ground","qr","reception","patient"].includes(currentView)){
     if(!isSharedNurseUser(user)){
       const authorizedRoom = authorizedRoomForUser(user);
       if(!authorizedRoom){
