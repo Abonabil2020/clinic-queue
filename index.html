@@ -9496,6 +9496,15 @@
             <div id="rcMissedList" class="reception-missed-list"></div>
           </section>
 
+          <section class="reception-missed-section" aria-live="polite" aria-labelledby="rcContinuationTitle">
+            <div class="reception-missed-head">
+              <h3 id="rcContinuationTitle" class="reception-missed-title">استكمال كشف / إجراء</h3>
+              <span id="rcContinuationCount" class="reception-missed-count num">٠</span>
+            </div>
+            <div id="rcContinuationEmpty" class="reception-missed-empty">لا يوجد استكمال كشف / إجراء في هذه العيادة</div>
+            <div id="rcContinuationList" class="reception-missed-list"></div>
+          </section>
+
           <div class="reception-qr-wrap">
             <p class="font-bold text-sm text-slate-800">كود المريض (QR)</p>
             <p class="text-[11px] text-slate-500 mt-1 mb-2">خاص بالعيادة المختارة لمتابعة الدور من الموبايل</p>
@@ -10853,6 +10862,13 @@ function renderQrDashboard(){
   });
 }
 
+function receptionPendingContinuation(data){
+  return Object.entries(data.continuationTurns || {})
+    .filter(([number,item])=>Number.isInteger(Number(number)) && Number(number)>0 && item && item.status !== "done")
+    .map(([number,item])=>({number:Number(number),status:item.status}))
+    .sort((a,b)=>a.number-b.number);
+}
+
 function renderReceptionDetail(){
   const room = ROOM_OPTIONS.find(item=>item.id === receptionSelectedRoom) || ROOM_OPTIONS[0];
   if(!room) return;
@@ -10895,6 +10911,25 @@ function renderReceptionDetail(){
     state.textContent = item.status === "recalling" ? "جارٍ إعادة النداء" : "لم يحضر";
     chip.append(number,state);
     missedList.appendChild(chip);
+  });
+
+  const continuation = receptionPendingContinuation(data);
+  $("#rcContinuationCount").textContent = ar(continuation.length);
+  $("#rcContinuationEmpty").classList.toggle("hidden-view", continuation.length > 0);
+  const continuationList = $("#rcContinuationList");
+  continuationList.replaceChildren();
+  continuation.forEach(item=>{
+    const chip = document.createElement("span");
+    chip.className = "reception-missed-chip";
+    chip.dataset.turnStatus = item.status === "recalling" ? "recalling" : "waiting";
+    const number = document.createElement("strong");
+    number.className = "reception-missed-number num";
+    number.textContent = ar(item.number);
+    const label = document.createElement("span");
+    label.className = "reception-missed-state";
+    label.textContent = item.status === "recalling" ? "جارٍ الاستدعاء للاستكمال" : "في انتظار الاستكمال";
+    chip.append(number,label);
+    continuationList.appendChild(chip);
   });
 
   const statusEl = $("#rcStatus");
@@ -10975,6 +11010,7 @@ function renderReceptionDashboard(){
     const displayCurrent = typeof data.displayCurrent === "number" ? data.displayCurrent : current;
     const closed = data.status === "finished" || data.status === "idle";
     const pendingMissed = receptionPendingMissed(data).length;
+    const pendingContinuation = receptionPendingContinuation(data).length;
     const clinicName = data.clinicName || data.specialty || room.place;
     const roomName = room.place || "غرفة " + room.id;
     const doctor = doctorDisplayFromData(data);
@@ -11007,6 +11043,7 @@ function renderReceptionDashboard(){
           '<div class="reception-card-meta">' +
             (data.status === "active" && !data.recallMode && !data.prepared && Number(data.current) > 0 && Number(data.noWaitingNumber) === Number(data.current) && Boolean(data.noWaitingAt) ? '<span class="reception-status-pill" style="background:#DC2626;color:#fff;border-color:#DC2626;font-weight:800">✓ لا يوجد انتظار حاليا</span>' : '<span class="reception-status-pill"><span class="dot ' + status.dot + '" style="width:7px;height:7px"></span>' + status.label + '</span>') +
             (data.recallMode && !closed ? '<span class="reception-small-meta" style="font-weight:700;color:var(--rc-accent)">وصل الكشف إلى: <b class="num">' + ar(typeof data.previousDisplay === "number" ? data.previousDisplay : current) + '</b></span>' : '') +
+            (pendingContinuation > 0 ? '<span class="reception-small-meta">استكمال كشف / إجراء: <b class="num">' + ar(pendingContinuation) + '</b></span>' : '') +
             '<span class="reception-small-meta">فائتة: <b class="num">' + ar(pendingMissed) + '</b> • آخر نداء: <b class="num">' + timeStr(data.updatedAt) + '</b></span>' +
           '</div>' +
         '</div>' +
