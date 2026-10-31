@@ -8472,6 +8472,13 @@
 #view-reception #receptionClinicGrid .reception-last-update{display:inline-flex;flex:0 0 auto;align-items:center;gap:4px;box-sizing:border-box;padding:3px 6px;border:1px solid #e2e8f0;border-radius:999px;background:#f1f5f9;color:#475569;font-size:10px;line-height:1.5;white-space:nowrap}
 #view-reception #receptionClinicGrid .reception-last-update .num{font-size:12px;font-weight:800;color:#1e293b;white-space:nowrap}
 </style>
+<style id="reception-header-spacing-fix">
+/* Only reception card header coverage and title spacing. */
+#view-reception #receptionClinicGrid .reception-clinic-card{display:flex;flex-direction:column;justify-content:flex-start;padding:0}
+#view-reception #receptionClinicGrid .reception-card-head{flex:0 0 auto;width:100%;height:auto;min-height:88px;box-sizing:border-box;padding:12px 16px;gap:12px;align-items:center;border-radius:0}
+#view-reception #receptionClinicGrid .reception-card-title-wrap{min-width:0;gap:4px}
+#view-reception #receptionClinicGrid .reception-card-name{font-size:clamp(17px,5.4cqi,21px);line-height:1.4;display:block;white-space:normal;overflow:visible;overflow-wrap:break-word;-webkit-line-clamp:unset}
+</style>
 </head>
 <body>
 <div id="networkStatusIndicator" class="network-status-indicator" role="status" aria-live="polite">
