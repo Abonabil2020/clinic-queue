@@ -8475,9 +8475,10 @@
 <style id="reception-header-spacing-fix">
 /* Only reception card header coverage and title spacing. */
 #view-reception #receptionClinicGrid .reception-clinic-card{display:flex;flex-direction:column;justify-content:flex-start;padding:0}
-#view-reception #receptionClinicGrid .reception-card-head{flex:0 0 auto;width:100%;height:auto;min-height:88px;box-sizing:border-box;padding:12px 16px;gap:12px;align-items:center;border-radius:0}
-#view-reception #receptionClinicGrid .reception-card-title-wrap{min-width:0;gap:4px}
-#view-reception #receptionClinicGrid .reception-card-name{font-size:clamp(17px,5.4cqi,21px);line-height:1.4;display:block;white-space:normal;overflow:visible;overflow-wrap:break-word;-webkit-line-clamp:unset}
+#view-reception #receptionClinicGrid .reception-card-head{flex:0 0 auto;width:100%;height:auto;min-height:64px;box-sizing:border-box;padding:6px 14px;gap:10px;align-items:center;border-radius:0}
+#view-reception #receptionClinicGrid .reception-card-title-wrap{min-width:0;gap:2px}
+#view-reception #receptionClinicGrid .reception-card-name{font-size:clamp(16px,4.8cqi,18px);line-height:1.25;display:block;white-space:normal;overflow:visible;overflow-wrap:break-word;-webkit-line-clamp:unset}
+#view-reception #receptionClinicGrid .reception-card-name.reception-card-name-long{font-size:15px;line-height:1.25}
 </style>
 </head>
 <body>
@@ -11142,6 +11143,7 @@ function renderReceptionDashboard(){
     const pendingMissed = receptionPendingMissed(data).length;
     const pendingContinuation = receptionPendingContinuation(data).length;
     const clinicName = data.clinicName || data.specialty || room.place;
+    const displayClinicName = String(clinicName || "").replace(/^\s*عيادة\s+/, "");
     const roomName = room.place || "غرفة " + room.id;
     const doctor = doctorDisplayFromData(data);
     const nurse = data.nurse && data.nurse !== "—" ? data.nurse : "لا يوجد تمريض مسجل";
@@ -11156,7 +11158,7 @@ function renderReceptionDashboard(){
     card.innerHTML =
       '<div class="reception-card-head">' +
         '<div class="reception-card-title-wrap">' +
-          '<div class="reception-card-name">' + escapeHtml(clinicName) + '</div>' +
+          '<div class="reception-card-name' + (displayClinicName.length > 25 ? ' reception-card-name-long' : '') + '">' + escapeHtml(displayClinicName) + '</div>' +
           '<span class="reception-room-name">' + escapeHtml(roomName) + '</span>' +
         '</div>' +
         '<span class="reception-room-badge"><strong class="num">' + room.id + '</strong></span>' +
