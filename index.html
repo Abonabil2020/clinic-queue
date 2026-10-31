@@ -9762,7 +9762,36 @@ const ROOM_ACCOUNTS = [
   { roomId:"109", username:"109", email:"room109@islah.clinic" }
 ];
 
-const NURSING_RESUME_KEY = "islahNursingResume:" + location.pathname;
+// Separate persistent authentication for each staff interface.
+const AUTH_SCOPE_KEY = "islahAuthScope:" + location.pathname;
+const AUTH_SCOPES = ["nurse", "reception", "clinics-manager", "nursing-manager", "admin"];
+function authScopeForRoute(hash, previous = "nurse"){
+  const view = (hash || "#/home").replace("#/", "");
+  if(["admin", "admin-login"].includes(view)) return "admin";
+  if(["reception", "reception-login"].includes(view)) return "reception";
+  if(view === "clinics-manager" || view === "nursing-manager") return view;
+  if(["staff-manager", "staff-manager-login"].includes(view))
+    return ["clinics-manager", "nursing-manager"].includes(previous) ? previous : "clinics-manager";
+  if(view === "nursing-control" || view === "login") return "nurse";
+  if(["setup", "nurse"].includes(view)) return previous === "admin" ? "admin" : "nurse";
+  return AUTH_SCOPES.includes(previous) ? previous : "nurse";
+}
+let savedAuthScope = "nurse";
+try { savedAuthScope = sessionStorage.getItem(AUTH_SCOPE_KEY) || "nurse"; } catch(e) {}
+const AUTH_SCOPE = authScopeForRoute(location.hash, savedAuthScope);
+try { sessionStorage.setItem(AUTH_SCOPE_KEY, AUTH_SCOPE); } catch(e) {}
+let authScopeReloading = false;
+function ensureAuthScope(){
+  if(authScopeReloading) return false;
+  const next = authScopeForRoute(location.hash, AUTH_SCOPE);
+  if(next === AUTH_SCOPE) return true;
+  authScopeReloading = true;
+  try { sessionStorage.setItem(AUTH_SCOPE_KEY, next); } catch(e) {}
+  location.reload();
+  return false;
+}
+
+const NURSING_RESUME_KEY = "islahNursingResume:" + location.pathname + (AUTH_SCOPE === "nurse" ? "" : ":" + AUTH_SCOPE);
 let nursingResume = null;
 try { nursingResume = JSON.parse(localStorage.getItem(NURSING_RESUME_KEY) || "null"); } catch(e) {}
 const explicitRoom = new URLSearchParams(location.search).get("room");
@@ -9807,8 +9836,8 @@ const CLINIC_OPTIONS = [
 
 const MAX_NUMBER = 50;
 
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
+const queueApp = firebase.initializeApp(firebaseConfig, "islah-" + AUTH_SCOPE);
+const auth = queueApp.auth();
 const NURSING_EMAIL = "nurse@islah.clinic";
 function isSharedNurseUser(user = auth.currentUser){
   return Boolean(user && !user.isAnonymous && String(user.email || "").toLowerCase() === NURSING_EMAIL);
@@ -9817,18 +9846,18 @@ function showNursingLogin(){
   $("#loginEmail").value = "nurse";
   show("login");
 }
-const clinicRef = firebase.database().ref("clinics/" + DISPLAY_SLOT_ID);
-const allClinicsRef = firebase.database().ref("clinics");
-const staffDirectoryRef = firebase.database().ref("staffDirectory");
-const auditLogsRef = firebase.database().ref("auditLogs");
-const presenceRootRef = firebase.database().ref("presence");
+const clinicRef = queueApp.database().ref("clinics/" + DISPLAY_SLOT_ID);
+const allClinicsRef = queueApp.database().ref("clinics");
+const staffDirectoryRef = queueApp.database().ref("staffDirectory");
+const auditLogsRef = queueApp.database().ref("auditLogs");
+const presenceRootRef = queueApp.database().ref("presence");
 const presenceSessionRef = presenceRootRef.push();
 const SPARK_CONNECTION_LIMIT = 100;
 let adminPresenceListening = false;
 let adminPresenceValueHandler = null;
 let adminPresenceErrorHandler = null;
 let presenceRegistrationBusy = false;
-const networkConnectionRef = firebase.database().ref(".info/connected");
+const networkConnectionRef = queueApp.database().ref(".info/connected");
 let browserOnline = navigator.onLine;
 let firebaseConnected = false;
 
@@ -10146,7 +10175,7 @@ const DASHBOARD_STATUS = {
   idle:     "في انتظار التشغيل"
 };
 
-const bookingRef = firebase.database().ref("bookingStatus");
+const bookingRef = queueApp.database().ref("bookingStatus");
 let bookingStates = {}, bookingLoaded = false, bookingBusy = false;
 function bookingInfo(roomId){
   if(!bookingLoaded || !firebaseConnected) return {key:"unknown", label:"حالة الحجز غير مؤكدة — جارٍ الاتصال"};
@@ -11395,7 +11424,7 @@ async function clearAdminRoom(roomId){
   renderAdminDashboard();
   try{
     if(!isAdminUser() || !firebaseConnected) throw new Error("unavailable");
-    await firebase.database().ref().update({
+    await queueApp.database().ref().update({
       ["clinics/" + roomId]:null,
       ["bookingStatus/" + roomId]:null,
       ["officialCounts/" + roomId]:null
@@ -11791,7 +11820,7 @@ const CLINICS_MANAGER_EMAIL = "clinics_manager@islah.clinic";
 const NURSING_MANAGER_EMAIL = "nursing_manager@islah.clinic";
 const ADMIN_EMAIL = "admin@islah.clinic";
 
-let staffManagerLoginRole = "clinics_manager";
+let staffManagerLoginRole = AUTH_SCOPE === "nursing-manager" ? "nursing_manager" : "clinics_manager";
 
 function isReceptionUser(user = auth.currentUser){
   return String(user?.email || "").toLowerCase() === RECEPTION_EMAIL;
@@ -12036,6 +12065,7 @@ function renderMobileFollow(){
 }
 
 function route(){
+  if(!ensureAuthScope()) return;
   if(restoreNursingResume()) return;
   const h = (location.hash || "#/home").replace("#/","");
   if(["nurse","setup","nursing-control"].includes(h) && !nursingAuthReady){
@@ -12108,7 +12138,7 @@ function route(){
       show("setup"); prefillSetup();
     }
   }
-  else if(isStaffManagerUser()){ location.hash = "#/staff-manager"; show("staff-manager"); renderStaffManager(); }
+  else if(isStaffManagerUser()){ location.hash = AUTH_SCOPE === "nursing-manager" ? "#/nursing-manager" : "#/clinics-manager"; show("staff-manager"); renderStaffManager(); }
   else if(isReceptionUser()){ location.hash = "#/reception"; show("reception"); renderReceptionDashboard(); }
   else if(isAdminUser() && !["setup","nurse"].includes(h)){ location.hash = "#/admin"; show("admin"); renderAdminDashboard(); }
   else if(!nursingRoomAccess())  { showNursingLogin(); }
@@ -13193,9 +13223,9 @@ $("#saveSetupBtn").addEventListener("click", async ()=>{
   const disabledBefore = controls.map(el=>el.disabled);
   controls.forEach(el=>el.disabled = true);
   const roomId = DISPLAY_SLOT_ID;
-  const expectedPeriodId = !takeover && !edit ? firebase.database().ref().push().key : null;
+  const expectedPeriodId = !takeover && !edit ? queueApp.database().ref().push().key : null;
   const before = nursingPeriod;
-  const handoverId = takeover || !edit ? firebase.database().ref().push().key : before.handoverId;
+  const handoverId = takeover || !edit ? queueApp.database().ref().push().key : before.handoverId;
   const editingIdentity = currentNursingIdentity();
   let clinicWriteCompleted = false;
   try{
@@ -14165,7 +14195,7 @@ function buildImportPayload(data){
       updates["specialties/" + existing.id + "/active"] = true;
       updates["specialties/" + existing.id + "/updatedAt"] = timestamp;
     }else{
-      const id = firebase.database().ref().push().key;
+      const id = queueApp.database().ref().push().key;
       specialtyIdByKey.set(key,id);
       updates["specialties/" + id] = {
         name,
@@ -14192,7 +14222,7 @@ function buildImportPayload(data){
       updates["doctors/" + existing.id + "/updatedAt"] = timestamp;
       updatedDoctors++;
     }else{
-      const id = firebase.database().ref().push().key;
+      const id = queueApp.database().ref().push().key;
       updates["doctors/" + id] = {
         name:item.name,
         shortName:item.shortName || item.name,
@@ -14214,7 +14244,7 @@ function buildImportPayload(data){
       updates["nurses/" + existing.id + "/active"] = true;
       updates["nurses/" + existing.id + "/updatedAt"] = timestamp;
     }else{
-      const id = firebase.database().ref().push().key;
+      const id = queueApp.database().ref().push().key;
       updates["nurses/" + id] = {
         name,
         active:true,
@@ -14301,7 +14331,7 @@ async function commitStaffImport(){
       if(isNursing){
         const nursesObj = {};
         data.nurses.forEach(name=>{
-          const id = firebase.database().ref().push().key;
+          const id = queueApp.database().ref().push().key;
           nursesObj[id] = {
             name,
             active:true,
@@ -14322,7 +14352,7 @@ async function commitStaffImport(){
         const doctorsObj = {};
 
         data.specialties.forEach(name=>{
-          const id = firebase.database().ref().push().key;
+          const id = queueApp.database().ref().push().key;
           specialtyIds.set(staffImportKey(name),id);
           specialtiesObj[id] = {
             name,
@@ -14335,7 +14365,7 @@ async function commitStaffImport(){
         data.doctors.forEach(item=>{
           const specialtyId = specialtyIds.get(staffImportKey(item.specialty));
           if(!specialtyId) return;
-          const id = firebase.database().ref().push().key;
+          const id = queueApp.database().ref().push().key;
           doctorsObj[id] = {
             name:item.name,
             shortName:item.shortName || item.name,
@@ -15077,7 +15107,7 @@ $("#staffSpecialtyForm").addEventListener("submit", event=>{
     existing.name = name;
   }else{
     state.specialties.push({
-      id:firebase.database().ref().push().key,
+      id:queueApp.database().ref().push().key,
       name,
       active:true
     });
@@ -15110,7 +15140,7 @@ $("#staffDoctorForm").addEventListener("submit", event=>{
     existing.specialtyId = specialtyId;
   }else{
     state.doctors.push({
-      id:firebase.database().ref().push().key,
+      id:queueApp.database().ref().push().key,
       name,
       shortName,
       specialtyId,
@@ -15139,7 +15169,7 @@ $("#staffNurseForm").addEventListener("submit", event=>{
     existing.name = name;
   }else{
     state.nurses.push({
-      id:firebase.database().ref().push().key,
+      id:queueApp.database().ref().push().key,
       name,
       active:true
     });
@@ -15167,7 +15197,7 @@ $("#staffSeedDirectoryBtn").addEventListener("click", async ()=>{
   const updates = {};
   if(isNursing){
     EMBEDDED_STAFF_IMPORT.nurses.forEach(name=>{
-      const key = firebase.database().ref().push().key;
+      const key = queueApp.database().ref().push().key;
       updates["nurses/" + key] = {
         name,
         active:true,
@@ -15255,6 +15285,7 @@ $("#staffManagerLoginForm").addEventListener("submit", async event=>{
   button.disabled = true;
   button.textContent = "جاري الدخول...";
   try{
+    await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
     const credential = await auth.signInWithEmailAndPassword(config.email, password);
     const validUser = config.role === "nursing_manager"
       ? isNursingManagerUser(credential.user)
@@ -15266,7 +15297,7 @@ $("#staffManagerLoginForm").addEventListener("submit", async event=>{
     }
 
     $("#staffManagerPassword").value = "";
-    location.hash = "#/staff-manager";
+    location.hash = AUTH_SCOPE === "nursing-manager" ? "#/nursing-manager" : "#/clinics-manager";
     route();
   }catch(error){
     message.textContent = LOGIN_ERRORS[error.code] || "تعذر تسجيل الدخول";
@@ -15977,7 +16008,7 @@ function resetCurrentClinic(payload){
   if(!firebaseConnected) return Promise.reject(new Error("offline"));
   const fresh = {
     ...payload,
-    handoverId:payload.handoverId || firebase.database().ref().push().key,
+    handoverId:payload.handoverId || queueApp.database().ref().push().key,
     operationalDayKey:operationalDayKey(),
     period:payload.period || "",
     current:0,
@@ -15988,7 +16019,7 @@ function resetCurrentClinic(payload){
     sessionStart:firebase.database.ServerValue.TIMESTAMP,
     updatedAt:firebase.database.ServerValue.TIMESTAMP
   };
-  return firebase.database().ref().update({
+  return queueApp.database().ref().update({
     ["clinics/" + DISPLAY_SLOT_ID]:fresh,
     ["bookingStatus/" + DISPLAY_SLOT_ID]:null
   });
@@ -16218,6 +16249,7 @@ $("#adminLoginForm").addEventListener("submit", async event=>{
   button.disabled = true;
   button.textContent = "جاري الدخول...";
   try{
+    await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
     await auth.signInWithEmailAndPassword(ADMIN_EMAIL, password);
     $("#adminPassword").value = "";
     location.hash = "#/admin";
@@ -16258,6 +16290,7 @@ $("#receptionLoginForm").addEventListener("submit", async event=>{
   button.disabled = true;
   button.textContent = "جاري الدخول...";
   try{
+    await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
     await auth.signInWithEmailAndPassword(RECEPTION_EMAIL, password);
     $("#receptionPassword").value = "";
     location.hash = "#/reception";
@@ -16278,6 +16311,7 @@ $("#receptionLogout").addEventListener("click", async ()=>{
   }catch(error){ alert("تعذّر تسجيل الخروج. حاول مرة أخرى"); }
 });
 auth.onAuthStateChanged(user=>{
+  if(!ensureAuthScope()) return;
   nursingAuthReady = true;
   if(user) clearNursingAuthWait();
   renderBookingStatus();
@@ -16321,7 +16355,7 @@ auth.onAuthStateChanged(user=>{
     stopAdminAuditListener();
     stopAdminPresenceListener();
     const currentView = (location.hash || "#/home").replace("#/", "");
-    if(!["mobile","mobile-third","mobile-ground","home","tv","tv-slideshow","tv-individual","tv-third","tv-third-slideshow","tv-ground","qr","patient","staff-manager","staff-manager-login"].includes(currentView)) location.hash = "#/staff-manager";
+    if(!["mobile","mobile-third","mobile-ground","home","tv","tv-slideshow","tv-individual","tv-third","tv-third-slideshow","tv-ground","qr","patient","staff-manager","staff-manager-login"].includes(currentView)) location.hash = AUTH_SCOPE === "nursing-manager" ? "#/nursing-manager" : "#/clinics-manager";
     route();
     return;
   }
@@ -16551,7 +16585,7 @@ renderBookingStatus();
 
 /* Shared official booking count: one small record per room, saved on request only. */
 window.officialCounts = (()=>{
-  const root=firebase.database().ref('officialCounts');
+  const root=queueApp.database().ref('officialCounts');
   let values={},listening=false,ready=false,listener=null,activeView='',busy=false;
   const editors={};
   const node=id=>document.getElementById(id);
