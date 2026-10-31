@@ -9015,6 +9015,10 @@
       </div>
     </div>
 
+    <div id="clinicsManagerTools" class="hidden-view" style="margin:12px 0;display:flex;flex-wrap:wrap;gap:10px;align-items:center">
+      <p id="clinicsLastImport" role="status" style="flex:1 1 100%;font-size:14px">لم يُسجَّل اعتماد ملف بعد.</p>
+      <button id="clinicsExportExcel" type="button" class="px-4 py-2 rounded-xl bg-slate-100 text-sm font-bold">تنزيل ملف Excel الحالي</button>
+    </div>
     <div id="staffRoleGuide" class="staff-role-guide">
       <div class="staff-role-guide-main">
         <div id="staffRoleGuideTitle" class="staff-role-guide-title">صلاحيات الحساب</div>
@@ -12249,6 +12253,7 @@ function handleStaffDirectorySnapshot(snapshot){
   const data = snapshot.val() || {};
   staffDirectoryLoaded = true;
   staffDirectoryState = {
+    lastClinicsImport:data.lastClinicsImport || null,
     ready:data.meta?.ready === true,
     specialties:parseDirectoryCollection(data.specialties),
     doctors:parseDirectoryCollection(data.doctors),
@@ -14288,7 +14293,8 @@ function buildImportPayload(data){
   };
 }
 
-async function saveStaffImportUpdates(updates){
+async function saveStaffImportUpdates(updates, importReceipt = null){
+  if(importReceipt && staffManagerCanClinics()) updates = {...updates,lastClinicsImport:importReceipt};
   if(!staffManagerCanClinics()) return staffDirectoryRef.update(updates);
   await staffDirectoryRef.update(updates);
   let snapshot;
@@ -14326,6 +14332,13 @@ async function commitStaffImport(){
   }
 
   const mode = $("#staffImportMode").value;
+  const previousDoctorKeys = new Set(staffDirectoryState.doctors.map(item=>staffImportKey(item.name)));
+  const importReceipt = isNursing ? null : {
+    updatedAt:firebase.database.ServerValue.TIMESTAMP,
+    addedDoctors:new Set(data.doctors.map(item=>staffImportKey(item.name)).filter(key=>!previousDoctorKeys.has(key))).size,
+    source:String(data.source || "Excel"),
+    mode
+  };
   const actionText = isNursing
     ? (mode === "replace"
         ? "سيتم استبدال قائمة أسماء التمريض الحالية فقط ببيانات الملف، دون تغيير التخصصات أو الأطباء."
@@ -14403,7 +14416,7 @@ async function commitStaffImport(){
         await saveStaffImportUpdates({
           specialties:specialtiesObj,
           doctors:doctorsObj
-        });
+        }, importReceipt);
         writeAuditLog({
           action:"clinics_import_replace",
           summary:"استبدال قوائم العيادات: " + data.specialties.length + " تخصص، " + data.doctors.length + " طبيب"
@@ -14426,7 +14439,7 @@ async function commitStaffImport(){
         }
       });
 
-      await saveStaffImportUpdates(allowedUpdates);
+      await saveStaffImportUpdates(allowedUpdates, importReceipt);
 
       if(isNursing){
         writeAuditLog({
@@ -14458,6 +14471,7 @@ async function commitStaffImport(){
     button.disabled = false;
     button.textContent = oldText;
     refreshStaffManagerQuickBar();
+    renderClinicsManagerTools();
   }
 }
 
@@ -14982,10 +14996,57 @@ function filterStaffAdminList(key, resetScroll = false){
   $("#staff" + key + "Search").addEventListener("input",()=>filterStaffAdminList(key,true));
 });
 
+function renderClinicsManagerTools(){
+  const visible = isClinicsManagerUser();
+  $("#clinicsManagerTools").classList.toggle("hidden-view", !visible);
+  if(!visible) return;
+  const receipt = staffDirectoryState.lastClinicsImport;
+  const valid = receipt && Number(receipt.updatedAt) > 0;
+  const text = valid
+    ? "آخر اعتماد ملف: " + new Date(Number(receipt.updatedAt)).toLocaleString("ar-EG", {timeZone:"Africa/Cairo"}) +
+      " — أطباء جدد أُضيفوا: " + ar(Number(receipt.addedDoctors) || 0)
+    : "لم يُسجَّل اعتماد ملف بعد إضافة هذه الخاصية.";
+  $("#clinicsLastImport").textContent = text;
+  $("#clinicsExportExcel").disabled = !staffDirectoryLoaded || staffImportSaving;
+}
+function clinicsExportRows(directory){
+  const names = new Map(directory.specialties.map(item=>[item.id,item.name]));
+  const rows = [["اسم التخصص","اسم الطبيب","الاسم المختصر"]];
+  directory.doctors.filter(item=>item.active !== false).forEach(item=>{
+    const specialty = names.get(item.specialtyId);
+    if(!specialty || !item.name) throw new Error("doctor-without-specialty");
+    rows.push([specialty,item.name,item.shortName || item.name]);
+  });
+  return rows;
+}
+$("#clinicsExportExcel").addEventListener("click", async ()=>{
+  if(!isClinicsManagerUser() || !staffDirectoryLoaded || staffImportSaving) return;
+  const button = $("#clinicsExportExcel");
+  button.disabled = true;
+  try{
+    await loadStaffExcelLibrary();
+    const snapshot = await staffDirectoryRef.get();
+    const data = snapshot.val() || {};
+    const rows = clinicsExportRows({specialties:parseDirectoryCollection(data.specialties),doctors:parseDirectoryCollection(data.doctors)});
+    if(rows.length === 1) return staffAdminMessage("لا توجد بيانات أطباء محفوظة لتنزيلها.",false);
+    const sheet = XLSX.utils.aoa_to_sheet(rows);
+    sheet["!cols"] = [{wch:38},{wch:42},{wch:30}];
+    const workbook = XLSX.utils.book_new();
+    workbook.Workbook = {Views:[{RTL:true}]};
+    XLSX.utils.book_append_sheet(workbook,sheet,"الأطباء والتخصصات");
+    XLSX.writeFile(workbook,"أطباء-مجمع-الإصلاح.xlsx");
+  }catch(error){
+    staffAdminMessage(error?.message === "doctor-without-specialty"
+      ? "تعذر التنزيل: يوجد طبيب بدون تخصص مرتبط. راجع بياناته أولًا."
+      : "تعذر تنزيل الملف. راجع الاتصال وحاول مرة أخرى.",false);
+  }finally{ button.disabled = false; }
+});
+
 function renderStaffManager(){
   if(!$("#staffDirectoryStatus")) return;
   if(typeof updateStaffManagerTopButton === "function") updateStaffManagerTopButton();
   applyStaffManagerRoleUI();
+  renderClinicsManagerTools();
   $("#staffOpenReception").classList.toggle("hidden-view", !isClinicsManagerUser());
   $("#staffSavedNurseCount").textContent = ar(staffDirectoryState.nurses.length);
   $("#staffSavedDoctorCount").textContent = ar(staffDirectoryState.doctors.length);
