@@ -8407,6 +8407,33 @@
 #view-tv#view-tv .queue-card[data-status="break"][data-waiting="false"] .queue-number{font-size:clamp(64px,22vh,400px)!important}
 #view-tv#view-tv .queue-public-chip,#view-tv#view-tv .queue-missed-count{font-size:clamp(13px,2.7vh,44px)!important}
 </style>
+<style id="reception-floor-card-visuals">
+/* Visual changes confined to reception floor cards and headings. */
+#view-reception #receptionClinicGrid .reception-floor-heading h2{font-size:clamp(18px,1.4vw,23px);padding:4px 22px;letter-spacing:0;line-height:1.4}
+#view-reception #receptionClinicGrid .reception-clinic-card{--rc-head:#526176;--rc-head-text:#fff;container-type:inline-size;border-radius:15px;background:linear-gradient(145deg,#fff 65%,var(--rc-soft));box-shadow:0 3px 10px rgba(15,23,42,.08)}
+#view-reception #receptionClinicGrid .reception-clinic-card[data-status="active"]{--rc-head:#08734f}
+#view-reception #receptionClinicGrid .reception-clinic-card[data-status="break"]{--rc-head:#e8b635;--rc-head-text:#392b08}
+#view-reception #receptionClinicGrid .reception-clinic-card[data-status="finished"]{--rc-head:#b52f43}
+#view-reception #receptionClinicGrid .reception-clinic-card[data-status="waiting"]{--rc-head:#694395}
+#view-reception #receptionClinicGrid .reception-card-head{background:linear-gradient(115deg,var(--rc-head),color-mix(in srgb,var(--rc-head) 88%,black));color:var(--rc-head-text);border-bottom:0;padding:10px 12px;gap:9px}
+#view-reception #receptionClinicGrid .reception-card-name{color:var(--rc-head-text);font-size:clamp(18px,5.8cqi,23px);line-height:1.4;font-weight:900}
+#view-reception #receptionClinicGrid .reception-room-name{color:var(--rc-head-text);opacity:.9;margin-top:2px}
+#view-reception #receptionClinicGrid .reception-room-badge{color:var(--rc-head-text);background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.3);font-size:clamp(16px,5cqi,20px);padding:3px 8px;box-shadow:none}
+#view-reception #receptionClinicGrid .reception-card-body{padding:10px 12px 11px}
+#view-reception #receptionClinicGrid .reception-doctor{font-size:clamp(19px,6cqi,24px);line-height:1.4;font-weight:800;white-space:normal;overflow-wrap:anywhere}
+#view-reception #receptionClinicGrid .clinic-hours-display{font-size:clamp(12px,3.8cqi,14px);line-height:1.5;margin-top:3px}
+#view-reception #receptionClinicGrid .reception-nurse{margin-top:6px;padding:6px 9px;font-size:clamp(13px,4cqi,15px);line-height:1.5}
+#view-reception #receptionClinicGrid .official-count-badge{margin-top:6px;line-height:1.5}
+#view-reception #receptionClinicGrid .reception-card-row{grid-template-columns:minmax(84px,29%) minmax(0,1fr);gap:9px;margin-top:8px}
+#view-reception #receptionClinicGrid .reception-current{padding:5px 3px;min-height:78px;border-radius:12px}
+#view-reception #receptionClinicGrid .reception-current-label{font-size:11px;line-height:1.4;text-align:center}
+#view-reception #receptionClinicGrid .reception-current-number{font-size:clamp(43px,14cqi,58px);line-height:1.05;font-weight:900}
+#view-reception #receptionClinicGrid .reception-clinic-card[data-status="finished"] .reception-current-number{font-size:clamp(22px,7.5cqi,30px)}
+#view-reception #receptionClinicGrid .reception-card-meta{gap:5px}
+#view-reception #receptionClinicGrid .reception-status-pill{font-size:clamp(12px,3.9cqi,14px);line-height:1.5;padding:5px 8px;max-width:100%;box-sizing:border-box;overflow-wrap:anywhere}
+#view-reception #receptionClinicGrid .reception-status-pill .dot{flex-shrink:0}
+#view-reception #receptionClinicGrid .reception-small-meta{font-size:clamp(12px,3.8cqi,14px);line-height:1.5}
+</style>
 </head>
 <body>
 <div id="networkStatusIndicator" class="network-status-indicator" role="status" aria-live="polite">
