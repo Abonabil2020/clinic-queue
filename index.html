@@ -9009,6 +9009,7 @@
       </div>
       <div class="staff-admin-actions">
         <span id="staffDirectoryStatus" class="staff-admin-status">القوائم المحلية قيد الاستخدام</span>
+        <button id="staffOpenReception" type="button" class="hidden-view px-3 py-2 rounded-xl bg-slate-100 text-sm font-bold">فتح الاستعلامات</button>
         <button id="staffManagerLogout" type="button"
           class="px-3 py-2 rounded-xl text-sm font-bold">تسجيل الخروج</button>
       </div>
@@ -9450,6 +9451,7 @@
     <input id="receptionPassword" type="password" autocomplete="current-password" class="w-full mb-4 px-4 py-3 rounded-xl bg-slate-100" required>
     <button id="receptionLoginButton" type="submit" class="w-full py-3 rounded-xl bg-sky-600 text-white font-bold">تسجيل الدخول</button>
     <a href="#/home" class="portal-back-btn block text-center">العودة إلى الصفحة الرئيسية</a>
+    <button id="receptionLoginReturnManager" type="button" class="portal-back-btn hidden-view w-full">رجوع لمسؤول العيادات</button>
     <p id="receptionLoginMessage" class="text-sm text-red-600 mt-3" role="status"></p>
   </form>
 </section>
@@ -9465,6 +9467,7 @@
       </div>
       <div class="reception-top-actions">
         <button id="receptionDesktopNotifications" type="button" class="reception-notification-switch" role="switch" aria-checked="false" title="تنبيهات الكمبيوتر والصفحة مفتوحة في الخلفية"><span class="notification-switch-track" aria-hidden="true"></span><span>تنبيهات كروم</span><span class="notification-switch-state">متوقفة</span></button>
+        <button id="receptionReturnManager" type="button" class="reception-logout hidden-view">رجوع لمسؤول العيادات</button>
         <button id="receptionLogout" type="button" class="reception-logout">تسجيل الخروج</button>
       </div>
     </div>
@@ -9771,6 +9774,11 @@ const ROOM_ACCOUNTS = [
 ];
 
 // Separate persistent authentication for each staff interface.
+const RECEPTION_MANAGER_ENTRY_KEY = "islahReceptionFromManager:" + location.pathname;
+function receptionManagerEntry(){
+  try { return sessionStorage.getItem(RECEPTION_MANAGER_ENTRY_KEY) || ""; }
+  catch(error){ return ""; }
+}
 const AUTH_SCOPE_KEY = "islahAuthScope:" + location.pathname;
 const AUTH_SCOPES = ["nurse", "reception", "clinics-manager", "nursing-manager", "admin"];
 function authScopeForRoute(hash, previous = "nurse"){
@@ -11920,6 +11928,9 @@ function show(v){
   VIEWS.forEach(x => $("#view-" + x).classList.add("hidden-view"));
   $("#view-" + v).classList.remove("hidden-view");
   document.title = pageTitleForView(v);
+  const fromManager = AUTH_SCOPE === "reception" && receptionManagerEntry() !== "";
+  $("#receptionReturnManager").classList.toggle("hidden-view", !fromManager);
+  $("#receptionLoginReturnManager").classList.toggle("hidden-view", !fromManager);
   syncAllClinicsListenerForView(v);
   window.officialCounts?.sync(v);
   if(v === "nurse"){
@@ -12075,6 +12086,10 @@ function renderMobileFollow(){
 
 function route(){
   if(!ensureAuthScope()) return;
+  if(AUTH_SCOPE === "reception" && receptionManagerEntry() === "password"){
+    show("reception-login");
+    return;
+  }
   if(restoreNursingResume()) return;
   const h = (location.hash || "#/home").replace("#/","");
   if(["nurse","setup","nursing-control"].includes(h) && !nursingAuthReady){
@@ -14971,6 +14986,7 @@ function renderStaffManager(){
   if(!$("#staffDirectoryStatus")) return;
   if(typeof updateStaffManagerTopButton === "function") updateStaffManagerTopButton();
   applyStaffManagerRoleUI();
+  $("#staffOpenReception").classList.toggle("hidden-view", !isClinicsManagerUser());
   $("#staffSavedNurseCount").textContent = ar(staffDirectoryState.nurses.length);
   $("#staffSavedDoctorCount").textContent = ar(staffDirectoryState.doctors.length);
   $("#staffSavedSpecialtyCount").textContent = ar(staffDirectoryState.specialties.length);
@@ -16282,6 +16298,22 @@ $("#adminLogout").addEventListener("click", async ()=>{
   }
 });
 
+$("#staffOpenReception").addEventListener("click", ()=>{
+  if(!isClinicsManagerUser()) return;
+  try{
+    sessionStorage.setItem(RECEPTION_MANAGER_ENTRY_KEY, "password");
+    location.hash = "#/reception";
+  }catch(error){ alert("تعذر فتح الاستعلامات. اسمح بتخزين بيانات الجلسة في المتصفح وحاول مرة أخرى."); }
+});
+function returnToClinicsManager(){
+  if(AUTH_SCOPE !== "reception" || !receptionManagerEntry()) return;
+  sessionStorage.removeItem(RECEPTION_MANAGER_ENTRY_KEY);
+  $("#receptionPassword").value = "";
+  location.hash = "#/clinics-manager";
+}
+$("#receptionReturnManager").addEventListener("click", returnToClinicsManager);
+$("#receptionLoginReturnManager").addEventListener("click", returnToClinicsManager);
+
 $("#receptionLoginForm").addEventListener("submit", async event=>{
   event.preventDefault();
   activateReceptionAudio();
@@ -16301,6 +16333,7 @@ $("#receptionLoginForm").addEventListener("submit", async event=>{
   try{
     await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
     await auth.signInWithEmailAndPassword(RECEPTION_EMAIL, password);
+    if(receptionManagerEntry()) sessionStorage.setItem(RECEPTION_MANAGER_ENTRY_KEY, "ready");
     $("#receptionPassword").value = "";
     location.hash = "#/reception";
     route();
