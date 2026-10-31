@@ -8467,10 +8467,10 @@
 }
 </style>
 <style id="reception-last-update-emphasis">
-#view-reception #receptionClinicGrid .reception-card-update-row{grid-column:1 / -1;display:flex;direction:rtl;align-items:center;justify-content:space-between;gap:12px;width:100%;min-width:0;box-sizing:border-box;margin-top:9px}
-#view-reception #receptionClinicGrid .reception-card-update-row>.reception-small-meta{flex:0 0 auto;white-space:nowrap}
-#view-reception #receptionClinicGrid .reception-last-update{display:inline-flex;flex:0 0 auto;align-items:center;gap:7px;box-sizing:border-box;padding:5px 11px;border:1px solid #e2e8f0;border-radius:999px;background:linear-gradient(110deg,#f8fafc,#eef2f6);color:#475569;font-size:12px;line-height:1.5;white-space:nowrap;box-shadow:0 1px 3px rgba(15,23,42,.04)}
-#view-reception #receptionClinicGrid .reception-last-update .num{font-size:clamp(14px,4.6cqi,17px);font-weight:800;color:#1e293b;white-space:nowrap}
+#view-reception #receptionClinicGrid .reception-card-update-row{display:flex;direction:rtl;align-items:center;justify-content:space-between;gap:6px;width:100%;min-width:0;box-sizing:border-box}
+#view-reception #receptionClinicGrid .reception-card-update-row>.reception-small-meta{flex:0 0 auto;white-space:nowrap;font-size:11px}
+#view-reception #receptionClinicGrid .reception-last-update{display:inline-flex;flex:0 0 auto;align-items:center;gap:4px;box-sizing:border-box;padding:3px 6px;border:1px solid #e2e8f0;border-radius:999px;background:#f1f5f9;color:#475569;font-size:10px;line-height:1.5;white-space:nowrap}
+#view-reception #receptionClinicGrid .reception-last-update .num{font-size:12px;font-weight:800;color:#1e293b;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -11138,11 +11138,11 @@ function renderReceptionDashboard(){
             (data.status === "active" && !data.recallMode && !data.prepared && Number(data.current) > 0 && Number(data.noWaitingNumber) === Number(data.current) && Boolean(data.noWaitingAt) ? '<span class="reception-status-pill" style="background:#DC2626;color:#fff;border-color:#DC2626;font-weight:800">✓ لا يوجد انتظار حاليا</span>' : '<span class="reception-status-pill"><span class="dot ' + status.dot + '" style="width:7px;height:7px"></span>' + status.label + '</span>') +
             (data.recallMode && !closed ? '<span class="reception-small-meta" style="font-weight:700;color:var(--rc-accent)">وصل الكشف إلى: <b class="num">' + ar(typeof data.previousDisplay === "number" ? data.previousDisplay : current) + '</b></span>' : '') +
             (pendingContinuation > 0 ? '<span class="reception-small-meta">استكمال كشف / إجراء: <b class="num">' + ar(pendingContinuation) + '</b></span>' : '') +
+            '<div class="reception-card-update-row">' +
+              '<span class="reception-small-meta">فائتة: <b class="num">' + ar(pendingMissed) + '</b></span>' +
+              '<span class="reception-last-update"><span>آخر تحديث:</span><b class="num">' + timeStr(data.updatedAt) + '</b></span>' +
+            '</div>' +
           '</div>' +
-        '</div>' +
-        '<div class="reception-card-update-row">' +
-          '<span class="reception-small-meta">فائتة: <b class="num">' + ar(pendingMissed) + '</b></span>' +
-          '<span class="reception-last-update"><span>آخر تحديث:</span><b class="num">' + timeStr(data.updatedAt) + '</b></span>' +
         '</div>' +
       '</div>';
     card.addEventListener("click", ()=>{
