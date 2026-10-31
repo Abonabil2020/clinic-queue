@@ -8434,6 +8434,38 @@
 #view-reception #receptionClinicGrid .reception-status-pill .dot{flex-shrink:0}
 #view-reception #receptionClinicGrid .reception-small-meta{font-size:clamp(12px,3.8cqi,14px);line-height:1.5}
 </style>
+<style id="reception-card-arrangement">
+/* Reception floor headings, cards and color guide only. */
+#view-reception #receptionClinicGrid .reception-floor-heading{display:flex;flex-wrap:wrap;justify-content:flex-start;gap:8px 12px;padding:0 0 10px;min-height:40px;border-bottom:1px solid var(--rf-border)}
+#view-reception #receptionClinicGrid .reception-floor-heading-copy{flex:1 1 180px;text-align:right}
+#view-reception #receptionClinicGrid .reception-floor-heading h2{display:inline-block;color:var(--rf-accent);background:transparent!important;font-size:clamp(20px,1.6vw,26px);padding:2px 0;border-radius:0;line-height:1.4}
+#view-reception #receptionClinicGrid .reception-floor-count{position:static;transform:none;min-width:26px;height:26px;flex:0 0 auto;background:#fff;font-size:12px}
+#view-reception #receptionClinicGrid .reception-card-head{height:86px;box-sizing:border-box;align-items:center;padding:8px 12px}
+#view-reception #receptionClinicGrid .reception-card-title-wrap{flex:1;gap:3px}
+#view-reception #receptionClinicGrid .reception-card-name{font-size:clamp(17px,5.4cqi,21px);line-height:1.35;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;overflow-wrap:anywhere}
+#view-reception #receptionClinicGrid .reception-room-name{font-size:12px;line-height:1.4;margin:0;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+#view-reception #receptionClinicGrid .reception-card-body{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:8px;row-gap:0;align-items:start}
+#view-reception #receptionClinicGrid .reception-card-body>.reception-doctor{grid-column:1;grid-row:1;font-size:clamp(18px,5.7cqi,22px);line-height:1.45;font-weight:700}
+#view-reception #receptionClinicGrid .reception-card-body>.booking-badge{grid-column:2;grid-row:1 / span 2;align-self:center;justify-self:end;width:auto;max-width:100px;margin:0;padding:4px 7px;border-radius:7px;font-size:11px;line-height:1.5;text-align:center}
+#view-reception #receptionClinicGrid .reception-card-body>.clinic-hours-display{grid-column:1;grid-row:2;min-width:0;overflow-wrap:anywhere;line-height:1.5;margin-top:3px}
+#view-reception #receptionClinicGrid .reception-card-body>.reception-nurse,#view-reception #receptionClinicGrid .reception-card-body>.official-count-badge,#view-reception #receptionClinicGrid .reception-card-body>.reception-card-row{grid-column:1 / -1}
+#view-reception #receptionClinicGrid .reception-nurse{margin-top:8px}
+#view-reception #receptionClinicGrid .reception-color-guide{position:relative;flex:0 0 auto;color:#475569;font-size:12px;text-align:right;z-index:5}
+#view-reception #receptionClinicGrid .reception-color-guide summary{display:flex;align-items:center;gap:8px;cursor:pointer;list-style:none;background:#fff;border:1px solid var(--rf-border);padding:7px 10px;border-radius:9px;font-weight:700}
+#view-reception #receptionClinicGrid .reception-color-guide summary::-webkit-details-marker{display:none}
+#view-reception #receptionClinicGrid .reception-color-guide summary:focus-visible{outline:2px solid #7352a1;outline-offset:3px}
+#view-reception #receptionClinicGrid .reception-color-guide[open] summary{color:var(--rf-accent);border-color:var(--rf-accent)}
+#view-reception #receptionClinicGrid .reception-color-guide-menu{position:absolute;inset-inline-end:0;top:calc(100% + 7px);width:285px;max-width:calc(100vw - 48px);box-sizing:border-box;padding:12px;background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 10px 30px #0f172a24}
+#view-reception #receptionClinicGrid .reception-color-guide-menu>div{display:flex;gap:9px;align-items:flex-start;padding:7px 0}
+#view-reception #receptionClinicGrid .reception-color-guide-menu i{width:11px;height:11px;flex:0 0 11px;border-radius:4px;background:var(--legend-color);margin-top:4px}
+#view-reception #receptionClinicGrid .reception-color-guide-menu b{display:block;font-size:12px;line-height:1.6;color:#334155}
+#view-reception #receptionClinicGrid .reception-color-guide-menu small{display:block;font-size:11px;line-height:1.6;color:#64748b}
+#view-reception #receptionClinicGrid .reception-color-guide-menu p{margin:6px 0 0;padding-top:8px;border-top:1px solid #e2e8f0;font-size:11px;color:#64748b}
+@media(max-width:600px){
+#view-reception #receptionClinicGrid .reception-floor-heading-copy{flex-basis:100%}
+#view-reception #receptionClinicGrid .reception-color-guide-menu{inset-inline-start:0;inset-inline-end:auto}
+}
+</style>
 </head>
 <body>
 <div id="networkStatusIndicator" class="network-status-indicator" role="status" aria-live="polite">
@@ -9472,6 +9504,17 @@
           <div class="reception-floor-heading-copy">
             <h2 id="receptionThirdHeading">عيادات الدور الثالث</h2>
           </div>
+          <details class="reception-color-guide">
+            <summary>دلالات الألوان <span aria-hidden="true">▾</span></summary>
+            <div class="reception-color-guide-menu">
+              <div><i style="--legend-color:#526176"></i><span><b>رصاصي — في انتظار التشغيل</b><small>لم يستلم التمريض العيادة بعد.</small></span></div>
+              <div><i style="--legend-color:#694395"></i><span><b>بنفسجي — في انتظار بدء الكشف</b><small>تم تجهيز العيادة ولم يبدأ أول كشف.</small></span></div>
+              <div><i style="--legend-color:#08734f"></i><span><b>أخضر — جاري الكشف</b><small>بدأ الكشف والعيادة تعمل.</small></span></div>
+              <div><i style="--legend-color:#e8b635"></i><span><b>أصفر — استراحة</b><small>الكشف متوقف مؤقتًا.</small></span></div>
+              <div><i style="--legend-color:#b52f43"></i><span><b>أحمر — انتهت العيادة</b><small>انتهت فترة الكشف.</small></span></div>
+              <p>حالة الحجز مستقلة عن لون العيادة.</p>
+            </div>
+          </details>
           <span id="receptionThirdCount" class="reception-floor-count num">٠</span>
         </header>
         <div id="receptionThirdGrid" class="reception-floor-clinic-grid" data-reception-floor-grid="third"></div>
@@ -11072,7 +11115,7 @@ function renderReceptionDashboard(){
       '<div class="reception-card-head">' +
         '<div class="reception-card-title-wrap">' +
           '<div class="reception-card-name">' + escapeHtml(clinicName) + '</div>' +
-          (roomName !== clinicName ? '<span class="reception-room-name">' + roomName + '</span>' : '') +
+          '<span class="reception-room-name">' + escapeHtml(roomName) + '</span>' +
         '</div>' +
         '<span class="reception-room-badge"><strong class="num">' + room.id + '</strong></span>' +
       '</div>' +
