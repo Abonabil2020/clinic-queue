@@ -8466,6 +8466,10 @@
 #view-reception #receptionClinicGrid .reception-color-guide-menu{inset-inline-start:0;inset-inline-end:auto}
 }
 </style>
+<style id="reception-last-update-emphasis">
+#view-reception #receptionClinicGrid .reception-last-update{display:flex;flex-wrap:wrap;align-items:center;gap:3px 7px;max-width:100%;box-sizing:border-box;padding:5px 8px;border:1px solid #e2e8f0;border-radius:8px;background:#f1f5f9;color:#475569;font-size:12px;line-height:1.5}
+#view-reception #receptionClinicGrid .reception-last-update .num{font-size:clamp(14px,4.6cqi,17px);font-weight:800;color:#1e293b;white-space:nowrap}
+</style>
 </head>
 <body>
 <div id="networkStatusIndicator" class="network-status-indicator" role="status" aria-live="polite">
@@ -9570,7 +9574,7 @@
               <strong id="rcMissedCount" class="num">٠</strong>
             </div>
             <div class="reception-detail-item">
-              <span>آخر نداء</span>
+              <span>آخر تحديث</span>
               <strong id="rcTime" class="num">—</strong>
             </div>
           </div>
@@ -11132,7 +11136,8 @@ function renderReceptionDashboard(){
             (data.status === "active" && !data.recallMode && !data.prepared && Number(data.current) > 0 && Number(data.noWaitingNumber) === Number(data.current) && Boolean(data.noWaitingAt) ? '<span class="reception-status-pill" style="background:#DC2626;color:#fff;border-color:#DC2626;font-weight:800">✓ لا يوجد انتظار حاليا</span>' : '<span class="reception-status-pill"><span class="dot ' + status.dot + '" style="width:7px;height:7px"></span>' + status.label + '</span>') +
             (data.recallMode && !closed ? '<span class="reception-small-meta" style="font-weight:700;color:var(--rc-accent)">وصل الكشف إلى: <b class="num">' + ar(typeof data.previousDisplay === "number" ? data.previousDisplay : current) + '</b></span>' : '') +
             (pendingContinuation > 0 ? '<span class="reception-small-meta">استكمال كشف / إجراء: <b class="num">' + ar(pendingContinuation) + '</b></span>' : '') +
-            '<span class="reception-small-meta">فائتة: <b class="num">' + ar(pendingMissed) + '</b> • آخر نداء: <b class="num">' + timeStr(data.updatedAt) + '</b></span>' +
+            '<span class="reception-small-meta">فائتة: <b class="num">' + ar(pendingMissed) + '</b></span>' +
+            '<span class="reception-last-update"><span>آخر تحديث:</span><b class="num">' + timeStr(data.updatedAt) + '</b></span>' +
           '</div>' +
         '</div>' +
       '</div>';
