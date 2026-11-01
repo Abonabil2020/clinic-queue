@@ -13663,6 +13663,7 @@ staffQuickApproveBtn?.addEventListener("click",()=>{
 });
 
 let staffImportState = null;
+const originalStaffExcelFiles = new WeakMap();
 let staffImportSaving = false;
 let staffImportReading = false;
 let staffImportReadToken = 0;
@@ -14145,6 +14146,10 @@ async function readStaffExcelArrayBuffer(buffer, sourceName, readToken = staffIm
     throw new Error("no-supported-data");
   }
   if(isStaffManagerUser() && readToken !== staffImportReadToken) return;
+  originalStaffExcelFiles.set(parsed, {
+    blob:new Blob([buffer]),
+    name:originalStaffExcelName(sourceName)
+  });
   staffImportState = parsed;
   renderStaffImportPreview();
   staffAdminMessage("تمت قراءة ملف Excel. راجع التنبيهات والفروقات قبل الحفظ.");
@@ -14294,6 +14299,7 @@ function buildImportPayload(data){
 }
 
 async function saveStaffImportUpdates(updates, importReceipt = null){
+  const originalFile = importReceipt && staffImportState ? originalStaffExcelFiles.get(staffImportState) : null;
   if(importReceipt && staffManagerCanClinics()) updates = {...updates,lastClinicsImport:importReceipt};
   if(!staffManagerCanClinics()) return staffDirectoryRef.update(updates);
   await staffDirectoryRef.update(updates);
@@ -14315,6 +14321,16 @@ async function saveStaffImportUpdates(updates, importReceipt = null){
     throw new Error("staff-save-verification");
   }
   handleStaffDirectorySnapshot(snapshot);
+  if(importReceipt && originalFile){
+    try{
+      await storedOriginalStaffExcel("readwrite", {
+        ...originalFile,
+        receipt:snapshot.val().lastClinicsImport
+      });
+    }catch(error){
+      alert("تم اعتماد بيانات الأطباء، لكن تعذر حفظ نسخة الملف الأصلي داخل هذا المتصفح. احتفظ بالملف الموجود عندك؛ زر التنزيل لن يعيد تكوينه.");
+    }
+  }
 }
 
 async function commitStaffImport(){
@@ -15009,36 +15025,58 @@ function renderClinicsManagerTools(){
   $("#clinicsLastImport").textContent = text;
   $("#clinicsExportExcel").disabled = !staffDirectoryLoaded || staffImportSaving;
 }
-function clinicsExportRows(directory){
-  const names = new Map(directory.specialties.map(item=>[item.id,item.name]));
-  const rows = [["اسم التخصص","اسم الطبيب","الاسم المختصر"]];
-  directory.doctors.filter(item=>item.active !== false).forEach(item=>{
-    const specialty = names.get(item.specialtyId);
-    if(!specialty || !item.name) throw new Error("doctor-without-specialty");
-    rows.push([specialty,item.name,item.shortName || item.name]);
+// Keep the approved upload byte-for-byte, without serializing it through XLSX.
+function originalStaffExcelName(source){
+  const name = String(source || "");
+  if(!/^https?:\/\//i.test(name)) return name || "ملف-الأطباء.xlsx";
+  try{
+    const filename = decodeURIComponent(new URL(name).pathname.split("/").pop());
+    if(/\.(xlsx|xls|csv)$/i.test(filename)) return filename;
+  }catch(error){}
+  return "ملف-الأطباء.xlsx";
+}
+function storedOriginalStaffExcel(mode, file){
+  const key = String(firebaseConfig.projectId || firebaseConfig.databaseURL || "") + ":" + location.pathname + ":" + auth.currentUser.uid;
+  return new Promise((resolve,reject)=>{
+    const request = indexedDB.open("islah-original-staff-excel",1);
+    request.onupgradeneeded = ()=>request.result.createObjectStore("files");
+    request.onerror = ()=>reject(request.error);
+    request.onblocked = ()=>reject(new Error("file-store-blocked"));
+    request.onsuccess = ()=>{
+      const db = request.result;
+      let transaction;
+      try{
+        transaction = db.transaction("files",mode);
+        const store = transaction.objectStore("files");
+        const operation = mode === "readwrite" ? store.put(file,key) : store.get(key);
+        transaction.oncomplete = ()=>{ db.close(); resolve(operation.result); };
+        transaction.onabort = ()=>{ db.close(); reject(transaction.error || new Error("file-store-aborted")); };
+        transaction.onerror = ()=>{};
+      }catch(error){ db.close(); reject(error); }
+    };
   });
-  return rows;
 }
 $("#clinicsExportExcel").addEventListener("click", async ()=>{
   if(!isClinicsManagerUser() || !staffDirectoryLoaded || staffImportSaving) return;
   const button = $("#clinicsExportExcel");
   button.disabled = true;
   try{
-    await loadStaffExcelLibrary();
     const snapshot = await staffDirectoryRef.get();
-    const data = snapshot.val() || {};
-    const rows = clinicsExportRows({specialties:parseDirectoryCollection(data.specialties),doctors:parseDirectoryCollection(data.doctors)});
-    if(rows.length === 1) return staffAdminMessage("لا توجد بيانات أطباء محفوظة لتنزيلها.",false);
-    const sheet = XLSX.utils.aoa_to_sheet(rows);
-    sheet["!cols"] = [{wch:38},{wch:42},{wch:30}];
-    const workbook = XLSX.utils.book_new();
-    workbook.Workbook = {Views:[{RTL:true}]};
-    XLSX.utils.book_append_sheet(workbook,sheet,"الأطباء والتخصصات");
-    XLSX.writeFile(workbook,"أطباء-مجمع-الإصلاح.xlsx");
+    const receipt = snapshot.val()?.lastClinicsImport;
+    const original = await storedOriginalStaffExcel("readonly");
+    if(!receipt || !original?.blob || original.receipt?.updatedAt !== receipt.updatedAt || original.receipt?.source !== receipt.source){
+      return staffAdminMessage("نسخة الملف الأصلي لآخر اعتماد غير محفوظة في هذا المتصفح. استخدم المتصفح الذي اعتمدته منه بعد هذا التعديل، أو ارفع الملف الأصلي واعتمده هنا.",false);
+    }
+    const url = URL.createObjectURL(original.blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = original.name;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),60000);
   }catch(error){
-    staffAdminMessage(error?.message === "doctor-without-specialty"
-      ? "تعذر التنزيل: يوجد طبيب بدون تخصص مرتبط. راجع بياناته أولًا."
-      : "تعذر تنزيل الملف. راجع الاتصال وحاول مرة أخرى.",false);
+    staffAdminMessage("تعذر تنزيل الملف الأصلي. راجع الاتصال وإتاحة التخزين داخل المتصفح.",false);
   }finally{ button.disabled = false; }
 });
 
