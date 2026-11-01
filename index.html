@@ -8516,6 +8516,21 @@
 @media(max-width:550px){
   #view-tv#view-tv.tv-twelve .clinic-grid{grid-template-columns:minmax(0,1fr)!important}
 }
+
+/* A landscape TV has three fixed card rows; the content fits those rows. */
+@media (orientation:landscape){
+  html:has(#view-tv.tv-twelve:not(.hidden-view)),body:has(#view-tv.tv-twelve:not(.hidden-view)){margin:0!important;overflow:hidden!important}
+  #view-tv#view-tv.tv-twelve:not(.hidden-view){position:fixed!important;inset:0!important;margin:0!important;width:100%!important;max-width:100%!important;height:100%!important;box-sizing:border-box;grid-template-columns:minmax(0,1fr)!important;grid-template-rows:clamp(40px,7vh,124px) minmax(0,1fr) clamp(23px,3.5vh,70px)!important;--space:clamp(3px,.8vh,15px)}
+  #view-tv#view-tv.tv-twelve .tv-dashboard{grid-row:2!important;grid-template-columns:minmax(0,1fr)!important;grid-template-rows:minmax(0,2fr) minmax(0,1.06fr)!important;width:100%!important;min-height:0!important;overflow:hidden!important}
+  #view-tv#view-tv.tv-twelve .floor-section{min-height:0!important;grid-template-rows:auto minmax(0,1fr)!important}
+  #view-tv#view-tv.tv-twelve .clinic-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important;min-height:0!important;align-content:stretch!important;grid-auto-rows:minmax(0,1fr)!important}
+  #view-tv#view-tv.tv-twelve .third-floor .clinic-grid{grid-template-rows:repeat(2,minmax(0,1fr))!important}
+  #view-tv#view-tv.tv-twelve .ground-floor .clinic-grid{grid-template-rows:minmax(0,1fr)!important}
+  #view-tv#view-tv.tv-twelve .queue-card[data-status]{min-height:0!important;height:100%!important;box-sizing:border-box;overflow:hidden!important}
+  #view-tv#view-tv.tv-twelve .queue-card[data-status] .queue-card-body{flex:1 1 0!important;min-height:0!important;grid-template-rows:auto auto minmax(0,1fr) auto!important}
+  #view-tv#view-tv.tv-twelve .queue-card-title,#view-tv#view-tv.tv-twelve .queue-card-body{zoom:var(--tv12-content-fit,1)}
+  #view-tv#view-tv.tv-twelve .tv-footer{grid-row:3!important;min-width:0!important;max-width:100%!important;overflow:hidden!important}
+}
 </style>
 </head>
 <body>
@@ -10842,7 +10857,28 @@ function scheduleTvTextFit(){
 }
 function fitTvText(){
   const tv = $("#view-tv");
-  if(tv?.classList.contains("tv-twelve")) return;
+  if(tv?.classList.contains("tv-twelve")){
+    if(tv.classList.contains("hidden-view") || !matchMedia("(orientation:landscape)").matches) return;
+    tv.querySelectorAll(".queue-card").forEach(card=>{
+      card.style.removeProperty("--tv12-content-fit");
+      const body = card.querySelector(".queue-card-body");
+      const box = card.querySelector(".queue-number-box");
+      const continuation = card.querySelector(".continuation-summary");
+      const status = card.querySelector(".queue-status");
+      const fits = ()=>body.scrollHeight <= body.clientHeight + 1 &&
+        box.scrollHeight <= box.clientHeight + 1 && box.scrollWidth <= box.clientWidth + 1 &&
+        continuation.getBoundingClientRect().top + 1 >= status.getBoundingClientRect().bottom;
+      if(fits()) return;
+      let low = .25, high = 1;
+      for(let pass=0;pass<7;pass++){
+        const scale = (low+high)/2;
+        card.style.setProperty("--tv12-content-fit",scale);
+        if(fits()) low=scale; else high=scale;
+      }
+      card.style.setProperty("--tv12-content-fit",low);
+    });
+    return;
+  }
   if(!tv || tv.classList.contains("hidden-view")) return;
   const visible = node=>node && node.getClientRects().length && getComputedStyle(node).visibility !== "hidden";
   const px = value=>parseFloat(value) || 0;
