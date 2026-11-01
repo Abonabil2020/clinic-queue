@@ -8531,6 +8531,28 @@
   #view-tv#view-tv.tv-twelve .queue-card-title,#view-tv#view-tv.tv-twelve .queue-card-body{zoom:var(--tv12-content-fit,1)}
   #view-tv#view-tv.tv-twelve .tv-footer{grid-row:3!important;min-width:0!important;max-width:100%!important;overflow:hidden!important}
 }
+
+#twelveLatest{display:none}
+#view-tv#view-tv.tv-twelve .tv-activity-panel{display:none!important}
+#view-tv#view-tv.tv-twelve .tv-topbar{display:grid!important;direction:ltr;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)!important;grid-template-rows:1fr!important;grid-template-areas:"datetime center brand"!important;align-items:center!important;padding:0 clamp(12px,2vw,75px)!important;gap:1vw!important;background:linear-gradient(110deg,#f8f5f7,#fff 40%,#fff 60%,#fbf5f7)!important;border-bottom:1px solid #decbd2!important}
+#view-tv#view-tv.tv-twelve .tv-center-heading{grid-area:center!important;justify-self:center!important;position:static!important;transform:none!important;margin:0!important;direction:rtl}
+#view-tv#view-tv.tv-twelve .tv-slogan{font-size:clamp(17px,min(2.1vw,3.6vh),66px)!important;color:#84213f!important;line-height:1.18!important}
+#view-tv#view-tv.tv-twelve .tv-brand{grid-area:brand!important;justify-self:end!important;justify-content:flex-end!important;width:auto!important;min-height:0!important;direction:ltr}
+#view-tv#view-tv.tv-twelve .tv-brand img{height:clamp(24px,4.8vh,90px)!important;max-height:100%!important;width:auto!important;max-width:20vw!important;object-fit:contain!important;transform:none!important;margin:0!important}
+#view-tv#view-tv.tv-twelve .tv-datetime{grid-area:datetime!important;justify-self:start!important;width:auto!important;direction:rtl;align-items:center!important}
+#view-tv#view-tv.tv-twelve .queue-missed-summary :is(.queue-public-chip,.queue-missed-count){font-size:clamp(12px,3.55cqi,26px)!important;font-weight:800!important}
+#view-tv#view-tv.tv-twelve .queue-card[data-status] .queue-card-body[data-twelve-hours]{grid-template-rows:auto auto auto minmax(0,1fr) auto!important}
+#view-tv#view-tv.tv-twelve .queue-card-body[data-twelve-hours]::after{content:attr(data-twelve-hours);grid-area:3/1;align-self:start;font-size:clamp(10px,3.2cqi,24px);line-height:1.35;color:#364657;font-weight:700;text-align:right}
+#view-tv#view-tv.tv-twelve .queue-card-body[data-twelve-hours] .continuation-summary{grid-area:4/1!important}
+#view-tv#view-tv.tv-twelve .queue-card[data-status] .queue-card-body[data-twelve-hours] .queue-number-box{grid-area:1/2/5/3!important}
+#view-tv#view-tv.tv-twelve .queue-card[data-status] .queue-card-body[data-twelve-hours] .queue-missed-summary{grid-area:5/1/6/3!important}
+#view-tv#view-tv.tv-twelve .tv-footer{display:flex!important;direction:rtl;align-items:center!important;gap:1vw;padding:2px 1vw!important}
+#view-tv#view-tv.tv-twelve .tv-footer-ticker{flex:1 1 0!important;min-width:0!important;overflow:hidden!important}
+#view-tv#view-tv.tv-twelve #twelveLatest:not([hidden]){display:flex;align-items:center;justify-content:flex-start;gap:.7em;flex:0 1 auto;max-width:49%;box-sizing:border-box;padding:.25em .8em;background:#fff;border:1px solid #dcc6ce;border-right:4px solid #983953;border-radius:.6em;color:#28374a;font-size:clamp(12px,min(1.04vw,2.05vh),37px);line-height:1.22;text-align:right;box-shadow:0 2px 6px #702d4312}
+#view-tv#view-tv.tv-twelve #twelveLatest strong{white-space:nowrap;color:#892845}
+@media(orientation:landscape){
+  #view-tv#view-tv.tv-twelve:not(.hidden-view){grid-template-rows:clamp(40px,7vh,124px) minmax(0,1fr) clamp(34px,5.1vh,104px)!important;--space:clamp(5px,1.05vh,20px)}
+}
 </style>
 </head>
 <body>
@@ -9422,6 +9444,9 @@
   </main>
 
   <footer class="tv-footer">
+    <div id="twelveLatest" hidden role="status" aria-live="polite" aria-atomic="true">
+      <strong>آخر تعديل</strong><span></span>
+    </div>
     <div class="tv-footer-ticker" aria-label="يرجى التواجد أمام العيادة قبل دورك بحالتين؛ وفي حال فوات دورك، تنتظر دخول حالتين بعد حضورك إلى المجمع.">
       <div class="tv-footer-track">
         <span class="tv-footer-message">يرجى التواجد أمام العيادة قبل دورك بحالتين؛ وفي حال فوات دورك، تنتظر دخول حالتين بعد حضورك إلى المجمع.</span>
@@ -10571,6 +10596,14 @@ function renderTvActivityPanel(highlight = false){
   const panel = $("#tvActivityPanel");
   if(!list || !count || !panel) return;
 
+  const latestBox = $("#twelveLatest");
+  const latest = tvActivityItems[0];
+  latestBox.hidden = !latest;
+  latestBox.querySelector("span").textContent = latest ? latest.text : "";
+  if(highlight && latest && $("#view-tv").matches(".tv-twelve:not(.hidden-view)") && !matchMedia("(prefers-reduced-motion: reduce)").matches){
+    latestBox.getAnimations().forEach(animation=>animation.cancel());
+    latestBox.animate([{transform:"translateX(16px)",opacity:.3},{transform:"translateX(0)",opacity:1}],{duration:260});
+  }
   count.textContent = ar(tvActivityItems.length);
   list.innerHTML = "";
 
@@ -10766,6 +10799,9 @@ function updateQueueCard(room, data){
   const doctor = doctorDisplayFromData(data);
 
   card.dataset.clinicName = clinicName;
+  const cardBody = card.querySelector(".queue-card-body");
+  if(validClinicHours(data.clinicHours)) cardBody.dataset.twelveHours = clinicHoursLabel(data.clinicHours);
+  else delete cardBody.dataset.twelveHours;
   card.dataset.hasDoctor = doctor && doctor !== "—" && doctor !== "لا يوجد طبيب مسجل" ? "true" : "false";
   card.dataset.status = status;
   card.dataset.recall = recallMode ? "true" : "false";
