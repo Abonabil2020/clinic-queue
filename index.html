@@ -8480,6 +8480,43 @@
 #view-reception #receptionClinicGrid .reception-card-name{font-size:clamp(16px,4.8cqi,18px);line-height:1.25;display:block;white-space:normal;overflow:visible;overflow-wrap:break-word;-webkit-line-clamp:unset}
 #view-reception #receptionClinicGrid .reception-card-name.reception-card-name-long{font-size:15px;line-height:1.25}
 </style>
+<style id="twelve-clinic-overview">
+#view-tv#view-tv.tv-twelve:not(.hidden-view){display:grid!important;grid-template-rows:clamp(48px,7vh,84px) minmax(0,1fr) auto!important;height:100dvh!important;min-height:0!important;overflow:hidden!important;--space:clamp(6px,.65vw,16px);background:#f7f6f7}
+#view-tv#view-tv.tv-twelve .tv-dashboard{display:grid!important;grid-template-rows:minmax(min-content,2fr) minmax(min-content,1fr)!important;min-height:0!important;height:auto!important;overflow:auto!important;padding:var(--space)!important;gap:var(--space)!important;align-content:stretch!important}
+#view-tv#view-tv.tv-twelve .floor-section{display:grid!important;grid-template-rows:auto 1fr!important;gap:clamp(4px,.6vh,9px)!important;padding:0!important;height:auto!important;min-height:min-content!important;overflow:visible!important;background:transparent!important;border:0!important}
+#view-tv#view-tv.tv-twelve .floor-heading{height:auto!important;min-height:0!important;margin:0!important;padding:0!important}
+#view-tv#view-tv.tv-twelve .floor-title{font-size:clamp(15px,1.2vw,28px)!important;line-height:1.35!important;padding:.08em 1.4em!important;min-height:0!important;height:auto!important}
+#view-tv#view-tv.tv-twelve .clinic-grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;grid-template-rows:none!important;grid-auto-rows:minmax(min-content,1fr)!important;height:auto!important;gap:var(--space)!important;overflow:visible!important}
+#view-tv#view-tv.tv-twelve .queue-card{--ink:#475971;--tint:#eff3f7;--edge:#d0dae4;height:auto!important;max-height:none!important;container-type:inline-size;border:1px solid var(--edge)!important;border-radius:12px!important;background:white!important;box-shadow:0 2px 6px #2630470c!important}
+#view-tv#view-tv.tv-twelve .queue-card[data-status="active"]{--ink:#136346;--tint:#eaf7ef;--edge:#b7dbc6}
+#view-tv#view-tv.tv-twelve .queue-card[data-status="break"]{--ink:#825500;--tint:#fff6dc;--edge:#ecd393}
+#view-tv#view-tv.tv-twelve .queue-card[data-status="finished"]{--ink:#a42e48;--tint:#fff0f3;--edge:#eac2cb}
+#view-tv#view-tv.tv-twelve .queue-card[data-waiting="true"]{--ink:#705091;--tint:#f4eef9;--edge:#dbcaeb}
+#view-tv#view-tv.tv-twelve .queue-card[data-recall="true"]{--ink:#12658b;--tint:#e9f5fc;--edge:#acd9ed}
+#view-tv#view-tv.tv-twelve .queue-card-title{direction:rtl!important;grid-template-columns:minmax(0,1fr) auto!important;padding:.25em .65em!important;background:var(--ink)!important;color:white!important}
+#view-tv#view-tv.tv-twelve .queue-clinic-name{order:0!important;grid-column:1!important;font-size:clamp(14px,4.5cqi,32px)!important;text-align:right!important;color:white!important}
+#view-tv#view-tv.tv-twelve .room-badge{order:1!important;grid-column:2!important;width:auto!important;justify-self:end!important;font-size:clamp(11px,3.45cqi,24px)!important;padding:.15em .5em!important}
+#view-tv#view-tv.tv-twelve .queue-card[data-status] .queue-card-body{direction:rtl!important;flex:1 1 auto!important;grid-template-columns:minmax(0,1fr) minmax(0,.95fr)!important;grid-template-rows:auto auto minmax(min-content,1fr) auto!important;padding:clamp(6px,1.9cqi,15px)!important;gap:clamp(3px,.5vh,7px) clamp(5px,1.8cqi,14px)!important}
+#view-tv#view-tv.tv-twelve .queue-doctor{grid-area:1/1!important;font-size:clamp(14px,4.7cqi,34px)!important}
+#view-tv#view-tv.tv-twelve .queue-status{grid-area:2/1!important;justify-self:start!important;font-size:clamp(11px,3.35cqi,23px)!important}
+#view-tv#view-tv.tv-twelve .continuation-summary{grid-area:3/1!important;align-self:end!important;font-size:clamp(11px,3.1cqi,22px)!important}
+#view-tv#view-tv.tv-twelve .queue-card[data-status] .queue-number-box{grid-area:1/2/4/3!important;background:var(--tint)!important;border:1px solid var(--edge)!important;border-radius:10px!important;max-height:none!important;padding:.25em!important}
+#view-tv#view-tv.tv-twelve .queue-card[data-status] .queue-number-label{font-size:clamp(11px,3.3cqi,22px)!important;color:var(--ink)!important}
+#view-tv#view-tv.tv-twelve .queue-card[data-status] .queue-number{font-size:clamp(16px,4.6cqi,34px)!important;color:var(--ink)!important;line-height:1.12!important}
+#view-tv#view-tv.tv-twelve .queue-card:is([data-status="active"],[data-status="break"])[data-waiting="false"] .queue-number{font-size:clamp(46px,min(18cqi,9vh),156px)!important;font-weight:900!important;font-variant-numeric:tabular-nums}
+#view-tv#view-tv.tv-twelve .queue-card[data-has-missed] .queue-missed-summary{grid-area:4/1/5/3!important;border-radius:6px!important;padding:2px 6px!important;gap:.35em!important;min-height:0!important}
+#view-tv#view-tv.tv-twelve .queue-missed-summary :is(.queue-missed-summary-head,.queue-missed-empty,.queue-public-more,.queue-public-chip,.queue-missed-count){font-size:clamp(10px,3.05cqi,21px)!important;line-height:1.25!important;min-height:0!important;height:auto!important}
+#view-tv#view-tv.tv-twelve .tv-footer{position:static!important;height:auto!important;max-height:none!important;min-height:0!important;padding:3px 0!important;border-top:1px solid #e4c7cf!important;background:#fff7f8!important}
+#view-tv#view-tv.tv-twelve .tv-footer-ticker{min-height:0!important;height:auto!important;padding:0!important}
+#view-tv#view-tv.tv-twelve .tv-footer-message{font-size:clamp(12px,1vw,24px)!important;line-height:1.4!important}
+@media(max-width:1050px){
+  #view-tv#view-tv.tv-twelve .tv-dashboard{grid-template-rows:auto auto!important;align-content:start!important}
+  #view-tv#view-tv.tv-twelve .clinic-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+@media(max-width:550px){
+  #view-tv#view-tv.tv-twelve .clinic-grid{grid-template-columns:minmax(0,1fr)!important}
+}
+</style>
 </head>
 <body>
 <div id="networkStatusIndicator" class="network-status-indicator" role="status" aria-live="polite">
@@ -10428,6 +10465,12 @@ function setTvDisplayMode(mode = "all"){
   stopTvPageTimer();
   stopTvIndividualTimer();
   tvDisplayMode = ["third", "ground", "slideshow", "third-slideshow", "individual"].includes(mode) ? mode : "all";
+  const overview = $("#view-tv");
+  overview.classList.toggle("tv-twelve", tvDisplayMode === "all");
+  if(tvDisplayMode === "all"){
+    overview.querySelectorAll(".queue-clinic-name,.queue-doctor,.queue-status,.queue-number-label,.queue-number")
+      .forEach(node=>node.style.removeProperty("font-size"));
+  }
   $("#view-tv").classList.toggle("tv-third-slideshow",tvDisplayMode === "third-slideshow" || tvDisplayMode === "slideshow");
   if(tvDisplayMode === "individual"){
     tvIndividualIndex = 0;
@@ -10799,6 +10842,7 @@ function scheduleTvTextFit(){
 }
 function fitTvText(){
   const tv = $("#view-tv");
+  if(tv?.classList.contains("tv-twelve")) return;
   if(!tv || tv.classList.contains("hidden-view")) return;
   const visible = node=>node && node.getClientRects().length && getComputedStyle(node).visibility !== "hidden";
   const px = value=>parseFloat(value) || 0;
