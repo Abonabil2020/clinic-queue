@@ -8689,9 +8689,9 @@
             <path d="M9 11h6M12 8v6"/>
           </svg>
         </span>
-        <h2>حساب مسؤول العيادات</h2>
+        <h2>حساب إدارة العيادات</h2>
         <p>إدارة التخصصات والأطباء وربط كل طبيب بتخصصه.</p>
-        <span class="portal-enter"><span>الدخول إلى مسؤول العيادات</span><span class="portal-arrow">←</span></span>
+        <span class="portal-enter"><span>الدخول إلى إدارة العيادات</span><span class="portal-arrow">←</span></span>
       </a>
 
       <a href="#/nursing-manager" class="portal-card nursing-manager">
@@ -9079,7 +9079,7 @@
 <section id="view-staff-manager-login" class="hidden-view min-h-screen flex items-center justify-center p-5">
   <form id="staffManagerLoginForm" class="w-full max-w-sm bg-white rounded-3xl shadow-xl p-7">
     <img src="logo.png" alt="مجمع الإصلاح الطبي" class="site-login-logo" onerror="this.style.display='none'">
-    <h1 id="staffManagerLoginTitle" class="text-2xl font-bold text-center mb-2">مسؤول العيادات</h1>
+    <h1 id="staffManagerLoginTitle" class="text-2xl font-bold text-center mb-2">إدارة العيادات</h1>
     <p id="staffManagerLoginSubtitle" class="text-sm text-slate-500 text-center mb-5">إدارة التخصصات والأطباء</p>
     <label for="staffManagerUsername" class="block text-sm mb-1">اسم المستخدم</label>
     <input id="staffManagerUsername" autocomplete="username" autocapitalize="none" autocorrect="off"
@@ -9105,7 +9105,7 @@
         </div>
         <div class="staff-admin-heading">
           <p class="staff-admin-kicker">لوحة الإدارة</p>
-          <h1 id="staffManagerPageTitle" class="text-xl font-bold">مسؤول العيادات</h1>
+          <h1 id="staffManagerPageTitle" class="text-xl font-bold">إدارة العيادات</h1>
           <p id="staffManagerPageSubtitle" class="staff-admin-subtitle">إدارة التخصصات والأطباء وقوائم الاختيار</p>
         </div>
       </div>
@@ -9119,7 +9119,8 @@
 
     <div id="clinicsManagerTools" class="hidden-view" style="margin:12px 0;display:flex;flex-wrap:wrap;gap:10px;align-items:center">
       <p id="clinicsLastImport" role="status" style="flex:1 1 100%;font-size:14px">لم يُسجَّل اعتماد ملف بعد.</p>
-      <button id="clinicsExportExcel" type="button" class="px-4 py-2 rounded-xl bg-slate-100 text-sm font-bold">تنزيل ملف Excel الحالي</button>
+      <button id="clinicsExportExcel" type="button" class="px-4 py-2 rounded-xl bg-slate-100 text-sm font-bold">تنزيل آخر ملف Excel معتمد</button>
+      <details style="flex:1 1 100%"><summary id="clinicLogSummary" style="cursor:pointer;font-weight:bold">سجل آخر التعديلات</summary><div id="clinicLogList" style="max-height:20rem;overflow:auto;padding:.5rem"></div></details>
     </div>
     <div id="staffRoleGuide" class="staff-role-guide">
       <div class="staff-role-guide-main">
@@ -9562,7 +9563,7 @@
     <input id="receptionPassword" type="password" autocomplete="current-password" class="w-full mb-4 px-4 py-3 rounded-xl bg-slate-100" required>
     <button id="receptionLoginButton" type="submit" class="w-full py-3 rounded-xl bg-sky-600 text-white font-bold">تسجيل الدخول</button>
     <a href="#/home" class="portal-back-btn block text-center">العودة إلى الصفحة الرئيسية</a>
-    <button id="receptionLoginReturnManager" type="button" class="portal-back-btn hidden-view w-full">رجوع لمسؤول العيادات</button>
+    <button id="receptionLoginReturnManager" type="button" class="portal-back-btn hidden-view w-full">رجوع لإدارة العيادات</button>
     <p id="receptionLoginMessage" class="text-sm text-red-600 mt-3" role="status"></p>
   </form>
 </section>
@@ -9578,7 +9579,7 @@
       </div>
       <div class="reception-top-actions">
         <button id="receptionDesktopNotifications" type="button" class="reception-notification-switch" role="switch" aria-checked="false" title="تنبيهات الكمبيوتر والصفحة مفتوحة في الخلفية"><span class="notification-switch-track" aria-hidden="true"></span><span>تنبيهات كروم</span><span class="notification-switch-state">متوقفة</span></button>
-        <button id="receptionReturnManager" type="button" class="reception-logout hidden-view">رجوع لمسؤول العيادات</button>
+        <button id="receptionReturnManager" type="button" class="reception-logout hidden-view">رجوع لإدارة العيادات</button>
         <button id="receptionLogout" type="button" class="reception-logout">تسجيل الخروج</button>
       </div>
     </div>
@@ -9976,6 +9977,53 @@ function showNursingLogin(){
 const clinicRef = queueApp.database().ref("clinics/" + DISPLAY_SLOT_ID);
 const allClinicsRef = queueApp.database().ref("clinics");
 const staffDirectoryRef = queueApp.database().ref("staffDirectory");
+const clinicPrivateRef = queueApp.database().ref("clinicManagement");
+let clinicLogQuery = null;
+function listenClinicHistory(){
+  if(clinicLogQuery || !isClinicsManagerUser()) return;
+  clinicLogQuery = clinicPrivateRef.child("history").orderByChild("at").limitToLast(20);
+  clinicLogQuery.on("value",snap=>{
+    const items = [];
+    snap.forEach(child=>{items.unshift(child.val());});
+    const date = at=>new Date(at).toLocaleString("ar-EG",{timeZone:"Africa/Cairo",dateStyle:"medium",timeStyle:"short"});
+    $("#clinicLogSummary").textContent = items.length ? "آخر تعديل "+date(items[0].at)+" — عرض السجل" : "سجل آخر التعديلات";
+    const list = $("#clinicLogList");
+    list.replaceChildren();
+    if(!items.length) list.textContent="يبدأ السجل من أول تعديل معتمد بعد التحديث.";
+    for(const item of items){
+      const entry=document.createElement("details"), title=document.createElement("summary"), lines=document.createElement("div");
+      title.textContent=date(item.at)+" — "+item.title;
+      lines.style.whiteSpace="pre-line";
+      lines.textContent=item.details;
+      entry.append(title,lines);list.append(entry);
+    }
+  },()=>{$("#clinicLogSummary").textContent="تعذر تحميل سجل التعديلات";});
+}
+async function writeClinicChange(updates,title,details,archive){
+  const batch = {};
+  for(const [path,value] of Object.entries(updates)) batch["staffDirectory/"+path]=value;
+  const key=clinicPrivateRef.child("history").push().key;
+  batch["clinicManagement/history/"+key]={at:firebase.database.ServerValue.TIMESTAMP,title,details:details.join("\n") || "اعتماد القائمة دون تغييرات في الأسماء."};
+  if(archive !== undefined) batch["clinicManagement/original"]=archive;
+  await queueApp.database().ref().update(batch);
+}
+function encodeClinicFile(blob){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=()=>resolve(reader.result.split(",")[1]);
+    reader.onerror=()=>reject(reader.error);
+    reader.readAsDataURL(blob);
+  });
+}
+function clinicImportLog(data,mode){
+  const c=compareStaffImportWithCurrent(data);
+  if(c.loading) throw new Error("انتظر تحميل القائمة الحالية قبل الاعتماد.");
+  const lines=[...c.addedSpecialties.map(n=>"إضافة تخصص: "+n),...c.addedDoctors.map(d=>"إضافة طبيب: "+d.name+" — "+d.specialty),
+    ...c.movedDoctors.map(d=>"نقل "+d.name+" من "+d.from+" إلى "+d.to),
+    ...c.renamedDisplayDoctors.map(d=>"تغيير الاسم المختصر لـ"+d.name+" من "+d.from+" إلى "+d.to)];
+  if(mode==="replace") lines.push(...c.removedDoctors.map(d=>"حذف طبيب: "+d.name),...c.removedSpecialties.map(n=>"حذف تخصص: "+n));
+  return lines;
+}
 const auditLogsRef = queueApp.database().ref("auditLogs");
 const presenceRootRef = queueApp.database().ref("presence");
 const presenceSessionRef = presenceRootRef.push();
@@ -12033,7 +12081,7 @@ function staffManagerLoginConfig(role = staffManagerLoginRole){
         role:"clinics_manager",
         username:"clinics_manager",
         email:CLINICS_MANAGER_EMAIL,
-        title:"مسؤول العيادات",
+        title:"إدارة العيادات",
         subtitle:"إدارة التخصصات والأطباء"
       };
 }
@@ -12474,6 +12522,7 @@ function startStaffDirectoryListener(){
 }
 
 function stopStaffDirectoryListener(){
+  if(clinicLogQuery){clinicLogQuery.off();clinicLogQuery=null;$("#clinicLogList").replaceChildren();$("#clinicLogSummary").textContent="سجل آخر التعديلات";}
   if(staffDirectoryListening){
     staffDirectoryRef.off("value", handleStaffDirectorySnapshot);
     staffDirectoryListening = false;
@@ -13571,12 +13620,12 @@ function applyStaffManagerRoleUI(){
 
   if(roleGuideTitle) roleGuideTitle.textContent = isNursing
     ? "حساب مسؤول التمريض"
-    : "حساب مسؤول العيادات";
+    : "حساب إدارة العيادات";
   if(roleGuideDesc) roleGuideDesc.textContent = isNursing
     ? "هذا الحساب يدير أسماء التمريض فقط: إضافة، تعديل، إيقاف أو إعادة تفعيل. الحفظ يسجل تعديلًا معلقًا، ولا يصل للمستخدمين إلا بعد «اعتماد التعديلات»."
     : "هذا الحساب يدير التخصصات والأطباء فقط. الحفظ يسجل تعديلًا معلقًا، ولا يصل للمستخدمين إلا بعد «اعتماد التعديلات».";
 
-  if(title) title.textContent = isNursing ? "مسؤول التمريض" : "مسؤول العيادات";
+  if(title) title.textContent = isNursing ? "مسؤول التمريض" : "إدارة العيادات";
   if(subtitle) subtitle.textContent = isNursing
     ? "إدارة أسماء التمريض وقوائم الاختيار"
     : "إدارة التخصصات والأطباء وقوائم الاختيار";
@@ -14491,7 +14540,12 @@ async function saveStaffImportUpdates(updates, importReceipt = null){
   const originalFile = importReceipt && staffImportState ? originalStaffExcelFiles.get(staffImportState) : null;
   if(importReceipt && staffManagerCanClinics()) updates = {...updates,lastClinicsImport:importReceipt};
   if(!staffManagerCanClinics()) return staffDirectoryRef.update(updates);
-  await staffDirectoryRef.update(updates);
+  if(importReceipt){
+    if(originalFile && originalFile.blob.size > 7*1024*1024) throw new Error("clinic-file-size");
+    const archive=originalFile ? {name:originalFile.name,encoded:await encodeClinicFile(originalFile.blob),
+      at:firebase.database.ServerValue.TIMESTAMP,source:importReceipt.source} : null;
+    await writeClinicChange(updates,"اعتماد ملف — "+importReceipt.source,clinicImportLog(staffImportState,importReceipt.mode),archive);
+  }else await staffDirectoryRef.update(updates);
   let snapshot;
   try{
     snapshot = await staffDirectoryRef.get();
@@ -14510,16 +14564,7 @@ async function saveStaffImportUpdates(updates, importReceipt = null){
     throw new Error("staff-save-verification");
   }
   handleStaffDirectorySnapshot(snapshot);
-  if(importReceipt && originalFile){
-    try{
-      await storedOriginalStaffExcel("readwrite", {
-        ...originalFile,
-        receipt:snapshot.val().lastClinicsImport
-      });
-    }catch(error){
-      alert("تم اعتماد بيانات الأطباء، لكن تعذر حفظ نسخة الملف الأصلي داخل هذا المتصفح. احتفظ بالملف الموجود عندك؛ زر التنزيل لن يعيد تكوينه.");
-    }
-  }
+
 }
 
 async function commitStaffImport(){
@@ -14668,6 +14713,7 @@ async function commitStaffImport(){
     renderStaffImportPreview();
   }catch(e){
     console.error("Staff Excel import error:",e);
+    if(e?.message==="clinic-file-size") return staffAdminMessage("حجم ملف Excel أكبر من ٧ ميجابايت. لم يتم اعتماده.",false);
     staffAdminMessage(isNursing ? "لم يتم اعتماد ملف التمريض. تحقق من الاتصال أو تواصل مع مسؤول النظام." : e?.message === "staff-save-verification"
       ? "تم إرسال الحفظ، لكن تعذر التأكد من البيانات. راجع القائمة المحفوظة قبل إعادة الاعتماد."
       : "لم يتم اعتماد الملف. تحقق من الاتصال أو تواصل مع مسؤول النظام.", false);
@@ -14956,7 +15002,8 @@ async function approveStaffManualChanges(){
   }
 
   try{
-    await staffDirectoryRef.update(diff.updates);
+    if(isClinicsManagerUser()) await writeClinicChange(diff.updates,"اعتماد تعديلات يدوية",diff.changes);
+    else await staffDirectoryRef.update(diff.updates);
     writeAuditLog({
       action:"staff_manual_approve",
       summary:"اعتماد " + diff.changes.length + " تعديل يدوي على قوائم النظام",
@@ -15205,6 +15252,7 @@ function renderClinicsManagerTools(){
   const visible = isClinicsManagerUser();
   $("#clinicsManagerTools").classList.toggle("hidden-view", !visible);
   if(!visible) return;
+  listenClinicHistory();
   const receipt = staffDirectoryState.lastClinicsImport;
   const valid = receipt && Number(receipt.updatedAt) > 0;
   const text = valid
@@ -15252,9 +15300,15 @@ $("#clinicsExportExcel").addEventListener("click", async ()=>{
   try{
     const snapshot = await staffDirectoryRef.get();
     const receipt = snapshot.val()?.lastClinicsImport;
-    const original = await storedOriginalStaffExcel("readonly");
+    let archive;
+    try{archive=(await clinicPrivateRef.child("original").get()).val();}catch(error){if(!String(error?.code || error).toLowerCase().includes("permission")) throw error;}
+    let original;
+    if(archive && receipt && receipt.updatedAt===archive.at && receipt.source===archive.source){
+      const bytes=Uint8Array.from(atob(archive.encoded),ch=>ch.charCodeAt(0));
+      original={blob:new Blob([bytes]),name:archive.name,receipt};
+    }else original=await storedOriginalStaffExcel("readonly");
     if(!receipt || !original?.blob || original.receipt?.updatedAt !== receipt.updatedAt || original.receipt?.source !== receipt.source){
-      return staffAdminMessage("نسخة الملف الأصلي لآخر اعتماد غير محفوظة في هذا المتصفح. استخدم المتصفح الذي اعتمدته منه بعد هذا التعديل، أو ارفع الملف الأصلي واعتمده هنا.",false);
+      return staffAdminMessage("آخر ملف قديم غير متاح للتنزيل من هذا الجهاز. افتحه من متصفح الرفع الأصلي أو اعتمد الأصل مرة واحدة لإتاحته لحساب إدارة العيادات.",false);
     }
     const url = URL.createObjectURL(original.blob);
     const link = document.createElement("a");
