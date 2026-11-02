@@ -12324,6 +12324,9 @@ function startScanCycle(){
   scanCycleTimer = setInterval(tick,250);
 }
 function route(){
+  if(["#/mobile","#/mobile-third","#/mobile-ground"].includes(location.hash)){
+    show("mobile"); renderMobileFollow(); return;
+  }
   if(location.hash !== "#/tv-scan-cycle") stopScanCycle();
   if(!ensureAuthScope()) return;
   if(AUTH_SCOPE === "reception" && receptionManagerEntry() === "password"){
