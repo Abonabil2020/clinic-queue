@@ -1,8 +1,7 @@
-
 {
   "name": "إدارة الأدوار",
   "short_name": "إدارة الأدوار",
-  "start_url": "./#/mobile",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "background_color": "#f0f4f8",
