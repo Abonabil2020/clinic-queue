@@ -8783,11 +8783,10 @@
       <div class="admin-connections-head">
         <div>
           <h2 class="admin-connections-label">المتصلون بالنظام الآن</h2>
-          <p class="admin-connections-note">عدد جلسات الموقع المتصلة مباشرة بالنظام في هذه اللحظة.</p>
+          <p class="admin-connections-note">عدد جلسات النظام النشطة خلال آخر دقيقتين تقريبًا.</p>
         </div>
         <div class="admin-connections-value-wrap" aria-live="polite">
           <strong id="adminConnectionsCount" class="admin-connections-value num">—</strong>
-          <span class="admin-connections-limit">/ 100</span>
         </div>
       </div>
       <div class="admin-connections-track" aria-hidden="true">
@@ -8795,7 +8794,7 @@
       </div>
       <div class="admin-connections-footer">
         <span id="adminConnectionsStatus" class="admin-connections-status">جارٍ قياس الاتصالات...</span>
-        <span class="admin-connections-source">حد Spark الحالي: 100 اتصال متزامن</span>
+        <span class="admin-connections-source">يشمل جميع صفحات النظام وأجهزة العرض</span>
       </div>
     </section>
 
@@ -10037,7 +10036,12 @@ function clinicImportLog(data,mode){
 const auditLogsRef = queueApp.database().ref("auditLogs");
 const presenceRootRef = queueApp.database().ref("presence");
 const presenceSessionRef = presenceRootRef.push();
-const SPARK_CONNECTION_LIMIT = 100;
+// Presence activity only; does not modify clinic queues or their listeners.
+const PRESENCE_HEARTBEAT_MS = 60000;
+const PRESENCE_ACTIVE_MS = 150000;
+let presenceRegistered = false;
+let adminPresenceSnapshot = null;
+let adminPresenceRefreshTimer = null;
 let adminPresenceListening = false;
 let adminPresenceValueHandler = null;
 let adminPresenceErrorHandler = null;
@@ -10066,13 +10070,37 @@ async function registerPresenceSession(){
   try{
     await presenceSessionRef.onDisconnect().remove();
     await presenceSessionRef.set({
-      connectedAt:firebase.database.ServerValue.TIMESTAMP
+      connectedAt:firebase.database.ServerValue.TIMESTAMP,
+      lastSeen:firebase.database.ServerValue.TIMESTAMP
     });
+    presenceRegistered = true;
   }catch(error){
     console.warn("Presence registration failed:",error?.code || error?.message || error);
   }finally{
     presenceRegistrationBusy = false;
   }
+}
+
+// A small heartbeat prevents abandoned presence records from inflating the count.
+setInterval(()=>{
+  if(!firebaseConnected || !presenceRegistered || presenceRegistrationBusy) return;
+  presenceSessionRef.update({lastSeen:firebase.database.ServerValue.TIMESTAMP}).catch(error=>{
+    console.warn("Presence heartbeat failed:",error?.code || error?.message || error);
+  });
+}, PRESENCE_HEARTBEAT_MS);
+
+function countActivePresence(snapshot){
+  if(!snapshot) return 0;
+  const now = Date.now();
+  let count = 0;
+  snapshot.forEach(child=>{
+    const session = child.val();
+    const lastSeen = Number(session?.lastSeen || session?.connectedAt);
+    if(Number.isFinite(lastSeen) && lastSeen > 0 && now - lastSeen < PRESENCE_ACTIVE_MS && lastSeen <= now + PRESENCE_ACTIVE_MS){
+      count++;
+    }
+  });
+  return count;
 }
 
 function renderAdminConnectionsCount(count, readError=false){
@@ -10091,29 +10119,18 @@ function renderAdminConnectionsCount(count, readError=false){
   }
 
   const safeCount = Math.max(0, Number(count) || 0);
-  const percent = Math.min(100, (safeCount / SPARK_CONNECTION_LIMIT) * 100);
   value.textContent = String(safeCount);
-  bar.style.width = percent.toFixed(1) + "%";
-
-  if(safeCount >= 90){
-    panel.dataset.level = "danger";
-    status.textContent = safeCount >= SPARK_CONNECTION_LIMIT
-      ? "تم بلوغ حد Spark للاتصالات المتزامنة"
-      : "قريب جدًا من حد Spark";
-  }else if(safeCount >= 70){
-    panel.dataset.level = "warning";
-    status.textContent = "اقتربت من حد Spark — راقب الاتصالات";
-  }else{
-    panel.dataset.level = "normal";
-    status.textContent = "الوضع طبيعي ضمن الحد المجاني";
-  }
+  bar.style.width = "0%"; // No fixed connection limit on the Blaze billing plan.
+  panel.dataset.level = "normal";
+  status.textContent = "جلسات نشطة خلال آخر دقيقتين ونصف تقريبًا";
 }
 
 function startAdminPresenceListener(){
   if(adminPresenceListening || !isAdminUser()) return;
 
   adminPresenceValueHandler = snapshot=>{
-    renderAdminConnectionsCount(snapshot.numChildren());
+    adminPresenceSnapshot = snapshot;
+    renderAdminConnectionsCount(countActivePresence(snapshot));
   };
   adminPresenceErrorHandler = error=>{
     renderAdminConnectionsCount(0,true);
@@ -10121,10 +10138,16 @@ function startAdminPresenceListener(){
   };
 
   presenceRootRef.on("value", adminPresenceValueHandler, adminPresenceErrorHandler);
+  adminPresenceRefreshTimer = setInterval(()=>{
+    if(adminPresenceSnapshot) renderAdminConnectionsCount(countActivePresence(adminPresenceSnapshot));
+  }, 30000);
   adminPresenceListening = true;
 }
 
 function stopAdminPresenceListener(){
+  if(adminPresenceRefreshTimer) clearInterval(adminPresenceRefreshTimer);
+  adminPresenceRefreshTimer = null;
+  adminPresenceSnapshot = null;
   if(adminPresenceValueHandler){
     presenceRootRef.off("value", adminPresenceValueHandler);
   }
@@ -10145,6 +10168,7 @@ window.addEventListener("offline", ()=>{
 
 networkConnectionRef.on("value", snapshot=>{
   firebaseConnected = snapshot.val() === true;
+  if(!firebaseConnected) presenceRegistered = false;
   renderBookingStatus();
   if(firebaseConnected) registerPresenceSession();
 });
