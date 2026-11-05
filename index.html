@@ -9023,11 +9023,14 @@
             <div class="text-[11px] text-slate-500 mt-1">معروض الآن</div>
           </div>
         </div>
+        <div class="mb-3 rounded-xl border border-sky-200 bg-sky-50 px-3 py-2 text-sm font-bold text-sky-900 leading-relaxed" role="note">
+          ℹ️ اترك الرقم معروضًا حتى ينتهي المريض من الكشف، ثم اختر الإجراء المناسب.
+        </div>
         <div class="grid grid-cols-2 gap-2">
           <button id="completeRecallBtn" class="py-3 rounded-xl bg-emerald-600 text-white font-bold">✓ تم الكشف</button>
           <button id="noShowRecallBtn" class="py-3 rounded-xl bg-orange-100 text-orange-800 font-bold">لم يحضر</button>
+          <button id="completeRecallContinuationBtn" class="col-span-2 py-3 rounded-xl bg-sky-700 text-white font-bold">✓ تم الكشف وله استكمال</button>
         </div>
-        <button id="returnPreviousBtn" class="w-full mt-2 py-3 rounded-xl bg-slate-100 text-slate-700 font-bold">↩ الرجوع لآخر رقم معروض</button>
       </div>
 
       <div id="nurseQueueControls">
@@ -16050,6 +16053,7 @@ function renderRecallPanel(){
   panel.querySelector("p.text-xs").textContent = continuationActive ? "استكمال كشف" : "إعادة استدعاء رقم فائت";
   $("#completeRecallBtn").textContent = continuationActive ? "✓ تم الاستكمال" : "✓ تم الكشف";
   $("#noShowRecallBtn").textContent = continuationActive ? "لم يحضر للاستكمال" : "لم يحضر";
+  $("#completeRecallContinuationBtn").classList.toggle("hidden-view", continuationActive);
   const controlsBlocked = active || isNurseQueueLocked();
   wheel.style.pointerEvents = controlsBlocked ? "none" : "auto";
   wheel.style.opacity = controlsBlocked ? ".55" : "1";
@@ -16059,15 +16063,11 @@ function renderRecallPanel(){
   $("#minusBtn").classList.toggle("opacity-50", controlsBlocked);
   $("#completeRecallBtn").disabled = isNurseQueueLocked();
   $("#noShowRecallBtn").disabled = isNurseQueueLocked();
-  $("#returnPreviousBtn").disabled = isNurseQueueLocked();
+  $("#completeRecallContinuationBtn").disabled = isNurseQueueLocked();
   $("#completeRecallBtn").classList.toggle("opacity-50", isNurseQueueLocked());
   $("#noShowRecallBtn").classList.toggle("opacity-50", isNurseQueueLocked());
-  $("#returnPreviousBtn").classList.toggle("opacity-50", isNurseQueueLocked());
+  $("#completeRecallContinuationBtn").classList.toggle("opacity-50", isNurseQueueLocked());
   updateNoShowButton(wheelValue());
-  if(active){
-    const target = typeof state.previousDisplay === "number" ? state.previousDisplay : state.current;
-    $("#returnPreviousBtn").textContent = "↩ الرجوع إلى " + ar(target);
-  }
 }
 
 async function recallMissedTurn(number){
@@ -16109,6 +16109,36 @@ async function leaveRecall(mode){
 
   const number = state.recallNumber;
   const backTo = typeof state.previousDisplay === "number" ? state.previousDisplay : state.current;
+  if(mode === "done_continuation"){
+    const roomId = DISPLAY_SLOT_ID;
+    const clinicName = state.clinicName;
+    const nurseName = state.nurse;
+    const identity = currentNursingIdentity();
+    const adminControl = isAdminUser();
+    const session = nursingLiveSessionStart;
+    try{
+      const result = await clinicRef.transaction(data=>{
+        if(!data || Number(data.sessionStart || 0) !== session || data.status !== "active" || data.prepared) return;
+        if(!adminControl && !nursingHandoverMatches(data,identity)) return;
+        if(!data.recallMode || data.recallKind === "continuation" || Number(data.recallNumber) !== number) return;
+        const missed = (data.missedTurns || {})[String(number)];
+        if(!missed || missed.status !== "recalling" || (data.continuationTurns || {})[String(number)]) return;
+        data.missedTurns = {...(data.missedTurns || {}),[String(number)]:{...missed,status:"done",completedAt:firebase.database.ServerValue.TIMESTAMP}};
+        data.continuationTurns = {...(data.continuationTurns || {}),[String(number)]:{status:"waiting",addedAt:firebase.database.ServerValue.TIMESTAMP}};
+        data.displayCurrent = typeof data.previousDisplay === "number" ? data.previousDisplay : data.current;
+        data.previousDisplay = null;
+        data.recallMode = false;
+        data.recallNumber = null;
+        data.updatedAt = firebase.database.ServerValue.TIMESTAMP;
+        return data;
+      },undefined,false);
+      if(!result.committed) return void flashSync("تغيرت حالة الدور أو الاستكمال؛ راجع القائمة وحاول مرة أخرى",false);
+      writeAuditLog({action:"recall_done_with_continuation",roomId,clinicName,nurseName,
+        summary:"إنهاء الكشف للدور الفائت " + ar(number) + " وإضافته للاستكمال والعودة إلى الدور " + ar(backTo)});
+      flashSync("تم الكشف وإضافة " + ar(number) + " للاستكمال",true);
+    }catch(e){flashSync("تعذّر حفظ الفائت والاستكمال",false)}
+    return;
+  }
   const updates = {
     displayCurrent:backTo,
     previousDisplay:null,
@@ -16138,7 +16168,7 @@ async function leaveRecall(mode){
 
 $("#completeRecallBtn").addEventListener("click", ()=> leaveRecall("done"));
 $("#noShowRecallBtn").addEventListener("click", ()=> leaveRecall("missed"));
-$("#returnPreviousBtn").addEventListener("click", ()=> leaveRecall("missed"));
+$("#completeRecallContinuationBtn").addEventListener("click", ()=> leaveRecall("done_continuation"));
 
 /* ==========================================================
    ⑤  بكرة الأرقام (Interactive Wheel)
