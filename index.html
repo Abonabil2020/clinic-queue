@@ -9396,12 +9396,7 @@
               <button id="staffNurseCancel" type="button" class="py-2.5 rounded-xl bg-slate-100 text-slate-600 font-bold">إلغاء</button>
             </div>
           </form>
-          <div class="staff-list-search">
-            <label for="staffNurseSearch">بحث في التمريض</label>
-            <input id="staffNurseSearch" type="search" class="staff-admin-input" placeholder="اكتب الاسم للبحث…" autocomplete="off" aria-controls="staffNurseList">
-          </div>
           <div id="staffNurseList" class="staff-admin-list" tabindex="0" aria-label="قائمة التمريض"></div>
-          <p id="staffNurseSearchEmpty" class="staff-list-search-empty" hidden>لا توجد نتائج مطابقة</p>
         </div>
       </section>
         </div>
@@ -14927,6 +14922,13 @@ function buildStaffManualDiff(){
     }
   });
 
+  actual.nurses.forEach(item=>{
+    if(!draft.nurses.some(candidate=>candidate.id === item.id)){
+      changes.push("حذف تمريض: " + (item.name || "—"));
+      updates["nurses/" + item.id] = null;
+    }
+  });
+
   draft.nurses.forEach(item=>{
     const old = actualNurses.get(item.id);
     if(!old){
@@ -15234,7 +15236,7 @@ function renderStaffGlobalSearch(){
 
 $("#staffGlobalSearch").addEventListener("input",renderStaffGlobalSearch);
 
-function createStaffAdminRow(name, meta, active, onEdit, onToggle){
+function createStaffAdminRow(name, meta, active, onEdit, onToggle, onDelete){
   const row = document.createElement("div");
   row.className = "staff-admin-row" + (active ? "" : " inactive");
 
@@ -15264,6 +15266,14 @@ function createStaffAdminRow(name, meta, active, onEdit, onToggle){
   toggleBtn.addEventListener("click", onToggle);
 
   actions.append(editBtn, toggleBtn);
+  if(typeof onDelete === "function"){
+    const deleteBtn = document.createElement("button");
+    deleteBtn.type = "button";
+    deleteBtn.className = "staff-admin-mini-btn danger";
+    deleteBtn.textContent = "حذف";
+    deleteBtn.addEventListener("click", onDelete);
+    actions.appendChild(deleteBtn);
+  }
   row.append(main, actions);
   return row;
 }
@@ -15284,7 +15294,7 @@ function filterStaffAdminList(key, resetScroll = false){
   empty.hidden = !query || matches > 0;
   if(resetScroll) list.scrollTop = 0;
 }
-["Specialty","Doctor","Nurse"].forEach(key=>{
+["Specialty","Doctor"].forEach(key=>{
   $("#staff" + key + "Search").addEventListener("input",()=>filterStaffAdminList(key,true));
 });
 
@@ -15493,10 +15503,19 @@ function renderStaffManager(){
           refreshStaffManualDirtyState();
           renderStaffManager();
           staffAdminMessage("تم تسجيل تغيير حالة التمريض كتعديل معلق.");
+        },
+        ()=>{
+          if(!staffManagerCanNursing() || staffManualSaving) return;
+          if(!confirm("تأكيد حذف اسم التمريض «" + (item.name || "—") + "» من النظام؟\nلن يُنفَّذ الحذف نهائيًا إلا بعد اعتماد التعديلات.")) return;
+          manualState.nurses = manualState.nurses.filter(nurse=>nurse.id !== item.id);
+          if($("#staffNurseId").value === item.id) resetStaffNurseForm();
+          refreshStaffManualDirtyState();
+          renderStaffManager();
+          staffAdminMessage("تم تسجيل حذف اسم التمريض كتعديل معلق. اضغط «اعتماد التعديلات» لتنفيذه.");
         }
       ));
     });
-  ["Specialty","Doctor","Nurse"].forEach(key=>filterStaffAdminList(key));
+  ["Specialty","Doctor"].forEach(key=>filterStaffAdminList(key));
 }
 
 $("#staffSpecialtyForm").addEventListener("submit", event=>{
