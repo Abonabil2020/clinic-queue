@@ -13190,6 +13190,7 @@ async function loadNursingPeriod(){
       const choice = await chooseOccupiedNursingRoom(data);
       if(serial !== nursingLoadSerial || DISPLAY_SLOT_ID !== $("#setupRoomSelect").value) return;
       if(choice === "back"){
+        setNursingRoomOpening(false);
         $("#setupRoomChange").click();
         return;
       }
