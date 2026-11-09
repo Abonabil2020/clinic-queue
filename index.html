@@ -13137,6 +13137,41 @@ function renderNursingSetup(){
   $("#setupStepBack").hidden = !currentNursingIdentity();
   $("#setupStepBack").textContent = "العودة للتحكم دون تغيير";
 }
+/* تنبيه الحجرة المشغولة عند اختيارها فقط؛ لا يغيّر بياناتها. */
+function chooseOccupiedNursingRoom(data){
+  return new Promise(resolve=>{
+    const dialog=document.createElement("dialog");
+    dialog.dir="rtl";
+    dialog.style.cssText="position:fixed;inset:0;margin:auto;width:calc(100% - 32px);max-width:440px;padding:22px;border:1px solid #fecaca;border-radius:17px;background:#fff;color:#334155;box-shadow:0 18px 65px #0005;font-family:inherit;text-align:right";
+    const title=document.createElement("h2");
+    title.textContent="تنبيه: الحجرة " + DISPLAY_SLOT_ID + " مشغولة حاليًا";
+    title.style.cssText="font-size:19px;font-weight:700;color:#b91c1c;margin-bottom:12px";
+    dialog.appendChild(title);
+    const lines=[
+      "التمريض المستلم: " + (data.nurse || "غير محدد"),
+      "الطبيب: " + doctorDisplayFromData(data),
+      "التخصص: " + (data.clinicName || data.specialty || "—"),
+      "رقم الكشف الحالي: " + ar(data.displayCurrent ?? data.current ?? 0)
+    ];
+    lines.forEach(value=>{const line=document.createElement("p");line.textContent=value;line.style.cssText="margin:7px 0;font-size:14px";dialog.appendChild(line)});
+    const note=document.createElement("p");
+    note.textContent="اختاري الإجراء الصحيح. لن تتغير بيانات العيادة بمجرد اختيار الحجرة.";
+    note.style.cssText="margin:14px 0;color:#64748b;font-size:13px";
+    dialog.appendChild(note);
+    let finished=false;
+    function done(choice){if(finished)return;finished=true;dialog.close();dialog.remove();resolve(choice)}
+    function button(label,choice,color){
+      const el=document.createElement("button");el.type="button";el.textContent=label;
+      el.style.cssText="display:block;width:100%;margin-top:9px;padding:12px;border:0;border-radius:11px;font:inherit;font-weight:700;background:"+color+";color:"+(choice==="back"?"#334155":"#fff");
+      el.onclick=()=>done(choice);dialog.appendChild(el);
+    }
+    button("استلام واستكمال نفس العيادة","takeover","#15803d");
+    button("إنهاء الفترة السابقة وبدء عيادة جديدة","new","#b91c1c");
+    button("رجوع لاختيار الحجرة","back","#e2e8f0");
+    dialog.addEventListener("cancel",e=>{e.preventDefault();done("back")});
+    document.body.appendChild(dialog);dialog.showModal();
+  });
+}
 async function loadNursingPeriod(){
   if(nursingSetupSaving) return;
   nursingSetupDraft = false;
@@ -13149,6 +13184,20 @@ async function loadNursingPeriod(){
     const data = (await clinicRef.once("value")).val() || {};
     if(serial !== nursingLoadSerial) return;
     nursingPeriod = data;
+    if(nursingSetupMode === "enter" && periodIsCurrent(data) && data.status !== "finished" &&
+       !(currentNursingIdentity() && nursingHandoverMatches(data,currentNursingIdentity()) &&
+         Number(data.sessionStart || 0) === currentNursingIdentity().sessionStart)){
+      const choice = await chooseOccupiedNursingRoom(data);
+      if(serial !== nursingLoadSerial || DISPLAY_SLOT_ID !== $("#setupRoomSelect").value) return;
+      if(choice === "back"){
+        $("#setupRoomChange").click();
+        return;
+      }
+      if(choice === "new"){
+        openNursingData("new");
+        return;
+      }
+    }
     fillClinicHours("setupHours", nursingSetupMode === "edit" ? data.clinicHours : null);
     const identity = currentNursingIdentity();
     if(nursingSetupMode === "enter" && identity && nursingRoomAccess() &&
@@ -13515,8 +13564,21 @@ $("#saveSetupBtn").addEventListener("click", async ()=>{
   const clinic = findSpecialtyById($("#setupClinic").value);
   const doctor = $("#setupDoctor").value.trim();
   if(!takeover && (!clinic || !selectableDoctorNames(clinic.id).includes(doctor))) return void (msg.textContent = "اختر العيادة والطبيب من قائمة أطباء التخصص");
-  if(!takeover && !edit && !confirm("تجهيز فترة جديدة في حجرة " + DISPLAY_SLOT_ID + " وتصفير الأدوار والفائت وإلغاء القفل والحجز القديم؟")) return;
   if(!firebaseConnected) return void (msg.textContent = "لا يوجد اتصال بالخادم. انتظر عودة الاتصال ثم احفظ؛ اختياراتك محفوظة هنا.");
+  if(!takeover && !edit){
+    const current = (await clinicRef.once("value")).val() || {};
+    if(!nursingPeriodMatches(nursingPeriod,current)) return void (msg.textContent = "تغيرت بيانات الحجرة. ارجع لاختيارها وراجع الفترة الحالية قبل البدء.");
+    if(periodIsCurrent(current) && current.status !== "finished"){
+      const warning = "تحذير: الحجرة " + DISPLAY_SLOT_ID + " مسجلة كعيادة شغالة.\n" +
+        "التمريض المستلم: " + (current.nurse || "غير محدد") + "\n" +
+        "الطبيب: " + doctorDisplayFromData(current) + "\n" +
+        "التخصص: " + (current.clinicName || current.specialty || "—") + "\n" +
+        "رقم الكشف الحالي: " + ar(current.displayCurrent ?? current.current ?? 0) + "\n\n" +
+        "تأكدي أن الطبيب السابق انتهى بالفعل. هل تريدين إنهاء الفترة السابقة وبدء عيادة جديدة؟";
+      if(!confirm(warning)) return;
+    }
+    if(!confirm("تجهيز فترة جديدة في حجرة " + DISPLAY_SLOT_ID + " وتصفير الأدوار والفائت وإلغاء القفل والحجز القديم؟")) return;
+  }
   nursingSetupSaving = true;
   ++nursingLoadSerial;
   clearTimeout(writeTimer); wheelWritePending = false; clearTimeout(settleTimer);
@@ -13546,8 +13608,14 @@ $("#saveSetupBtn").addEventListener("click", async ()=>{
       const latest = (await clinicRef.once("value")).val() || {};
       if(!nursingPeriodMatches(before,latest)) throw new Error("period-changed");
       clearTimeout(writeTimer);
-      await resetCurrentClinic({periodId:expectedPeriodId,handoverId,clinicHours,prepared:true,status:"idle",clinicName:clinic.name,specialty:clinic.name,doctor,doctorDisplayName:doctorDisplayName(doctor),nurse,roomNumber:DISPLAY_SLOT_ID,floor:CURRENT_ROOM.floorName,location:"عيادة رقم " + DISPLAY_SLOT_ID + " — " + CURRENT_ROOM.floorName});
+      const freshPeriod = {periodId:expectedPeriodId,handoverId,clinicHours,prepared:true,status:"idle",clinicName:clinic.name,specialty:clinic.name,doctor,doctorDisplayName:doctorDisplayName(doctor),nurse,roomNumber:DISPLAY_SLOT_ID,floor:CURRENT_ROOM.floorName,location:"عيادة رقم " + DISPLAY_SLOT_ID + " — " + CURRENT_ROOM.floorName,operationalDayKey:operationalDayKey(),period:"",current:0,maxReached:0,displayCurrent:0,sessionStart:firebase.database.ServerValue.TIMESTAMP,updatedAt:firebase.database.ServerValue.TIMESTAMP};
+      const replacement = await clinicRef.transaction(data=>{
+        if(!nursingPeriodMatches(before,data || {})) return;
+        return freshPeriod;
+      },undefined,false);
+      if(!replacement.committed) throw new Error("period-changed");
       clinicWriteCompleted = true;
+      await queueApp.database().ref("bookingStatus/" + roomId).remove();
       saved = (await clinicRef.once("value")).val();
     }
     if(!saved || roomId !== DISPLAY_SLOT_ID || saved.nurse !== nurse || saved.handoverId !== handoverId ||
