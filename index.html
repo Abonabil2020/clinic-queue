@@ -5338,9 +5338,16 @@
 
 
   /* ===== صفحة الأدمن فقط: سجل تحديثات النظام ===== */
-  /* ===== الأدمن فقط: بطاقات الإحصائيات السريعة ===== */
-  #view-admin .admin-metrics-grid{
+  /* ===== الأدمن فقط: إحصائيات مختصرة مع حالة الاتصال الفعلية ===== */
+  #view-admin .admin-metrics-date{
     margin-top:16px;
+    color:#64748b;
+    font-size:12px;
+    font-weight:700;
+    text-align:right;
+  }
+  #view-admin .admin-metrics-grid{
+    margin-top:8px;
     display:grid;
     grid-template-columns:repeat(2,minmax(0,1fr));
     gap:16px;
@@ -5348,177 +5355,93 @@
   #view-admin .admin-connections-panel{
     position:relative;
     overflow:hidden;
-    margin-top:0;
-    padding:18px 18px 16px;
+    min-width:0;
+    min-height:118px;
+    padding:22px 20px;
+    display:flex;
+    align-items:center;
+    background:#fff;
     border:1px solid #dbe5f1;
-    border-radius:22px;
-    background:linear-gradient(180deg,#ffffff 0%,#f8fbff 100%);
-    box-shadow:0 10px 28px rgba(15,23,42,.08);
-    isolation:isolate;
+    border-radius:20px;
+    box-shadow:0 7px 22px rgba(15,23,42,.06);
   }
   #view-admin .admin-connections-panel::before{
     content:"";
     position:absolute;
-    inset:0 0 auto 0;
-    height:5px;
-    background:linear-gradient(90deg,#22c55e 0%,#16a34a 100%);
-    z-index:0;
+    inset:0 0 auto;
+    height:4px;
+    background:linear-gradient(90deg,#22c55e,#16a34a);
   }
   #view-admin #adminDailyVisitsPanel::before{
-    background:linear-gradient(90deg,#2563eb 0%,#38bdf8 100%);
-  }
-  #view-admin .admin-connections-panel::after{
-    content:attr(data-badge);
-    position:absolute;
-    top:16px;
-    left:18px;
-    padding:5px 10px;
-    border-radius:999px;
-    background:rgba(34,197,94,.12);
-    color:#166534;
-    font-size:10px;
-    font-weight:800;
-    letter-spacing:.2px;
-    z-index:1;
-  }
-  #view-admin #adminDailyVisitsPanel::after{
-    background:rgba(37,99,235,.10);
-    color:#1d4ed8;
+    background:linear-gradient(90deg,#2563eb,#38bdf8);
   }
   #view-admin .admin-connections-head{
-    position:relative;
-    z-index:1;
     display:flex;
-    align-items:flex-start;
+    align-items:center;
     justify-content:space-between;
-    gap:18px;
-    flex-wrap:wrap;
-    padding-top:22px;
+    gap:16px;
+    width:100%;
+  }
+  #view-admin .admin-connections-title{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    min-width:0;
   }
   #view-admin .admin-connections-label{
     color:#0f172a;
-    font-size:20px;
-    line-height:1.35;
+    font-size:19px;
+    line-height:1.5;
     font-weight:800;
-  }
-  #view-admin .admin-connections-note{
-    margin-top:8px;
-    color:#64748b;
-    font-size:12px;
-    line-height:1.8;
-    max-width:32ch;
-  }
-  #view-admin .admin-connections-value-wrap{
-    display:flex;
-    align-items:flex-end;
-    gap:6px;
-    direction:ltr;
-    white-space:nowrap;
-    flex-shrink:0;
   }
   #view-admin .admin-connections-value{
-    color:#0f172a;
-    font-size:48px;
-    line-height:.95;
-    font-weight:900;
-    letter-spacing:-1px;
-    text-shadow:0 1px 0 rgba(255,255,255,.6);
-  }
-  #view-admin .admin-connections-limit{
-    color:#94a3b8;
-    font-size:12px;
-    font-weight:800;
-  }
-  #view-admin .admin-connections-track{
-    position:relative;
-    z-index:1;
-    width:100%;
-    height:12px;
-    margin-top:16px;
-    overflow:hidden;
-    border-radius:999px;
-    background:#e8eef6;
-    box-shadow:inset 0 1px 2px rgba(15,23,42,.08);
-  }
-  #view-admin .admin-connections-bar{
-    display:block;
-    width:0;
-    height:100%;
-    border-radius:inherit;
-    background:linear-gradient(90deg,#22c55e 0%,#16a34a 100%);
-    box-shadow:0 0 14px rgba(34,197,94,.22);
-    transition:width .25s ease,background .25s ease;
-  }
-  #view-admin .admin-connections-footer{
-    position:relative;
-    z-index:1;
-    margin-top:14px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:10px;
-    flex-wrap:wrap;
-  }
-  #view-admin .admin-connections-status,
-  #view-admin .admin-connections-source{
-    display:inline-flex;
-    align-items:center;
-    gap:7px;
-    padding:7px 12px;
-    border-radius:999px;
-    background:#f8fafc;
-    border:1px solid #e2e8f0;
-    font-size:11px;
-    font-weight:700;
-  }
-  #view-admin .admin-connections-status{
-    color:#166534;
-  }
-  #view-admin .admin-connections-status::before{
-    content:"";
-    width:8px;
-    height:8px;
     flex:0 0 auto;
+    color:#0f172a;
+    font-size:50px;
+    line-height:1;
+    font-weight:900;
+    font-variant-numeric:tabular-nums;
+  }
+  #view-admin .admin-metric-dot{
+    flex:0 0 11px;
+    width:11px;
+    height:11px;
     border-radius:50%;
-    background:#22c55e;
-    box-shadow:0 0 0 4px rgba(34,197,94,.12);
+    background:#16a34a;
+    box-shadow:0 0 0 3px rgba(34,197,94,.12);
   }
-  #view-admin .admin-connections-source{
-    color:#475569;
-  }
-  #view-admin .admin-connections-panel[data-level="warning"] .admin-connections-bar{background:linear-gradient(90deg,#f59e0b 0%,#d97706 100%)}
-  #view-admin .admin-connections-panel[data-level="warning"] .admin-connections-status{color:#92400e}
-  #view-admin .admin-connections-panel[data-level="warning"] .admin-connections-status::before{background:#f59e0b;box-shadow:0 0 0 4px rgba(245,158,11,.14)}
-  #view-admin .admin-connections-panel[data-level="warning"]::before{background:linear-gradient(90deg,#f59e0b 0%,#d97706 100%)}
-  #view-admin .admin-connections-panel[data-level="danger"] .admin-connections-bar{background:linear-gradient(90deg,#ef4444 0%,#dc2626 100%)}
-  #view-admin .admin-connections-panel[data-level="danger"] .admin-connections-status{color:#991b1b}
-  #view-admin .admin-connections-panel[data-level="danger"] .admin-connections-status::before{background:#ef4444;box-shadow:0 0 0 4px rgba(239,68,68,.12)}
-  #view-admin .admin-connections-panel[data-level="danger"]::before{background:linear-gradient(90deg,#ef4444 0%,#dc2626 100%)}
-  #view-admin .admin-connections-panel[data-level="error"] .admin-connections-bar{background:linear-gradient(90deg,#94a3b8 0%,#64748b 100%)}
-  #view-admin .admin-connections-panel[data-level="error"] .admin-connections-status{color:#64748b}
-  #view-admin .admin-connections-panel[data-level="error"] .admin-connections-status::before{background:#94a3b8;box-shadow:0 0 0 4px rgba(148,163,184,.12)}
-  #view-admin .admin-connections-panel[data-level="error"]::before{background:linear-gradient(90deg,#94a3b8 0%,#64748b 100%)}
-  #view-admin #adminDailyVisitsPanel .admin-connections-status{
-    color:#1d4ed8;
-  }
-  #view-admin #adminDailyVisitsPanel .admin-connections-status::before{
+  #view-admin #adminDailyVisitsPanel .admin-metric-dot{
     background:#2563eb;
-    box-shadow:0 0 0 4px rgba(37,99,235,.12);
+    box-shadow:0 0 0 3px rgba(37,99,235,.12);
+  }
+  #view-admin .admin-connections-panel[data-health="live"] .admin-metric-dot{
+    animation:adminMetricPulse 1.5s ease-in-out infinite;
+  }
+  #view-admin .admin-connections-panel[data-health="offline"] .admin-metric-dot{
+    background:#ef4444;
+    box-shadow:0 0 0 3px rgba(239,68,68,.12);
+    animation:none;
+  }
+  #view-admin .admin-connections-panel[data-health="error"] .admin-metric-dot,
+  #view-admin .admin-connections-panel[data-health="loading"] .admin-metric-dot{
+    background:#94a3b8;
+    box-shadow:0 0 0 3px rgba(148,163,184,.12);
+    animation:none;
+  }
+  @keyframes adminMetricPulse{
+    0%,100%{opacity:1;transform:scale(1);}
+    50%{opacity:.3;transform:scale(.82);}
   }
   @media(max-width:880px){
-    #view-admin .admin-metrics-grid{
-      grid-template-columns:1fr;
-    }
+    #view-admin .admin-metrics-grid{grid-template-columns:1fr;gap:10px;}
   }
   @media(max-width:600px){
-    #view-admin .admin-connections-panel{padding:16px 14px 14px}
-    #view-admin .admin-connections-panel::after{top:14px;left:14px}
-    #view-admin .admin-connections-head{padding-top:24px;gap:12px}
-    #view-admin .admin-connections-label{font-size:17px}
-    #view-admin .admin-connections-note{font-size:11px;max-width:none}
-    #view-admin .admin-connections-value{font-size:38px}
-    #view-admin .admin-connections-status,
-    #view-admin .admin-connections-source{font-size:10px;padding:6px 10px}
+    #view-admin .admin-connections-panel{min-height:96px;padding:17px 14px;border-radius:16px;}
+    #view-admin .admin-connections-label{font-size:16px;}
+    #view-admin .admin-connections-value{font-size:42px;}
+  }
+  @media(prefers-reduced-motion:reduce){
+    #view-admin .admin-connections-panel[data-health="live"] .admin-metric-dot{animation:none;}
   }
 
   #view-admin .admin-audit-panel{
@@ -8859,40 +8782,25 @@
       <button id="adminLogout" type="button" class="px-4 py-2.5 rounded-xl bg-slate-100 text-slate-600 text-sm font-bold">تسجيل الخروج</button>
     </header>
 
+    <div id="adminMetricsDate" class="admin-metrics-date" aria-label="تاريخ الإحصائية"></div>
     <div class="admin-metrics-grid">
-      <section id="adminConnectionsPanel" class="admin-connections-panel" data-level="normal" data-badge="مباشر الآن" aria-label="المتصلون بالنظام الآن">
+      <section id="adminConnectionsPanel" class="admin-connections-panel" data-health="loading" data-read-state="pending" aria-label="المتصلون بالنظام حاليًا">
         <div class="admin-connections-head">
-          <div>
-            <h2 class="admin-connections-label">المتصلون بالنظام الآن</h2>
-            <p class="admin-connections-note">عدد جلسات النظام النشطة خلال آخر دقيقتين تقريبًا.</p>
+          <div class="admin-connections-title">
+            <span class="admin-metric-dot" aria-hidden="true"></span>
+            <h2 class="admin-connections-label">المتصلون بالنظام حاليًا</h2>
           </div>
-          <div class="admin-connections-value-wrap" aria-live="polite">
-            <strong id="adminConnectionsCount" class="admin-connections-value num">—</strong>
-          </div>
-        </div>
-        <div class="admin-connections-track" aria-hidden="true">
-          <span id="adminConnectionsBar" class="admin-connections-bar"></span>
-        </div>
-        <div class="admin-connections-footer">
-          <span id="adminConnectionsStatus" class="admin-connections-status">جارٍ قياس الاتصالات...</span>
-          <span class="admin-connections-source">يشمل جميع صفحات النظام وأجهزة العرض</span>
+          <strong id="adminConnectionsCount" class="admin-connections-value num" aria-live="polite">—</strong>
         </div>
       </section>
 
-      <!-- Daily distinct-browser visits: Cairo 03:00 accounting boundary. -->
-      <section id="adminDailyVisitsPanel" class="admin-connections-panel" data-badge="إحصائية اليوم" aria-label="الأجهزة التي زارت النظام اليوم">
+      <section id="adminDailyVisitsPanel" class="admin-connections-panel" data-health="loading" data-read-state="pending" aria-label="عدد مستخدمي النظام اليوم">
         <div class="admin-connections-head">
-          <div>
-            <h2 class="admin-connections-label">الأجهزة التي استخدمت النظام اليوم</h2>
-            <p class="admin-connections-note">كل متصفح يُحسب مرة واحدة يوميًا، حتى مع تكرار الدخول والخروج.</p>
+          <div class="admin-connections-title">
+            <span class="admin-metric-dot" aria-hidden="true"></span>
+            <h2 class="admin-connections-label">عدد مستخدمي النظام اليوم</h2>
           </div>
-          <div class="admin-connections-value-wrap" aria-live="polite">
-            <strong id="adminDailyVisitsCount" class="admin-connections-value num">—</strong>
-          </div>
-        </div>
-        <div class="admin-connections-footer">
-          <span id="adminDailyVisitsStatus" class="admin-connections-status">جارٍ تحميل زيارات اليوم...</span>
-          <span class="admin-connections-source">يبدأ اليوم الجديد 3:00 فجرًا بتوقيت القاهرة</span>
+          <strong id="adminDailyVisitsCount" class="admin-connections-value num" aria-live="polite">—</strong>
         </div>
       </section>
     </div>
@@ -10216,13 +10124,38 @@ async function recordDailyVisit(){
   }finally{ dailyVisitWriteBusy = false; }
 }
 
-function renderAdminDailyVisits(count, error=false){
-  const value = $("#adminDailyVisitsCount");
-  const status = $("#adminDailyVisitsStatus");
-  if(!value || !status) return;
-  value.textContent = error ? "—" : String(Math.max(0,Number(count) || 0));
-  status.textContent = error ? "تعذر قراءة زيارات اليوم — راجع Firebase Rules" : "أجهزة/متصفحات مختلفة منذ الساعة 3:00 فجرًا";
-  status.style.color = error ? "#b91c1c" : "";
+// The dot blinks only while Firebase is connected AND the metric has been read.
+function updateAdminMetricsConnectivity(){
+  const connected = firebaseConnected && browserOnline;
+  for(const id of ["adminConnectionsPanel", "adminDailyVisitsPanel"]){
+    const panel = document.getElementById(id);
+    if(!panel) continue;
+    const readState = panel.dataset.readState || "pending";
+    const health = !connected ? "offline" : readState === "error" ? "error" : readState === "ok" ? "live" : "loading";
+    panel.dataset.health = health;
+    const dot = panel.querySelector(".admin-metric-dot");
+    if(dot) dot.title = health === "live" ? "متصل بالخادم" : health === "offline" ? "الاتصال بالخادم منقطع" : health === "error" ? "تعذر قراءة الإحصائية" : "جارٍ التحقق من الاتصال";
+  }
+}
+
+const adminMetricsDateFormat = new Intl.DateTimeFormat("ar-EG",{
+  timeZone:"Africa/Cairo", weekday:"long", day:"numeric", month:"long", year:"numeric"
+});
+function updateAdminMetricsDate(){
+  const element = document.getElementById("adminMetricsDate");
+  if(!element) return;
+  // Use the same Cairo 03:00 accounting day as the daily-visit counter.
+  const visitDay = cairoVisitDayKey();
+  element.textContent = adminMetricsDateFormat.format(new Date(visitDay + "T12:00:00Z"));
+}
+
+function renderAdminDailyVisits(count, error=false, loading=false){
+  const value = document.getElementById("adminDailyVisitsCount");
+  const panel = document.getElementById("adminDailyVisitsPanel");
+  if(!value || !panel) return;
+  value.textContent = error || loading ? "—" : String(Math.max(0,Number(count) || 0));
+  panel.dataset.readState = error ? "error" : loading ? "pending" : "ok";
+  updateAdminMetricsConnectivity();
 }
 
 function stopAdminDailyVisitsListener(){
@@ -10239,7 +10172,8 @@ function startAdminDailyVisitsListener(){
   if(adminDailyVisitsDay === day && adminDailyVisitsRef) return;
   stopAdminDailyVisitsListener();
   adminDailyVisitsDay = day;
-  renderAdminDailyVisits(0);
+  renderAdminDailyVisits(0,false,true);
+  updateAdminMetricsDate();
   adminDailyVisitsRef = dailyVisitsRootRef.child(day);
   adminDailyVisitsOnValue = snapshot=>renderAdminDailyVisits(snapshot.numChildren());
   adminDailyVisitsOnError = error=>{
@@ -10253,6 +10187,7 @@ function startAdminDailyVisitsListener(){
 setInterval(()=>{
   if(firebaseConnected) recordDailyVisit().catch(()=>{});
   if(adminDailyVisitsRef && isAdminUser() && adminDailyVisitsDay !== cairoVisitDayKey()) startAdminDailyVisitsListener();
+  updateAdminMetricsDate();
 }, 30000);
 window.addEventListener("focus",()=>{ if(firebaseConnected) recordDailyVisit().catch(()=>{}); });
 queueApp.database().ref(".info/serverTimeOffset").on("value",snap=>{
@@ -10315,35 +10250,26 @@ function countActivePresence(snapshot){
 }
 
 function renderAdminConnectionsCount(count, readError=false){
-  const panel = $("#adminConnectionsPanel");
-  const value = $("#adminConnectionsCount");
-  const bar = $("#adminConnectionsBar");
-  const status = $("#adminConnectionsStatus");
-  if(!panel || !value || !bar || !status) return;
-
-  if(readError){
-    panel.dataset.level = "error";
-    value.textContent = "—";
-    bar.style.width = "0%";
-    status.textContent = "تعذر قراءة عدد المتصلين — راجع Firebase Rules";
-    return;
-  }
-
-  const safeCount = Math.max(0, Number(count) || 0);
-  value.textContent = String(safeCount);
-  bar.style.width = "0%"; // No fixed connection limit on the Blaze billing plan.
-  panel.dataset.level = "normal";
-  status.textContent = "جلسات نشطة خلال آخر دقيقتين ونصف تقريبًا";
+  const panel = document.getElementById("adminConnectionsPanel");
+  const value = document.getElementById("adminConnectionsCount");
+  if(!panel || !value) return;
+  panel.dataset.readState = readError ? "error" : "ok";
+  value.textContent = readError ? "—" : String(Math.max(0, Number(count) || 0));
+  updateAdminMetricsConnectivity();
 }
 
 function startAdminPresenceListener(){
   if(adminPresenceListening || !isAdminUser()) return;
+  const panel = document.getElementById("adminConnectionsPanel");
+  if(panel) panel.dataset.readState = "pending";
+  updateAdminMetricsConnectivity();
 
   adminPresenceValueHandler = snapshot=>{
     adminPresenceSnapshot = snapshot;
     renderAdminConnectionsCount(countActivePresence(snapshot));
   };
   adminPresenceErrorHandler = error=>{
+    adminPresenceSnapshot = null;
     renderAdminConnectionsCount(0,true);
     console.warn("Presence read failed:",error?.code || error?.message || error);
   };
@@ -10371,15 +10297,18 @@ function stopAdminPresenceListener(){
 window.addEventListener("online", ()=>{
   browserOnline = true;
   updateNetworkStatusIndicator();
+  updateAdminMetricsConnectivity();
 });
 
 window.addEventListener("offline", ()=>{
   browserOnline = false;
   updateNetworkStatusIndicator();
+  updateAdminMetricsConnectivity();
 });
 
 networkConnectionRef.on("value", snapshot=>{
   firebaseConnected = snapshot.val() === true;
+  updateAdminMetricsConnectivity();
   if(!firebaseConnected) presenceRegistered = false;
   renderBookingStatus();
   if(firebaseConnected) registerPresenceSession();
@@ -10387,6 +10316,8 @@ networkConnectionRef.on("value", snapshot=>{
 });
 
 updateNetworkStatusIndicator();
+updateAdminMetricsConnectivity();
+updateAdminMetricsDate();
 
 
 const EMBEDDED_STAFF_IMPORT = {"source":"تحكم أدوار العيادات2.xlsx — الملف الأساسي","specialties":["الأطفال وحديثي الولادة","عيادة الباطنة والكبد والجهاز الهضمي","الغدد الصماء والسكر","باطنه عامه و أمراض الكلى","القلب والأوعية الدموية","الجراحة العامة","أمراض المخ والأعصاب","جراحة الاوعية الدموية","جراحة الأطفال","العظام","الجلدية والتناسلية والذكورة","الجلدية والتجميل","عيادة المسالك البولية","النساء والتوليد","أمراض الروماتيزم والمناعة","الصدر","الرمد","الطب النفسي - أطفال ومراهقين","عيادة الأنف والأذن والحنجرة","أمراض الدم","جراحة الفم والأسنان","التغذية العلاجية","عيادة أمراض التخاطب","جلسات تخاطب","العيادة العامة ( باطنة - أطفال )","جراحة القلب والصدر","الاشعة التليفزيونية"],"doctors":[{"name":"إيمان فادي السيد حامد","shortName":"إيمان فادي","specialty":"الأطفال وحديثي الولادة"},{"name":"كريمة البدوي محمد الشربيني","shortName":"كريمة البدوي","specialty":"الأطفال وحديثي الولادة"},{"name":"وليد عبدالعاطي الشربيني","shortName":"وليد الشربيني","specialty":"الأطفال وحديثي الولادة"},{"name":"احمد محمد الدمرداش الدسوقي","shortName":"احمد الدمرداش","specialty":"الأطفال وحديثي الولادة"},{"name":"مروة المهدي الشحات سماحه","shortName":"مروة المهدي","specialty":"الأطفال وحديثي الولادة"},{"name":"سامح محمد مسعد عبدالحليم","shortName":"سامح مزروع","specialty":"الأطفال وحديثي الولادة"},{"name":"ريهام عبدالرحمن محمد المهدي","shortName":"ريهام عبد الرحمن","specialty":"الأطفال وحديثي الولادة"},{"name":"رشا احمد ابراهيم البري","shortName":"رشا أحمد","specialty":"الأطفال وحديثي الولادة"},{"name":"أحمد محمد غازي السيد","shortName":"أحمد غازي","specialty":"الأطفال وحديثي الولادة"},{"name":"نورا جمال شعبان الدسوقي","shortName":"نورا جمال","specialty":"الأطفال وحديثي الولادة"},{"name":"منار متولي رزق","shortName":"منار متولي","specialty":"عيادة الباطنة والكبد والجهاز الهضمي"},{"name":"مروة محمود ابراهيم سمك","shortName":"مروة سمك","specialty":"عيادة الباطنة والكبد والجهاز الهضمي"},{"name":"اسلام محمد الشربينى","shortName":"اسلام الشربينى","specialty":"عيادة الباطنة والكبد والجهاز الهضمي"},{"name":"ايناس محسن مطاوع","shortName":"ايناس مطاوع","specialty":"عيادة الباطنة والكبد والجهاز الهضمي"},{"name":"سحر عبدالرحمن الغرباوي خضر","shortName":"سحر الغرباوي","specialty":"عيادة الباطنة والكبد والجهاز الهضمي"},{"name":"سعد محمد البيومي فؤاد","shortName":"سعد البيومي","specialty":"عيادة الباطنة والكبد والجهاز الهضمي"},{"name":"امال علاءالدين عباس حمزة","shortName":"امال علاء الدين","specialty":"عيادة الباطنة والكبد والجهاز الهضمي"},{"name":"جهاد محمد هشام يسري","shortName":"جهاد هشام","specialty":"عيادة الباطنة والكبد والجهاز الهضمي"},{"name":"سامي عمر محمد الجمل","shortName":"سامي الجمل","specialty":"عيادة الباطنة والكبد والجهاز الهضمي"},{"name":"علي حسن علي حجازي","shortName":"علي حجازي","specialty":"الغدد الصماء والسكر"},{"name":"هدير محمد نجيب معتوق","shortName":"هدير نجيب","specialty":"الغدد الصماء والسكر"},{"name":"بسمة سامي محمد خليفة","shortName":"بسمة سامي","specialty":"الغدد الصماء والسكر"},{"name":"مصطفي إبراهيم السيد","shortName":"مصطفى شكري","specialty":"باطنه عامه و أمراض الكلى"},{"name":"ايمان معوض محمود محمد الدسوقي","shortName":"ايمان الدسوقي","specialty":"باطنه عامه و أمراض الكلى"},{"name":"يوسف ابراهيم العدوي","shortName":"يوسف  العدوي","specialty":"القلب والأوعية الدموية"},{"name":"عزه المتولي محمود حطب","shortName":"عزة المتولي","specialty":"القلب والأوعية الدموية"},{"name":"وسام فتحي السعيد","shortName":"وسام فتحي","specialty":"القلب والأوعية الدموية"},{"name":"محمود احمد السيد القصبي","shortName":"محمود القصبي","specialty":"القلب والأوعية الدموية"},{"name":"احمد مصطفي عبدالحليم الحسيني","shortName":"احمد مصطفى","specialty":"القلب والأوعية الدموية"},{"name":"أريج الحنفي عزيز الدين محمد","shortName":"أريج الحنفي","specialty":"القلب والأوعية الدموية"},{"name":"انجي السيد عبدالسلام عبداللطيف","shortName":"انجي السيد","specialty":"القلب والأوعية الدموية"},{"name":"مصطفي محمود محمد يوسف","shortName":"مصطفى محمود","specialty":"القلب والأوعية الدموية"},{"name":"عادل حسني السيد النجار","shortName":"عادل النجار","specialty":"القلب والأوعية الدموية"},{"name":"فاطمة حسني علي علي شاهين","shortName":"فاطمة حسني","specialty":"القلب والأوعية الدموية"},{"name":"سمر رضا أبو العينين","shortName":"سمر أبو العينين","specialty":"الجراحة العامة"},{"name":"محمد احمد عبد المقصود","shortName":"محمد عبد المقصود","specialty":"الجراحة العامة"},{"name":"محمد محمد عبد الفتاح","shortName":"محمد عبد الفتاح","specialty":"الجراحة العامة"},{"name":"احمد مجدي عزام","shortName":"احمد عزام","specialty":"الجراحة العامة"},{"name":"خالد مرزوق عبدالجليل","shortName":"خالد مرزوق","specialty":"الجراحة العامة"},{"name":"ايمن طاهر مصطفي شميس","shortName":"ايمن طاهر","specialty":"الجراحة العامة"},{"name":"عمار ابراهيم السيد محمد حجازي","shortName":"عمار حجازي","specialty":"الجراحة العامة"},{"name":"مروة عبدالخالق عبدالواحد أبوالنجا","shortName":"مروة أبو النجا","specialty":"أمراض المخ والأعصاب"},{"name":"علي أيمن علي موافي","shortName":"علي موافي","specialty":"أمراض المخ والأعصاب"},{"name":"عبدالغني محمد ناصر الشامي","shortName":"عبدالغني الشامي","specialty":"أمراض المخ والأعصاب"},{"name":"منار حماده محمد ابوالوفا","shortName":"منار أبو الوفا","specialty":"أمراض المخ والأعصاب"},{"name":"احمد الدسوقي فريد رزق الحوفي","shortName":"احمد الدسوقي","specialty":"أمراض المخ والأعصاب"},{"name":"احمد محمد طه الغمري","shortName":"أحمد الغمري","specialty":"جراحة الاوعية الدموية"},{"name":"محمد هشام عبدالرحمن عتمان","shortName":"محمد هشام","specialty":"جراحة الاوعية الدموية"},{"name":"محمد اشرف السيد الشاذلي","shortName":"محمد الشاذلي","specialty":"جراحة الاوعية الدموية"},{"name":"محمد حسام احمد غانم","shortName":"محمد حسام","specialty":"جراحة الأطفال"},{"name":"اشرف عبدالحميد خليل ضياء","shortName":"أشرف ضياء","specialty":"العظام"},{"name":"محمد عوض احمد عوض","shortName":"محمد عوض","specialty":"العظام"},{"name":"محمد احمد السيد القصبي","shortName":"محمد القصبي","specialty":"العظام"},{"name":"السيد ماهر السيد عطا الله","shortName":"السيد ماهر","specialty":"العظام"},{"name":"محمد احمد ابراهيم هدهود","shortName":"محمد هدهود","specialty":"العظام"},{"name":"طارق احمد عبدالغني سليم","shortName":"طارق احمد","specialty":"العظام"},{"name":"احمد محمد ابراهيم البراشي","shortName":"أحمد البراشي","specialty":"العظام"},{"name":"محمود الامام عبدالعزيز محمد","shortName":"محمود الإمام","specialty":"العظام"},{"name":"عبدالله السيد ابراهيم القناوي","shortName":"عبدالله القناوي","specialty":"العظام"},{"name":"محمد محمود عبدالجيد المغازي","shortName":"محمد المغازي","specialty":"العظام"},{"name":"محمد حمدي عبدالحميد احمد","shortName":"محمد حمدي","specialty":"العظام"},{"name":"عمرو احمد عبدالكريم","shortName":"عمرو عبدالكريم","specialty":"الجلدية والتناسلية والذكورة"},{"name":"احمد ابراهيم علي عبدالهادي","shortName":"أحمد إبراهيم","specialty":"الجلدية والتناسلية والذكورة"},{"name":"هاني عزت رزق ابراهيم","shortName":"هاني عزت","specialty":"الجلدية والتناسلية والذكورة"},{"name":"عادل مدبولي بخيت حسين","shortName":"عادل مدبولي","specialty":"الجلدية والتناسلية والذكورة"},{"name":"دعاء علي نعيم السقا","shortName":"دعاء السقا","specialty":"الجلدية والتجميل"},{"name":"فاطمة فيصل محمد","shortName":"فاطمة فيصل","specialty":"الجلدية والتجميل"},{"name":"هبه شوقي عبدالحميد عماشه","shortName":"هبة شوقي","specialty":"الجلدية والتجميل"},{"name":"هند صابر محمود صابر","shortName":"هند صابر","specialty":"الجلدية والتجميل"},{"name":"ايه الحربي محمد عبدالعال","shortName":"آيه الحربي","specialty":"الجلدية والتجميل"},{"name":"هند ابراهيم عبدالوهاب حسن","shortName":"هند إبراهيم","specialty":"الجلدية والتجميل"},{"name":"ايمان محمد محمد المنشاوي","shortName":"ايمان المنشاوي","specialty":"الجلدية والتجميل"},{"name":"اسماء شعبان حسن سيد احمد حيده","shortName":"اسماء شعبان","specialty":"الجلدية والتجميل"},{"name":"محمد باهي حامد زقزوق","shortName":"محمد باهي","specialty":"عيادة المسالك البولية"},{"name":"مروان أنس إسماعيل عبدالعال","shortName":"مروان أنس","specialty":"عيادة المسالك البولية"},{"name":"عمرو وائل يحيي عبدالرازق","shortName":"عمرو وائل","specialty":"عيادة المسالك البولية"},{"name":"عفت عوض محمد علي","shortName":"عفت عوض","specialty":"النساء والتوليد"},{"name":"جيهان عبدالحميد محمود عباس","shortName":"جيهان عبدالحميد","specialty":"النساء والتوليد"},{"name":"رشا ابراهيم عبده مكروم","shortName":"رشا إبراهيم","specialty":"النساء والتوليد"},{"name":"الشيماء كمال علي ابوالعينين","shortName":"الشيماء كمال","specialty":"النساء والتوليد"},{"name":"هند سعد ابراهيم الشوبكي","shortName":"هند الشوبكي","specialty":"النساء والتوليد"},{"name":"نسمه طلعت طه الوكيل","shortName":"نسمة الوكيل","specialty":"النساء والتوليد"},{"name":"رنا محمد مصطفي العدل","shortName":"رنا العدل","specialty":"النساء والتوليد"},{"name":"أسماء هاني عبدالجليل محمود","shortName":"اسماء هاني","specialty":"النساء والتوليد"},{"name":"نورا إبراهيم إبراهيم محسوب","shortName":"نورا ابراهيم","specialty":"النساء والتوليد"},{"name":"رانيا السعيد عبدالقادر","shortName":"رانيا السعيد","specialty":"أمراض الروماتيزم والمناعة"},{"name":"دينا محمود عبدالغفار","shortName":"دينا عبدالغفار","specialty":"أمراض الروماتيزم والمناعة"},{"name":"ماجد الحسين ابوالعزم","shortName":"ماجد الحسين","specialty":"الصدر"},{"name":"نيرمين ابراهيم سيد احمد","shortName":"نريمين ابراهيم","specialty":"الصدر"},{"name":"مها عبدالمنعم ابراهيم عبدالسميع","shortName":"مها عبد المنعم","specialty":"الصدر"},{"name":"عبدالرحمن محمود عبدالملك حامد","shortName":"عبدالرحمن عبدالملك","specialty":"الرمد"},{"name":"دينا علاء احمد عوض","shortName":"دينا علاء","specialty":"الرمد"},{"name":"اسماء محمد طلعت","shortName":"أسماء طلعت","specialty":"الرمد"},{"name":"عبدالمنعم عادل خريبة","shortName":"عبدالمنعم خريبة","specialty":"الرمد"},{"name":"هويدا كمال ابراهيم البسيوني","shortName":"هويدا كمال","specialty":"الرمد"},{"name":"عمرو محمد محمود طايل","shortName":"عمرو طايل","specialty":"الرمد"},{"name":"احمد عامر عبدالله الحنفي","shortName":"أحمد عامر","specialty":"الرمد"},{"name":"مريم طاهر فتحي عقل","shortName":"مريم عقل","specialty":"الرمد"},{"name":"نادية عبدالله ابراهيم السمطي","shortName":"نادية عبدالله","specialty":"الرمد"},{"name":"علي محمد علي شرف الدين","shortName":"علي شرف الدين","specialty":"الرمد"},{"name":"محمد ايمن عبدالله البدري","shortName":"محمد البدري","specialty":"الرمد"},{"name":"امينة حسين محمد ابراهيم عبدالمجيد","shortName":"أمينة حسين","specialty":"الطب النفسي - أطفال ومراهقين"},{"name":"أنس مجدي صقر","shortName":"أنس مجدي","specialty":"عيادة الأنف والأذن والحنجرة"},{"name":"احمد محمد العرمان","shortName":"أحمد العرمان","specialty":"عيادة الأنف والأذن والحنجرة"},{"name":"احمد ربيع ياقوت","shortName":"أحمد ربيع ياقوت","specialty":"عيادة الأنف والأذن والحنجرة"},{"name":"رضوي محمود العشري","shortName":"رضوى العشري","specialty":"عيادة الأنف والأذن والحنجرة"},{"name":"الاء ايهاب محمد","shortName":"آلاء إيهاب","specialty":"عيادة الأنف والأذن والحنجرة"},{"name":"اسامة عبدالعزيز رضوان","shortName":"أسامة رضوان","specialty":"عيادة الأنف والأذن والحنجرة"},{"name":"نعيم سعد محي الدين محمود","shortName":"نعيم الجمل","specialty":"عيادة الأنف والأذن والحنجرة"},{"name":"ياسمين علي عمرو الصيفى","shortName":"ياسمين الصيفي","specialty":"عيادة الأنف والأذن والحنجرة"},{"name":"نهي احمد عبده الخولي","shortName":"نهى الخولي","specialty":"عيادة الأنف والأذن والحنجرة"},{"name":"احمد طلعت محمد ابراهيم","shortName":"أحمد طلعت","specialty":"أمراض الدم"},{"name":"عمرو السيد عوض شعيب","shortName":"عمرو شعيب","specialty":"جراحة الفم والأسنان"},{"name":"رضوي محمد رضا الشربيني","shortName":"رضوى الشربيني","specialty":"جراحة الفم والأسنان"},{"name":"يوسف حمزة قابيل","shortName":"يوسف حمزة","specialty":"جراحة الفم والأسنان"},{"name":"عمر محمود محمد يوسف","shortName":"عمر محمود","specialty":"جراحة الفم والأسنان"},{"name":"احمد عبدالقادر احمد عبدالمعطي","shortName":"احمد عبد القادر","specialty":"جراحة الفم والأسنان"},{"name":"محمد حامد جبريل","shortName":"محمد حامد","specialty":"جراحة الفم والأسنان"},{"name":"احمد محمد فريد","shortName":"أحمد فريد","specialty":"جراحة الفم والأسنان"},{"name":"عبدالله اشرف عبداللطيف المتولي","shortName":"عبدالله أشرف","specialty":"جراحة الفم والأسنان"},{"name":"مصطفي عادل طه","shortName":"مصطفى عادل","specialty":"جراحة الفم والأسنان"},{"name":"محمود محمد حسن محمد","shortName":"محمود محمد","specialty":"جراحة الفم والأسنان"},{"name":"وئام ابراهيم الطنطاوي الباز","shortName":"وئام الطنطاوي","specialty":"جراحة الفم والأسنان"},{"name":"نهي شاكر سعد قورة","shortName":"نهى شاكر","specialty":"جراحة الفم والأسنان"},{"name":"احمد ابراهيم السيد العشماوي","shortName":"احمد العشماوي","specialty":"جراحة الفم والأسنان"},{"name":"اسماء السيد عوض عبدالمجيد","shortName":"أسماء عوض","specialty":"جراحة الفم والأسنان"},{"name":"رحاب حمدي أحمد","shortName":"رحاب حمدي","specialty":"التغذية العلاجية"},{"name":"اسراء السيد سعد السيد","shortName":"إسراء السيد","specialty":"عيادة أمراض التخاطب"},{"name":"امنية محمد شريف القصاص","shortName":"أمينة محمد","specialty":"عيادة أمراض التخاطب"},{"name":"رانيا سالم الزينى","shortName":"رانيا سالم","specialty":"جلسات تخاطب"},{"name":"احمد محمد الددامونى ابراهيم","shortName":"أحمد الدداموني","specialty":"العيادة العامة ( باطنة - أطفال )"},{"name":"ايمن محمد اسماعيل خليفة عويس","shortName":"أيمن خليفة","specialty":"جراحة القلب والصدر"},{"name":"مي مطاوع محمد","shortName":"مي مطاوع","specialty":"الاشعة التليفزيونية"},{"name":"مروة محمد محمد دنيور","shortName":"مروة دنيور","specialty":"الاشعة التليفزيونية"},{"name":"دينا عبدالناصر رزق الله محمود","shortName":"دينا عبد الناصر","specialty":"الاشعة التليفزيونية"},{"name":"اميرة محمود محمد الحسيني","shortName":"أميرة الحسيني","specialty":"الاشعة التليفزيونية"},{"name":"سالي مصطفي حسن حجاج","shortName":"سالي حجاج","specialty":"الاشعة التليفزيونية"},{"name":"ايهاب محمد ابراهيم عمر","shortName":"ايهاب محمد","specialty":"الاشعة التليفزيونية"},{"name":"سارة عادل محمود الرشيدي","shortName":"سارة عادل","specialty":"الاشعة التليفزيونية"},{"name":"عاليا يوسف عبدالله بدوي","shortName":"عاليا سويف","specialty":"الاشعة التليفزيونية"},{"name":"احمد ابراهيم محمد ابراهيم عويضة","shortName":"احمد ابراهيم","specialty":"الاشعة التليفزيونية"}],"nurses":["أمنية محمد محمد عرفات","بسمه محمد جمال محمد","عنايات عبدالخالق أحمد محمد","دنيا محمد فرج محمد","إيمان حسن حسن جمعة","رشا محمد مدين خليل","فرحة حسين فتحي الخواجة","مريم وجدي محمد محمد","إسراء إسماعيل السيد","ريهام أيمن علي أبوالعينين","شروق نشأت حسن إبراهيم","شروق صبحي مسعد السعيد","شروق طاهر عبدالعزيز حسين","انتصار مسعد عبدالستار عبدالحميد","نجلاء زكريا السيد عبدالمقصود","مريم محمود عبدالرحيم عبدالرحيم","اميرة حسام فريد مصطفي","ايه عيد محمد القناوى","دعاء عصام حمدي","اميمه وائل عبدالله حسونه","ناهد عبدالبديع خيري السيد","سارة نجيب محمد عثمان","اسراء حامد محمد احمد عطيه","جنا احمد عبدالعزيز عبدالرحمن"],"warnings":[]};
