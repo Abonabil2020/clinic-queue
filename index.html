@@ -5338,107 +5338,187 @@
 
 
   /* ===== صفحة الأدمن فقط: سجل تحديثات النظام ===== */
-  /* ===== الأدمن فقط: متابعة جلسات النظام المتصلة الآن ===== */
-  #view-admin .admin-connections-panel{
+  /* ===== الأدمن فقط: بطاقات الإحصائيات السريعة ===== */
+  #view-admin .admin-metrics-grid{
     margin-top:16px;
-    padding:15px 16px;
-    border:1px solid #e2e8f0;
-    border-radius:18px;
-    background:#fff;
-    box-shadow:0 4px 14px rgba(15,23,42,.05);
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:16px;
+  }
+  #view-admin .admin-connections-panel{
+    position:relative;
+    overflow:hidden;
+    margin-top:0;
+    padding:18px 18px 16px;
+    border:1px solid #dbe5f1;
+    border-radius:22px;
+    background:linear-gradient(180deg,#ffffff 0%,#f8fbff 100%);
+    box-shadow:0 10px 28px rgba(15,23,42,.08);
+    isolation:isolate;
+  }
+  #view-admin .admin-connections-panel::before{
+    content:"";
+    position:absolute;
+    inset:0 0 auto 0;
+    height:5px;
+    background:linear-gradient(90deg,#22c55e 0%,#16a34a 100%);
+    z-index:0;
+  }
+  #view-admin #adminDailyVisitsPanel::before{
+    background:linear-gradient(90deg,#2563eb 0%,#38bdf8 100%);
+  }
+  #view-admin .admin-connections-panel::after{
+    content:attr(data-badge);
+    position:absolute;
+    top:16px;
+    left:18px;
+    padding:5px 10px;
+    border-radius:999px;
+    background:rgba(34,197,94,.12);
+    color:#166534;
+    font-size:10px;
+    font-weight:800;
+    letter-spacing:.2px;
+    z-index:1;
+  }
+  #view-admin #adminDailyVisitsPanel::after{
+    background:rgba(37,99,235,.10);
+    color:#1d4ed8;
   }
   #view-admin .admin-connections-head{
+    position:relative;
+    z-index:1;
     display:flex;
-    align-items:center;
+    align-items:flex-start;
     justify-content:space-between;
-    gap:14px;
+    gap:18px;
     flex-wrap:wrap;
+    padding-top:22px;
   }
   #view-admin .admin-connections-label{
     color:#0f172a;
-    font-size:14px;
-    font-weight:700;
+    font-size:20px;
+    line-height:1.35;
+    font-weight:800;
   }
   #view-admin .admin-connections-note{
-    margin-top:3px;
+    margin-top:8px;
     color:#64748b;
-    font-size:10px;
-    line-height:1.6;
+    font-size:12px;
+    line-height:1.8;
+    max-width:32ch;
   }
   #view-admin .admin-connections-value-wrap{
     display:flex;
-    align-items:baseline;
-    gap:4px;
+    align-items:flex-end;
+    gap:6px;
     direction:ltr;
     white-space:nowrap;
+    flex-shrink:0;
   }
   #view-admin .admin-connections-value{
     color:#0f172a;
-    font-size:28px;
-    line-height:1;
-    font-weight:700;
+    font-size:48px;
+    line-height:.95;
+    font-weight:900;
+    letter-spacing:-1px;
+    text-shadow:0 1px 0 rgba(255,255,255,.6);
   }
   #view-admin .admin-connections-limit{
     color:#94a3b8;
     font-size:12px;
-    font-weight:700;
+    font-weight:800;
   }
   #view-admin .admin-connections-track{
+    position:relative;
+    z-index:1;
     width:100%;
-    height:9px;
-    margin-top:12px;
+    height:12px;
+    margin-top:16px;
     overflow:hidden;
     border-radius:999px;
-    background:#e2e8f0;
+    background:#e8eef6;
+    box-shadow:inset 0 1px 2px rgba(15,23,42,.08);
   }
   #view-admin .admin-connections-bar{
     display:block;
     width:0;
     height:100%;
     border-radius:inherit;
-    background:#22c55e;
+    background:linear-gradient(90deg,#22c55e 0%,#16a34a 100%);
+    box-shadow:0 0 14px rgba(34,197,94,.22);
     transition:width .25s ease,background .25s ease;
   }
   #view-admin .admin-connections-footer{
-    margin-top:8px;
+    position:relative;
+    z-index:1;
+    margin-top:14px;
     display:flex;
     align-items:center;
     justify-content:space-between;
     gap:10px;
     flex-wrap:wrap;
   }
-  #view-admin .admin-connections-status{
+  #view-admin .admin-connections-status,
+  #view-admin .admin-connections-source{
     display:inline-flex;
     align-items:center;
-    gap:6px;
-    color:#166534;
-    font-size:10px;
+    gap:7px;
+    padding:7px 12px;
+    border-radius:999px;
+    background:#f8fafc;
+    border:1px solid #e2e8f0;
+    font-size:11px;
     font-weight:700;
+  }
+  #view-admin .admin-connections-status{
+    color:#166534;
   }
   #view-admin .admin-connections-status::before{
     content:"";
-    width:7px;
-    height:7px;
+    width:8px;
+    height:8px;
     flex:0 0 auto;
     border-radius:50%;
     background:#22c55e;
+    box-shadow:0 0 0 4px rgba(34,197,94,.12);
   }
-  #view-admin .admin-connections-panel[data-level="warning"] .admin-connections-bar{background:#f59e0b}
-  #view-admin .admin-connections-panel[data-level="warning"] .admin-connections-status{color:#92400e}
-  #view-admin .admin-connections-panel[data-level="warning"] .admin-connections-status::before{background:#f59e0b}
-  #view-admin .admin-connections-panel[data-level="danger"] .admin-connections-bar{background:#ef4444}
-  #view-admin .admin-connections-panel[data-level="danger"] .admin-connections-status{color:#991b1b}
-  #view-admin .admin-connections-panel[data-level="danger"] .admin-connections-status::before{background:#ef4444}
-  #view-admin .admin-connections-panel[data-level="error"] .admin-connections-bar{background:#94a3b8}
-  #view-admin .admin-connections-panel[data-level="error"] .admin-connections-status{color:#64748b}
-  #view-admin .admin-connections-panel[data-level="error"] .admin-connections-status::before{background:#94a3b8}
   #view-admin .admin-connections-source{
-    color:#94a3b8;
-    font-size:9px;
+    color:#475569;
+  }
+  #view-admin .admin-connections-panel[data-level="warning"] .admin-connections-bar{background:linear-gradient(90deg,#f59e0b 0%,#d97706 100%)}
+  #view-admin .admin-connections-panel[data-level="warning"] .admin-connections-status{color:#92400e}
+  #view-admin .admin-connections-panel[data-level="warning"] .admin-connections-status::before{background:#f59e0b;box-shadow:0 0 0 4px rgba(245,158,11,.14)}
+  #view-admin .admin-connections-panel[data-level="warning"]::before{background:linear-gradient(90deg,#f59e0b 0%,#d97706 100%)}
+  #view-admin .admin-connections-panel[data-level="danger"] .admin-connections-bar{background:linear-gradient(90deg,#ef4444 0%,#dc2626 100%)}
+  #view-admin .admin-connections-panel[data-level="danger"] .admin-connections-status{color:#991b1b}
+  #view-admin .admin-connections-panel[data-level="danger"] .admin-connections-status::before{background:#ef4444;box-shadow:0 0 0 4px rgba(239,68,68,.12)}
+  #view-admin .admin-connections-panel[data-level="danger"]::before{background:linear-gradient(90deg,#ef4444 0%,#dc2626 100%)}
+  #view-admin .admin-connections-panel[data-level="error"] .admin-connections-bar{background:linear-gradient(90deg,#94a3b8 0%,#64748b 100%)}
+  #view-admin .admin-connections-panel[data-level="error"] .admin-connections-status{color:#64748b}
+  #view-admin .admin-connections-panel[data-level="error"] .admin-connections-status::before{background:#94a3b8;box-shadow:0 0 0 4px rgba(148,163,184,.12)}
+  #view-admin .admin-connections-panel[data-level="error"]::before{background:linear-gradient(90deg,#94a3b8 0%,#64748b 100%)}
+  #view-admin #adminDailyVisitsPanel .admin-connections-status{
+    color:#1d4ed8;
+  }
+  #view-admin #adminDailyVisitsPanel .admin-connections-status::before{
+    background:#2563eb;
+    box-shadow:0 0 0 4px rgba(37,99,235,.12);
+  }
+  @media(max-width:880px){
+    #view-admin .admin-metrics-grid{
+      grid-template-columns:1fr;
+    }
   }
   @media(max-width:600px){
-    #view-admin .admin-connections-panel{padding:13px 14px}
-    #view-admin .admin-connections-value{font-size:25px}
+    #view-admin .admin-connections-panel{padding:16px 14px 14px}
+    #view-admin .admin-connections-panel::after{top:14px;left:14px}
+    #view-admin .admin-connections-head{padding-top:24px;gap:12px}
+    #view-admin .admin-connections-label{font-size:17px}
+    #view-admin .admin-connections-note{font-size:11px;max-width:none}
+    #view-admin .admin-connections-value{font-size:38px}
+    #view-admin .admin-connections-status,
+    #view-admin .admin-connections-source{font-size:10px;padding:6px 10px}
   }
 
   #view-admin .admin-audit-panel{
@@ -8779,41 +8859,43 @@
       <button id="adminLogout" type="button" class="px-4 py-2.5 rounded-xl bg-slate-100 text-slate-600 text-sm font-bold">تسجيل الخروج</button>
     </header>
 
-    <section id="adminConnectionsPanel" class="admin-connections-panel" data-level="normal" aria-label="المتصلون بالنظام الآن">
-      <div class="admin-connections-head">
-        <div>
-          <h2 class="admin-connections-label">المتصلون بالنظام الآن</h2>
-          <p class="admin-connections-note">عدد جلسات النظام النشطة خلال آخر دقيقتين تقريبًا.</p>
+    <div class="admin-metrics-grid">
+      <section id="adminConnectionsPanel" class="admin-connections-panel" data-level="normal" data-badge="مباشر الآن" aria-label="المتصلون بالنظام الآن">
+        <div class="admin-connections-head">
+          <div>
+            <h2 class="admin-connections-label">المتصلون بالنظام الآن</h2>
+            <p class="admin-connections-note">عدد جلسات النظام النشطة خلال آخر دقيقتين تقريبًا.</p>
+          </div>
+          <div class="admin-connections-value-wrap" aria-live="polite">
+            <strong id="adminConnectionsCount" class="admin-connections-value num">—</strong>
+          </div>
         </div>
-        <div class="admin-connections-value-wrap" aria-live="polite">
-          <strong id="adminConnectionsCount" class="admin-connections-value num">—</strong>
+        <div class="admin-connections-track" aria-hidden="true">
+          <span id="adminConnectionsBar" class="admin-connections-bar"></span>
         </div>
-      </div>
-      <div class="admin-connections-track" aria-hidden="true">
-        <span id="adminConnectionsBar" class="admin-connections-bar"></span>
-      </div>
-      <div class="admin-connections-footer">
-        <span id="adminConnectionsStatus" class="admin-connections-status">جارٍ قياس الاتصالات...</span>
-        <span class="admin-connections-source">يشمل جميع صفحات النظام وأجهزة العرض</span>
-      </div>
-    </section>
+        <div class="admin-connections-footer">
+          <span id="adminConnectionsStatus" class="admin-connections-status">جارٍ قياس الاتصالات...</span>
+          <span class="admin-connections-source">يشمل جميع صفحات النظام وأجهزة العرض</span>
+        </div>
+      </section>
 
-    <!-- Daily distinct-browser visits: Cairo 03:00 accounting boundary. -->
-    <section id="adminDailyVisitsPanel" class="admin-connections-panel" aria-label="الأجهزة التي زارت النظام اليوم">
-      <div class="admin-connections-head">
-        <div>
-          <h2 class="admin-connections-label">الأجهزة التي استخدمت النظام اليوم</h2>
-          <p class="admin-connections-note">كل متصفح يُحسب مرة واحدة يوميًا، حتى مع تكرار الدخول والخروج.</p>
+      <!-- Daily distinct-browser visits: Cairo 03:00 accounting boundary. -->
+      <section id="adminDailyVisitsPanel" class="admin-connections-panel" data-badge="إحصائية اليوم" aria-label="الأجهزة التي زارت النظام اليوم">
+        <div class="admin-connections-head">
+          <div>
+            <h2 class="admin-connections-label">الأجهزة التي استخدمت النظام اليوم</h2>
+            <p class="admin-connections-note">كل متصفح يُحسب مرة واحدة يوميًا، حتى مع تكرار الدخول والخروج.</p>
+          </div>
+          <div class="admin-connections-value-wrap" aria-live="polite">
+            <strong id="adminDailyVisitsCount" class="admin-connections-value num">—</strong>
+          </div>
         </div>
-        <div class="admin-connections-value-wrap" aria-live="polite">
-          <strong id="adminDailyVisitsCount" class="admin-connections-value num">—</strong>
+        <div class="admin-connections-footer">
+          <span id="adminDailyVisitsStatus" class="admin-connections-status">جارٍ تحميل زيارات اليوم...</span>
+          <span class="admin-connections-source">يبدأ اليوم الجديد 3:00 فجرًا بتوقيت القاهرة</span>
         </div>
-      </div>
-      <div class="admin-connections-footer">
-        <span id="adminDailyVisitsStatus" class="admin-connections-status">جارٍ تحميل زيارات اليوم...</span>
-        <span class="admin-connections-source">يبدأ اليوم الجديد 3:00 فجرًا بتوقيت القاهرة</span>
-      </div>
-    </section>
+      </section>
+    </div>
 
     <div id="adminRoomGrid" class="admin-room-grid"></div>
 
