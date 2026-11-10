@@ -8798,6 +8798,23 @@
       </div>
     </section>
 
+    <!-- Daily distinct-browser visits: Cairo 03:00 accounting boundary. -->
+    <section id="adminDailyVisitsPanel" class="admin-connections-panel" aria-label="الأجهزة التي زارت النظام اليوم">
+      <div class="admin-connections-head">
+        <div>
+          <h2 class="admin-connections-label">الأجهزة التي استخدمت النظام اليوم</h2>
+          <p class="admin-connections-note">كل متصفح يُحسب مرة واحدة يوميًا، حتى مع تكرار الدخول والخروج.</p>
+        </div>
+        <div class="admin-connections-value-wrap" aria-live="polite">
+          <strong id="adminDailyVisitsCount" class="admin-connections-value num">—</strong>
+        </div>
+      </div>
+      <div class="admin-connections-footer">
+        <span id="adminDailyVisitsStatus" class="admin-connections-status">جارٍ تحميل زيارات اليوم...</span>
+        <span class="admin-connections-source">يبدأ اليوم الجديد 3:00 فجرًا بتوقيت القاهرة</span>
+      </div>
+    </section>
+
     <div id="adminRoomGrid" class="admin-room-grid"></div>
 
     <section class="admin-audit-panel" aria-label="سجل تحديثات النظام">
@@ -10048,6 +10065,120 @@ const networkConnectionRef = queueApp.database().ref(".info/connected");
 let browserOnline = navigator.onLine;
 let firebaseConnected = false;
 
+// Daily unique-browser visits; independent from live presence and all clinic operations.
+const dailyVisitsRootRef = queueApp.database().ref("dailyVisits");
+const DAILY_DEVICE_KEY = "islahDailyVisitDeviceId:" + location.pathname;
+const DAILY_VISIT_RETRY_MS = 60000;
+const cairoVisitClock = new Intl.DateTimeFormat("en-GB", {
+  timeZone:"Africa/Cairo", year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", hourCycle:"h23"
+});
+let dailyVisitDeviceId = "";
+let dailyVisitRecordedDay = "";
+let dailyVisitAttemptDay = "";
+let dailyVisitWriteBusy = false;
+let dailyVisitLastAttemptAt = 0;
+let dailyVisitServerOffset = 0;
+let adminDailyVisitsDay = "";
+let adminDailyVisitsRef = null;
+let adminDailyVisitsOnValue = null;
+let adminDailyVisitsOnError = null;
+
+function cairoVisitDayKey(){
+  const date = new Date(Date.now() + dailyVisitServerOffset);
+  const parts = {};
+  cairoVisitClock.formatToParts(date).forEach(part=>{ if(part.type !== "literal") parts[part.type] = part.value; });
+  const y = Number(parts.year), m = Number(parts.month), d = Number(parts.day);
+  if(Number(parts.hour) < 3){
+    return new Date(Date.UTC(y, m - 1, d - 1)).toISOString().slice(0,10);
+  }
+  return `${parts.year}-${parts.month}-${parts.day}`;
+}
+
+function getDailyVisitDeviceId(){
+  if(dailyVisitDeviceId) return dailyVisitDeviceId;
+  try {
+    const stored = localStorage.getItem(DAILY_DEVICE_KEY);
+    if(stored && /^[a-f0-9]{32}$/.test(stored)) return (dailyVisitDeviceId = stored);
+  }catch(error){}
+  const bytes = new Uint8Array(16);
+  if(!window.crypto || !window.crypto.getRandomValues) return "";
+  window.crypto.getRandomValues(bytes);
+  const generated = Array.from(bytes, n=>n.toString(16).padStart(2,"0")).join("");
+  try { localStorage.setItem(DAILY_DEVICE_KEY, generated); }
+  catch(error){ return ""; } // Do not claim one-per-device if browser storage is unavailable.
+  return (dailyVisitDeviceId = generated);
+}
+
+async function recordDailyVisit(){
+  if(!firebaseConnected || dailyVisitWriteBusy) return;
+  const day = cairoVisitDayKey();
+  if(dailyVisitRecordedDay === day) return;
+  const now = Date.now();
+  if(dailyVisitAttemptDay === day && now - dailyVisitLastAttemptAt < DAILY_VISIT_RETRY_MS) return;
+  const deviceId = getDailyVisitDeviceId();
+  if(!deviceId) return;
+  const localMark = "islahDailyVisitDone:" + day + ":" + deviceId;
+  try { if(localStorage.getItem(localMark) === "1") { dailyVisitRecordedDay = day; return; } }
+  catch(error){}
+  dailyVisitAttemptDay = day;
+  dailyVisitLastAttemptAt = now;
+  dailyVisitWriteBusy = true;
+  try {
+    await dailyVisitsRootRef.child(day).child(deviceId).set({at:firebase.database.ServerValue.TIMESTAMP});
+    dailyVisitRecordedDay = day;
+    try { localStorage.setItem(localMark, "1"); } catch(error){}
+  }catch(error){
+    // Concurrent tabs may attempt the same create-only record; it remains one visit.
+    if(error?.code !== "PERMISSION_DENIED") console.warn("Daily visit registration failed:",error?.code || error?.message || error);
+    // A permission error is not proof a visit exists; retry later if rules are missing.
+  }finally{ dailyVisitWriteBusy = false; }
+}
+
+function renderAdminDailyVisits(count, error=false){
+  const value = $("#adminDailyVisitsCount");
+  const status = $("#adminDailyVisitsStatus");
+  if(!value || !status) return;
+  value.textContent = error ? "—" : String(Math.max(0,Number(count) || 0));
+  status.textContent = error ? "تعذر قراءة زيارات اليوم — راجع Firebase Rules" : "أجهزة/متصفحات مختلفة منذ الساعة 3:00 فجرًا";
+  status.style.color = error ? "#b91c1c" : "";
+}
+
+function stopAdminDailyVisitsListener(){
+  if(adminDailyVisitsRef && adminDailyVisitsOnValue) adminDailyVisitsRef.off("value",adminDailyVisitsOnValue);
+  adminDailyVisitsRef = null;
+  adminDailyVisitsOnValue = null;
+  adminDailyVisitsOnError = null;
+  adminDailyVisitsDay = "";
+}
+
+function startAdminDailyVisitsListener(){
+  if(!isAdminUser()) return;
+  const day = cairoVisitDayKey();
+  if(adminDailyVisitsDay === day && adminDailyVisitsRef) return;
+  stopAdminDailyVisitsListener();
+  adminDailyVisitsDay = day;
+  renderAdminDailyVisits(0);
+  adminDailyVisitsRef = dailyVisitsRootRef.child(day);
+  adminDailyVisitsOnValue = snapshot=>renderAdminDailyVisits(snapshot.numChildren());
+  adminDailyVisitsOnError = error=>{
+    renderAdminDailyVisits(0,true);
+    console.warn("Daily visit read failed:",error?.code || error?.message || error);
+  };
+  adminDailyVisitsRef.on("value",adminDailyVisitsOnValue,adminDailyVisitsOnError);
+}
+
+// A timer handles screens and tabs that stay open across 03:00 without requiring navigation.
+setInterval(()=>{
+  if(firebaseConnected) recordDailyVisit().catch(()=>{});
+  if(adminDailyVisitsRef && isAdminUser() && adminDailyVisitsDay !== cairoVisitDayKey()) startAdminDailyVisitsListener();
+}, 30000);
+window.addEventListener("focus",()=>{ if(firebaseConnected) recordDailyVisit().catch(()=>{}); });
+queueApp.database().ref(".info/serverTimeOffset").on("value",snap=>{
+  dailyVisitServerOffset = Number(snap.val()) || 0;
+  if(firebaseConnected) recordDailyVisit().catch(()=>{});
+  if(adminDailyVisitsRef && isAdminUser() && adminDailyVisitsDay !== cairoVisitDayKey()) startAdminDailyVisitsListener();
+});
+
 function updateNetworkStatusIndicator(){
   if(document.getElementById("view-mobile") && !document.getElementById("view-mobile").classList.contains("hidden-view")) renderMobileFollow();
   const indicator = document.getElementById("networkStatusIndicator");
@@ -10143,6 +10274,7 @@ function startAdminPresenceListener(){
 }
 
 function stopAdminPresenceListener(){
+  stopAdminDailyVisitsListener();
   if(adminPresenceRefreshTimer) clearInterval(adminPresenceRefreshTimer);
   adminPresenceRefreshTimer = null;
   adminPresenceSnapshot = null;
@@ -10169,6 +10301,7 @@ networkConnectionRef.on("value", snapshot=>{
   if(!firebaseConnected) presenceRegistered = false;
   renderBookingStatus();
   if(firebaseConnected) registerPresenceSession();
+  if(firebaseConnected) recordDailyVisit().catch(()=>{});
 });
 
 updateNetworkStatusIndicator();
@@ -11703,6 +11836,7 @@ function renderAdminDashboard(){
   startAdminAuditListener();
   renderAdminAuditLog();
   startAdminPresenceListener();
+  startAdminDailyVisitsListener();
   grid.innerHTML = "";
 
   ROOM_OPTIONS.forEach(room=>{
