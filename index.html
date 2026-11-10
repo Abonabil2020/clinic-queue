@@ -4605,6 +4605,22 @@
   }
 
 
+  /* ===== حماية لوحة التمريض عند انقطاع الاتصال الحقيقي بـ Firebase ===== */
+  #view-nurse .nurse-offline-lock{
+    position:fixed; inset:0; z-index:99998;
+    display:flex; align-items:center; justify-content:center;
+    padding:20px; box-sizing:border-box;
+    background:rgba(15,23,42,.48);
+    direction:rtl; pointer-events:auto;
+  }
+  #view-nurse .nurse-offline-lock-card{
+    max-width:410px; width:100%; padding:24px 18px; text-align:center;
+    background:#fff; border:2px solid #fecaca; border-radius:20px;
+    box-shadow:0 12px 36px rgba(15,23,42,.18); color:#991b1b;
+  }
+  #view-nurse .nurse-offline-lock-card strong{display:block;font-size:20px;font-weight:700;}
+  #view-nurse .nurse-offline-lock-card p{margin-top:10px;color:#475569;font-size:15px;line-height:1.6;}
+
   /* ===== مؤشر الاتصال — عام لكل الشاشات ===== */
   .network-status-indicator{
     position:fixed;
@@ -8948,6 +8964,12 @@
 ============================================================ -->
 <dialog id="clinicHoursDialog" class="rounded-2xl p-4" style="width:min(400px,90vw)"><h3 class="font-bold">تعديل موعد العيادة</h3><div class="clinic-hours-fields"><strong>موعد العيادة</strong><div class="clinic-hours-row"><label for="editHoursFrom">من</label><input id="editHoursFrom" type="text" inputmode="numeric" autocomplete="off" maxlength="5" placeholder="٥ أو ٥٣٠" aria-label="من موعد العيادة"><select id="editHoursFromMeridiem" aria-label="من صباحًا أو مساءً"><option value="am">صباحًا</option><option value="pm">مساءً</option></select></div><div class="clinic-hours-row"><label for="editHoursTo">إلى</label><input id="editHoursTo" type="text" inputmode="numeric" autocomplete="off" maxlength="5" placeholder="٥ أو ٥٣٠" aria-label="إلى موعد العيادة"><select id="editHoursToMeridiem" aria-label="إلى صباحًا أو مساءً"><option value="am">صباحًا</option><option value="pm">مساءً</option></select></div><small>أرقام فقط: ٥ = ٥:٠٠، ٥٣٠ = ٥:٣٠</small></div><p id="clinicHoursMessage" role="status" class="text-sm text-red-600"></p><button id="saveClinicHours" type="button" class="px-4 py-2 bg-sky-600 text-white rounded-lg">حفظ</button> <button id="cancelClinicHours" type="button" class="px-4 py-2 bg-slate-100 rounded-lg">إلغاء</button></dialog>
 <section id="view-nurse" class="hidden-view min-h-screen pb-10">
+  <div id="nurseOfflineLock" class="nurse-offline-lock" role="status" aria-live="polite">
+    <div class="nurse-offline-lock-card">
+      <strong>التحكم متوقف مؤقتًا</strong>
+      <p id="nurseOfflineLockMessage">جارٍ التأكد من الاتصال بالنظام — التحكم متوقف مؤقتًا.</p>
+    </div>
+  </div>
   <header class="text-white px-5 py-4 flex items-center justify-between" style="background:var(--navy)">
     <div>
       <h1 id="nurseRoomTitle" class="font-bold text-lg leading-tight">لوحة التمريض</h1>
@@ -10054,6 +10076,9 @@ let presenceRegistrationBusy = false;
 const networkConnectionRef = queueApp.database().ref(".info/connected");
 let browserOnline = navigator.onLine;
 let firebaseConnected = false;
+let firebaseConnectionKnown = false;
+// Only the live Firebase database connection authorizes nursing operations.
+function nursingServerAvailable(){ return firebaseConnected === true; }
 
 // Daily unique-browser visits; independent from live presence and all clinic operations.
 const dailyVisitsRootRef = queueApp.database().ref("dailyVisits");
@@ -10200,13 +10225,29 @@ function updateNetworkStatusIndicator(){
   if(document.getElementById("view-mobile") && !document.getElementById("view-mobile").classList.contains("hidden-view")) renderMobileFollow();
   const indicator = document.getElementById("networkStatusIndicator");
   const statusText = document.getElementById("networkStatusText");
-  if(!indicator) return;
+  // A browser can incorrectly say "offline" while the Firebase socket still works.
+  // The warning and nursing lock therefore follow .info/connected, not navigator.onLine.
+  const offline = firebaseConnectionKnown && !nursingServerAvailable();
+  if(indicator) indicator.classList.toggle("visible", offline);
+  if(offline && statusText) statusText.textContent = "الاتصال بالنظام منقطع";
 
-  const offline = !browserOnline;
-  indicator.classList.toggle("visible", offline);
-
-  if(offline && statusText){
-    statusText.textContent = "لا يوجد اتصال بالإنترنت";
+  const lock = document.getElementById("nurseOfflineLock");
+  if(lock){
+    lock.classList.toggle("hidden-view", nursingServerAvailable());
+    const message = document.getElementById("nurseOfflineLockMessage");
+    if(message) message.textContent = firebaseConnectionKnown
+      ? "انقطع الاتصال بالنظام — تم إيقاف كل أزرار التحكم حتى يعود الاتصال. لن يتغير رقم الدور."
+      : "جارٍ التأكد من الاتصال بالنظام — التحكم متوقف مؤقتًا.";
+  }
+  const badge = document.getElementById("syncBadge");
+  if(badge){
+    if(!nursingServerAvailable()){
+      badge.textContent = firebaseConnectionKnown ? "الاتصال منقطع" : "جارٍ الاتصال";
+      badge.className = "text-xs px-2.5 py-1 rounded-full bg-red-100 text-red-700";
+    }else if(badge.textContent === "الاتصال منقطع" || badge.textContent === "جارٍ الاتصال"){
+      badge.textContent = "متصل";
+      badge.className = "text-xs px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700";
+    }
   }
 }
 
@@ -10308,6 +10349,8 @@ window.addEventListener("offline", ()=>{
 
 networkConnectionRef.on("value", snapshot=>{
   firebaseConnected = snapshot.val() === true;
+  firebaseConnectionKnown = true;
+  updateNetworkStatusIndicator();
   updateAdminMetricsConnectivity();
   if(!firebaseConnected) presenceRegistered = false;
   renderBookingStatus();
@@ -16243,6 +16286,7 @@ function openMissedTurnActions(number){
 }
 
 async function cancelMissedTurn(number){
+  if(!nursingServerAvailable()) return void flashSync("الاتصال منقطع، لا يمكن تعديل الأدوار",false);
   if(!canControlCurrentRoom() || isNurseQueueLocked()) return;
   const item = (state.missedTurns || {})[String(number)];
   if(!item || item.status === "done") return;
@@ -16337,6 +16381,7 @@ async function recallMissedTurn(number){
 }
 
 async function leaveRecall(mode){
+  if(!nursingServerAvailable()) return void flashSync("الاتصال منقطع، لا يمكن تعديل الأدوار",false);
   if(state.recallKind === "continuation") return leaveContinuation(mode);
   if(!canControlCurrentRoom()) return void alert("هذا الحساب غير مصرح له بالتحكم في هذه الحجرة");
   if(isNurseQueueLocked()) return void flashSync(state.status === "break" ? "العيادة في استراحة" : "العيادة منتهية", false);
@@ -16444,6 +16489,7 @@ function renderNursingNumberPending(){
 }
 function pushNumber(v){
   if(location.hash !== "#/nurse" || nursingSetupSaving) return;
+  if(!nursingServerAvailable()) return void flashSync("الاتصال منقطع، لم يتغير الرقم", false);
   if(!canControlCurrentRoom()) return void flashSync("الحساب غير مصرح لهذه الحجرة", false);
   if(isNurseQueueLocked()) return void flashSync(state.status === "break" ? "العيادة في استراحة" : "العيادة منتهية", false);
   if(state.recallMode || wheelWritePending) return;
@@ -16456,6 +16502,13 @@ function pushNumber(v){
   renderNursingNumberPending();
   clearTimeout(writeTimer);
   writeTimer = setTimeout(()=>{
+    if(!nursingServerAvailable()){
+      wheelWritePending = false;
+      renderNursingNumberPending();
+      syncWheel(state.current);
+      flashSync("الاتصال منقطع، لم يتغير الرقم", false);
+      return;
+    }
     const updates = {
       current:v,
       maxReached:Math.max(state.maxReached || 0, v),
@@ -16498,6 +16551,7 @@ function pushNumber(v){
 }
 
 async function markSelectedTurnAsMissed(){
+  if(!nursingServerAvailable()) return void flashSync("الاتصال منقطع، لم يتغير الدور",false);
   if(wheelWritePending) return void flashSync("انتظر تأكيد حفظ الرقم",false);
   if(!canControlCurrentRoom()) return void flashSync("الحساب غير مصرح لهذه الحجرة", false);
   if(isNurseQueueLocked()) return void flashSync(state.status === "break" ? "العيادة في استراحة" : "العيادة منتهية", false);
@@ -16562,7 +16616,7 @@ function renderContinuationTurns(){
   });
 }
 async function continuationChange(operation, number){
-  if(!canControlCurrentRoom() || isNurseQueueLocked() || !firebaseConnected) return void flashSync("تعذر التنفيذ، تحقق من الاتصال وحالة العيادة",false);
+  if(!canControlCurrentRoom() || isNurseQueueLocked() || !nursingServerAvailable()) return void flashSync("تعذر التنفيذ، تحقق من الاتصال وحالة العيادة",false);
   const ref=clinicRef, session=nursingLiveSessionStart, identity=currentNursingIdentity(), admin=isAdminUser();
   try{
     const result=await ref.transaction(data=>{
@@ -16614,7 +16668,10 @@ function flashSync(text, ok){
   const b = $("#syncBadge");
   b.textContent = text;
   b.className = "text-xs px-2.5 py-1 rounded-full " + (ok ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700");
-  setTimeout(()=>{ b.textContent = "متصل"; b.className = "text-xs px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700"; }, 1200);
+  setTimeout(()=>{
+    b.textContent = nursingServerAvailable() ? "متصل" : "الاتصال منقطع";
+    b.className = "text-xs px-2.5 py-1 rounded-full " + (nursingServerAvailable() ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700");
+  }, 1200);
 }
 
 $("#directTurnButton").addEventListener("click",()=>{
@@ -16648,6 +16705,7 @@ function stepNumber(d){
    ========================================================== */
 /* Reject delayed operational writes from a previous period. */
 async function updateCurrentPeriod(updates, expectedSession = nursingLiveSessionStart, requireActiveQueue = false){
+  if(!nursingServerAvailable()) throw new Error("offline");
   if(nursingSetupSaving || !canControlCurrentRoom()) throw new Error("period-changed");
   const identity = currentNursingIdentity();
   const adminControl = isAdminUser();
@@ -16674,7 +16732,7 @@ async function updateCurrentPeriod(updates, expectedSession = nursingLiveSession
 
 /* Replace only this room's operational state and reopen its booking atomically. */
 function resetCurrentClinic(payload){
-  if(!firebaseConnected) return Promise.reject(new Error("offline"));
+  if(!nursingServerAvailable()) return Promise.reject(new Error("offline"));
   const fresh = {
     ...payload,
     handoverId:payload.handoverId || queueApp.database().ref().push().key,
@@ -16700,7 +16758,7 @@ $("#startPreparedClinicBtn").addEventListener("click",()=>{
   document.querySelector('.statusBtn[data-status="active"]').click();
 });
 $("#resetSameClinicBtn").addEventListener("click", async ()=>{
-  if(!firebaseConnected) return void alert("الاتصال مقطوع. بيانات العيادة محفوظة؛ انتظر رجوع الاتصال قبل التصفير.");
+  if(!nursingServerAvailable()) return void alert("الاتصال مقطوع. بيانات العيادة محفوظة؛ انتظر رجوع الاتصال قبل التصفير.");
   if(!canControlCurrentRoom()) return void alert("هذا الحساب غير مصرح له بالتحكم في هذه الحجرة");
   if(!confirm("تصفير العيادة بنفس بيانات الطبيب والتخصص والتمريض؟ سيتم مسح الأدوار والفائت وإلغاء قفل الحجز والاستراحة والإنهاء.")) return;
   const button = $("#resetSameClinicBtn");
@@ -16734,6 +16792,7 @@ $("#resetSameClinicBtn").addEventListener("click", async ()=>{
 
 /* تأكيد التمريض بانتهاء آخر كشف وعدم وجود انتظار، مع منع تكرار تسجيل وقت الانتهاء. */
 $("#nurseNoWaitingBtn").addEventListener("click",async ()=>{
+  if(!nursingServerAvailable()) return void flashSync("الاتصال منقطع، لم يتم حفظ أي تغيير",false);
   if(!canControlCurrentRoom() || isNurseQueueLocked() || state.recallMode || state.prepared || state.current <= 0 || state.status !== "active") return;
   const number = state.current;
   const expectedSession = nursingLiveSessionStart;
@@ -17233,7 +17292,7 @@ $("#rcBookingToggle").addEventListener("click", async ()=>{
   }
 });
 $("#nurseBookingClose").addEventListener("click", async ()=>{
-  if(bookingBusy || !bookingLoaded || !firebaseConnected || !canControlCurrentRoom()) return;
+  if(bookingBusy || !bookingLoaded || !nursingServerAvailable() || !canControlCurrentRoom()) return;
 
   const roomId = DISPLAY_SLOT_ID;
   if(bookingStateForToday(roomId).closed === true) return;
@@ -17328,6 +17387,7 @@ window.officialCounts = (()=>{
       event.preventDefault();if(busy)return;
       const c=context(kind),key=c?c.room+':'+c.session:'';
       if(!c?.session||!c.permitted||key!==e.key)return;
+      if(!nursingServerAvailable()) { e.message.textContent='الاتصال منقطع؛ لم يتم حفظ العدد.'; return; }
       const raw=e.input.value.trim().replace(/[٠-٩]/g,x=>String('٠١٢٣٤٥٦٧٨٩'.indexOf(x))).replace(/[۰-۹]/g,x=>String('۰۱۲۳۴۵۶۷۸۹'.indexOf(x)));
       if(!/^\d{1,5}$/.test(raw)||Number(raw)>10000){e.message.textContent='أدخل عددًا صحيحًا من ٠ إلى ١٠٠٠٠.';return;}
       busy=true;updateEditor(kind);e.message.textContent='جارٍ الحفظ...';
