@@ -10221,6 +10221,8 @@ queueApp.database().ref(".info/serverTimeOffset").on("value",snap=>{
   if(adminDailyVisitsRef && isAdminUser() && adminDailyVisitsDay !== cairoVisitDayKey()) startAdminDailyVisitsListener();
 });
 
+let networkWarningTimer = null;
+const NETWORK_WARNING_DELAY_MS = 3000;
 function updateNetworkStatusIndicator(){
   if(document.getElementById("view-mobile") && !document.getElementById("view-mobile").classList.contains("hidden-view")) renderMobileFollow();
   const indicator = document.getElementById("networkStatusIndicator");
@@ -10228,8 +10230,18 @@ function updateNetworkStatusIndicator(){
   // A browser can incorrectly say "offline" while the Firebase socket still works.
   // The warning and nursing lock therefore follow .info/connected, not navigator.onLine.
   const offline = firebaseConnectionKnown && !nursingServerAvailable();
-  if(indicator) indicator.classList.toggle("visible", offline);
-  if(offline && statusText) statusText.textContent = "الاتصال بالنظام منقطع";
+  if(!offline){
+    if(networkWarningTimer !== null){ clearTimeout(networkWarningTimer); networkWarningTimer = null; }
+    if(indicator) indicator.classList.remove("visible");
+  }else if(networkWarningTimer === null && indicator && !indicator.classList.contains("visible")){
+    networkWarningTimer = setTimeout(()=>{
+      networkWarningTimer = null;
+      if(firebaseConnectionKnown && !nursingServerAvailable()){
+        indicator.classList.add("visible");
+        if(statusText) statusText.textContent = "الاتصال بالنظام منقطع";
+      }
+    }, NETWORK_WARNING_DELAY_MS);
+  }
 
   const lock = document.getElementById("nurseOfflineLock");
   if(lock){
