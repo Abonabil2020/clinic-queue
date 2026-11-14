@@ -4617,6 +4617,7 @@
     background:rgba(15,23,42,.48);
     direction:rtl; pointer-events:auto;
   }
+  #view-nurse .nurse-offline-lock.is-connecting{opacity:0;}
   #view-nurse .nurse-offline-lock-card{
     max-width:410px; width:100%; padding:24px 18px; text-align:center;
     background:#fff; border:2px solid #fecaca; border-radius:20px;
@@ -8968,7 +8969,7 @@
 ============================================================ -->
 <dialog id="clinicHoursDialog" class="rounded-2xl p-4" style="width:min(400px,90vw)"><h3 class="font-bold">تعديل موعد العيادة</h3><div class="clinic-hours-fields"><strong>موعد العيادة</strong><div class="clinic-hours-row"><label for="editHoursFrom">من</label><input id="editHoursFrom" type="text" inputmode="numeric" autocomplete="off" maxlength="5" placeholder="٥ أو ٥٣٠" aria-label="من موعد العيادة"><select id="editHoursFromMeridiem" aria-label="من صباحًا أو مساءً"><option value="am">صباحًا</option><option value="pm">مساءً</option></select></div><div class="clinic-hours-row"><label for="editHoursTo">إلى</label><input id="editHoursTo" type="text" inputmode="numeric" autocomplete="off" maxlength="5" placeholder="٥ أو ٥٣٠" aria-label="إلى موعد العيادة"><select id="editHoursToMeridiem" aria-label="إلى صباحًا أو مساءً"><option value="am">صباحًا</option><option value="pm">مساءً</option></select></div><small>أرقام فقط: ٥ = ٥:٠٠، ٥٣٠ = ٥:٣٠</small></div><p id="clinicHoursMessage" role="status" class="text-sm text-red-600"></p><button id="saveClinicHours" type="button" class="px-4 py-2 bg-sky-600 text-white rounded-lg">حفظ</button> <button id="cancelClinicHours" type="button" class="px-4 py-2 bg-slate-100 rounded-lg">إلغاء</button></dialog>
 <section id="view-nurse" class="hidden-view min-h-screen pb-10">
-  <div id="nurseOfflineLock" class="nurse-offline-lock" role="status" aria-live="polite">
+  <div id="nurseOfflineLock" class="nurse-offline-lock is-connecting" role="status" aria-live="polite" aria-hidden="true">
     <div class="nurse-offline-lock-card">
       <strong>التحكم متوقف مؤقتًا</strong>
       <p id="nurseOfflineLockMessage">جارٍ التأكد من الاتصال بالنظام — التحكم متوقف مؤقتًا.</p>
@@ -9016,7 +9017,7 @@
     <div class="nursing-queue-card bg-white rounded-2xl shadow-sm p-4 mb-4">
       <div class="flex items-center justify-between mb-2">
         <h2 class="font-bold">رقم الدور الحالي</h2>
-        <span id="syncBadge" class="text-xs px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700">متصل</span>
+        <span id="syncBadge" class="text-xs px-2.5 py-1 rounded-full bg-red-100 text-red-700">جارٍ الاتصال</span>
       </div>
 
       <div class="nursing-displayed-turn mb-3 px-3 py-2.5 rounded-xl bg-sky-50 border border-sky-100 flex items-center justify-between gap-3">
@@ -10227,6 +10228,11 @@ queueApp.database().ref(".info/serverTimeOffset").on("value",snap=>{
 
 let networkWarningTimer = null;
 const NETWORK_WARNING_DELAY_MS = 3000;
+let nurseInitialConnectionPending = true;
+const nurseInitialConnectionTimer = setTimeout(()=>{
+  nurseInitialConnectionPending = false;
+  updateNurseConnectionIndicator();
+}, NETWORK_WARNING_DELAY_MS);
 function updateNetworkStatusIndicator(){
   if(document.getElementById("view-mobile") && !document.getElementById("view-mobile").classList.contains("hidden-view")) renderMobileFollow();
   const indicator = document.getElementById("networkStatusIndicator");
@@ -10247,9 +10253,16 @@ function updateNetworkStatusIndicator(){
     }, NETWORK_WARNING_DELAY_MS);
   }
 
+  updateNurseConnectionIndicator();
+}
+
+function updateNurseConnectionIndicator(){
   const lock = document.getElementById("nurseOfflineLock");
   if(lock){
     lock.classList.toggle("hidden-view", nursingServerAvailable());
+    // Preserve the click shield while the first connection is being established.
+    lock.classList.toggle("is-connecting", nurseInitialConnectionPending);
+    lock.setAttribute("aria-hidden", String(nurseInitialConnectionPending || nursingServerAvailable()));
     const message = document.getElementById("nurseOfflineLockMessage");
     if(message) message.textContent = firebaseConnectionKnown
       ? "انقطع الاتصال بالنظام — تم إيقاف كل أزرار التحكم حتى يعود الاتصال. لن يتغير رقم الدور."
@@ -10258,7 +10271,7 @@ function updateNetworkStatusIndicator(){
   const badge = document.getElementById("syncBadge");
   if(badge){
     if(!nursingServerAvailable()){
-      badge.textContent = firebaseConnectionKnown ? "الاتصال منقطع" : "جارٍ الاتصال";
+      badge.textContent = nurseInitialConnectionPending || !firebaseConnectionKnown ? "جارٍ الاتصال" : "الاتصال منقطع";
       badge.className = "text-xs px-2.5 py-1 rounded-full bg-red-100 text-red-700";
     }else if(badge.textContent === "الاتصال منقطع" || badge.textContent === "جارٍ الاتصال"){
       badge.textContent = "متصل";
@@ -10366,6 +10379,10 @@ window.addEventListener("offline", ()=>{
 networkConnectionRef.on("value", snapshot=>{
   firebaseConnected = snapshot.val() === true;
   firebaseConnectionKnown = true;
+  if(firebaseConnected && nurseInitialConnectionPending){
+    clearTimeout(nurseInitialConnectionTimer);
+    nurseInitialConnectionPending = false;
+  }
   updateNetworkStatusIndicator();
   updateAdminMetricsConnectivity();
   if(!firebaseConnected) presenceRegistered = false;
