@@ -8981,7 +8981,7 @@
     </div>
     <div class="flex items-center gap-2">
       <button id="adminSwitchRoomBtn" type="button" class="hidden-view text-xs bg-white/15 px-3 py-2 rounded-lg">تغيير الحجرة</button>
-      <button id="nursingSwitchRoomBtn" type="button" class="hidden-view text-xs bg-white/15 px-3 py-2 rounded-lg">تبديل العيادة</button>
+      <button id="nursingSwitchRoomBtn" type="button" style="display:none" class="hidden-view text-xs bg-white/15 px-3 py-2 rounded-lg">تبديل العيادة</button>
       <button id="logoutBtn" class="text-xs bg-white/15 px-3 py-2 rounded-lg">تسليم الوردية</button>
     </div>
   </header>
@@ -9004,7 +9004,7 @@
         <div class="flex flex-wrap gap-2 mt-2">
           <button title="تغيير البيانات مع الاحتفاظ بالأدوار والفائت وحالة الحجز" id="editSetupBtn" class="text-sm px-3 py-2 rounded-lg bg-slate-100 text-slate-600 font-bold">تعديل البيانات الحالية</button>
           <button title="بدء فترة جديدة وتصفير الأدوار والفائت وإلغاء قفل الحجز" id="startSessionBtn" class="text-sm px-3 py-2 rounded-lg text-white font-bold" style="background:var(--teal)">بدء فترة جديدة</button>
-          <button id="resetSameClinicBtn" type="button" class="text-sm px-3 py-2 rounded-lg bg-slate-100 text-slate-600 font-bold">تصفير العيادة بنفس البيانات</button>
+          <button id="resetSameClinicBtn" type="button" style="display:none" class="text-sm px-3 py-2 rounded-lg bg-slate-100 text-slate-600 font-bold">تصفير العيادة بنفس البيانات</button>
           <button id="nursingAddRoomBtn" type="button" class="text-sm px-3 py-2 rounded-lg bg-slate-100 text-slate-600 font-bold" style="display:none">إضافة حجرة ثانية (اختياري)</button>
         </div>
         <p class="nursing-period-help">تعديل البيانات: يحافظ على الأدوار والفائت والحجز.<br>فترة جديدة: يصفّر الأدوار والفائت ويلغي قفل الحجز.</p>
@@ -12006,6 +12006,7 @@ function syncAdminRoomControls(){
   $("#setupAdminRoomsBtn")?.classList.toggle("hidden-view", !admin);
   $("#adminSwitchRoomBtn")?.classList.toggle("hidden-view", !admin);
   $("#nursingSwitchRoomBtn")?.classList.toggle("hidden-view", !isSharedNurseUser());
+  $("#resetSameClinicBtn").style.display = admin ? "" : "none";
   const logout = $("#logoutBtn");
   if(logout) logout.textContent = admin ? "تسجيل الخروج" : "تسليم الوردية";
 }
