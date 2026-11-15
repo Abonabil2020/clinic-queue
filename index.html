@@ -5359,6 +5359,13 @@
 
 
   /* ===== صفحة الأدمن فقط: سجل تحديثات النظام ===== */
+  #view-admin .admin-audit-search label{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700}
+  #view-admin .admin-audit-search :is(input,select){border:1px solid #dbe5f1;border-radius:8px;padding:5px 8px;background:white;color:#0f172a}
+  #view-admin #adminAuditSearch{width:min(230px,62vw)}
+  #view-admin .admin-audit-item details{margin-top:4px;font-size:12px;color:#334155}
+  #view-admin .admin-audit-item details summary{cursor:pointer;color:#3b4c7b}
+  #view-admin .admin-audit-item details[open] summary{margin-bottom:5px}
+  #view-admin .admin-audit-more{margin:8px 16px}
   /* ===== الأدمن فقط: إحصائيات مختصرة مع حالة الاتصال الفعلية ===== */
   #view-admin .admin-metrics-date{
     margin-top:16px;
@@ -8832,7 +8839,7 @@
       <div class="admin-audit-head">
         <div>
           <h2 class="admin-audit-title">سجل تحديثات النظام</h2>
-          <p class="admin-audit-subtitle">آخر العمليات التي غيّرت بيانات النظام، مع الحساب المنفذ والحجرة والوقت.</p>
+          <p class="admin-audit-subtitle">عمليات اليوم من ٣ الفجر إلى ٣ الفجر بتوقيت القاهرة.</p>
         </div>
         <span class="admin-audit-live">متابعة مباشرة</span>
       </div>
@@ -8845,9 +8852,16 @@
         <button type="button" class="admin-audit-filter" data-audit-filter="admin">الأدمن</button>
         <span id="adminAuditCount" class="admin-audit-count num">٠ تحديث</span>
       </div>
+      <div class="admin-audit-toolbar admin-audit-search">
+        <label>بحث <input id="adminAuditSearch" type="search" placeholder="الاسم، العيادة، الحجرة أو رقم الدور"></label>
+        <label>نوع العملية <select id="adminAuditType"><option value="">كل العمليات</option></select></label>
+        <label>من <input id="adminAuditFrom" type="time"></label>
+        <label>إلى <input id="adminAuditTo" type="time"></label>
+      </div>
       <div id="adminAuditList" class="admin-audit-list">
         <div class="admin-audit-empty">جارٍ تحميل سجل التحديثات...</div>
       </div>
+      <button id="adminAuditMore" class="admin-audit-filter admin-audit-more" type="button" hidden>عرض المزيد</button>
     </section>
   </main>
 </section>
@@ -11674,11 +11688,6 @@ const AUDIT_ROLE_LABELS = {
   staff_manager:"مسؤول العيادات والتمريض",
   admin:"الأدمن"
 };
-let adminAuditItems = [];
-let adminAuditFilter = "all";
-let adminAuditListening = false;
-let adminAuditQuery = null;
-
 function auditActorInfo(context = {}){
   const user = auth.currentUser;
   const email = String(user?.email || "").trim().toLowerCase();
@@ -11732,103 +11741,257 @@ async function writeAuditLog({action,summary,roomId="",clinicName="",nurseName="
   }
 }
 
-function adminAuditDateTime(ts){
-  const value = Number(ts || 0);
-  if(!value) return {date:"—",time:"—"};
-  const d = new Date(value);
-  return {
-    date:d.toLocaleDateString("ar-EG",{day:"2-digit",month:"2-digit",year:"numeric"}),
-    time:d.toLocaleTimeString("ar-EG",{hour:"2-digit",minute:"2-digit",hour12:true})
-  };
+const auditCairoClock = new Intl.DateTimeFormat("en-GB", {
+  timeZone:"Africa/Cairo", year:"numeric", month:"2-digit", day:"2-digit",
+  hour:"2-digit", minute:"2-digit", second:"2-digit", hourCycle:"h23"
+});
+
+function auditCairoParts(timestamp){
+  return Object.fromEntries(auditCairoClock.formatToParts(timestamp)
+    .filter(part=>part.type !== "literal").map(part=>[part.type,Number(part.value)]));
+}
+
+function auditDayBoundary(timestamp, daysAfter = 0){
+  const date = auditCairoParts(timestamp);
+  const target = Date.UTC(date.year,date.month-1,date.day-(date.hour<3?1:0)+daysAfter,3);
+  const local = auditCairoParts(target);
+  const offset = Date.UTC(local.year,local.month-1,local.day,local.hour,local.minute,local.second)-target;
+  return target-offset;
+}
+
+const AUDIT_ACTION_GROUPS = [
+  ["تغيير الدور", /^queue_number$/],
+  ["لم يحضر", /^(mark_missed|cancel_missed)$/],
+  ["الدور الفائت", /^recall_/],
+  ["الاستكمال", /^continuation_/],
+  ["استلام التحكم", /^nurse_control_enter$/],
+  ["تصفير العيادة", /^clinic_reset$/],
+  ["الفترة وحالة العيادة", /^(clinic_|no_waiting)/],
+  ["الحجز", /^booking_/],
+  ["تعديل القوائم", /^(staff_|nursing_|clinics_)/]
+];
+const AUDIT_PAGE_SIZE = 40;
+const adminAuditItems = new Map();
+let adminAuditFilter = "all";
+let adminAuditQuery = null;
+let adminAuditTimer;
+let adminAuditFrame;
+let adminAuditStatus = "loading";
+let adminAuditLimit = AUDIT_PAGE_SIZE;
+
+function auditText(value){
+  return String(value ?? "").toLowerCase()
+    .replace(/[٠-٩۰-۹]/g,digit=>String(digit.charCodeAt(0) & 15))
+    .replace(/[أإآٱ]/g,"ا").replace(/[\u064b-\u065f\u0670ـ]/g,"");
+}
+
+function auditActionGroup(action){
+  return AUDIT_ACTION_GROUPS.findIndex(([,pattern])=>pattern.test(action));
+}
+
+const auditDisplayDate = new Intl.DateTimeFormat("ar-EG", {
+  timeZone:"Africa/Cairo", year:"numeric", month:"2-digit", day:"2-digit"
+});
+const auditDisplayTime = new Intl.DateTimeFormat("ar-EG", {
+  timeZone:"Africa/Cairo", hour:"2-digit", minute:"2-digit", second:"2-digit", hour12:true
+});
+
+function auditMatches(item, desired){
+  const {role, type, terms, from, to} = desired;
+  if(role !== "all" && item.actorRole !== role) return false;
+  if(type && auditActionGroup(item.action) !== Number(type)) return false;
+  if(terms.length){
+    const values = [item.actorName,item.clinicName,item.roomId,item.summary,item.details?.previousNurse];
+    const searchText = auditText(values.join(" "));
+    if(!terms.every(term=>/^\d+$/.test(term)
+      ? searchText.split(/\D+/).includes(term)
+      : searchText.includes(term))) return false;
+  }
+  if(from || to){
+    const {hour, minute} = auditCairoParts(item.createdAt);
+    const minutes = (hour*60+minute+1260)%1440;
+    const at = [String(Math.floor(minutes/60)).padStart(2,"0"),String(minutes%60).padStart(2,"0")].join(":");
+    if(from && at < auditFilterTime(from)) return false;
+    if(to && at > auditFilterTime(to)) return false;
+  }
+  return true;
+}
+
+function auditFilterTime(value){
+  const [hour,minute] = value.split(":");
+  return String((Number(hour)+21)%24).padStart(2,"0")+":"+minute;
 }
 
 function renderAdminAuditLog(){
   const list = $("#adminAuditList");
   const count = $("#adminAuditCount");
-  if(!list || !count) return;
+  const more = $("#adminAuditMore");
+  if(!list || !count || !more) return;
 
-  const filtered = adminAuditFilter === "all"
-    ? adminAuditItems
-    : adminAuditItems.filter(item=>item.actorRole === adminAuditFilter);
+  const open = new Set(Array.from(list.querySelectorAll("details[open]"),node=>node.dataset.auditId));
+  const desired = {
+    role:adminAuditFilter,
+    type:$("#adminAuditType").value,
+    terms:auditText($("#adminAuditSearch").value).trim().split(/\s+/).filter(Boolean),
+    from:$("#adminAuditFrom").value,
+    to:$("#adminAuditTo").value
+  };
+  const filtered = Array.from(adminAuditItems.values())
+    .filter(item=>auditMatches(item,desired))
+    .sort((a,b)=>b.createdAt-a.createdAt || (a.id < b.id ? 1 : -1));
+  count.textContent = adminAuditStatus === "ready"
+    ? ar(Math.min(adminAuditLimit,filtered.length)) + " من " + ar(filtered.length) + " نتيجة"
+    : "—";
+  more.hidden = adminAuditStatus !== "ready" || filtered.length <= adminAuditLimit;
 
-  count.textContent = ar(filtered.length) + " تحديث";
-  list.innerHTML = "";
+  const fragment = document.createDocumentFragment();
+  if(adminAuditStatus !== "ready" || !filtered.length){
+    const empty = document.createElement("div");
+    empty.className = "admin-audit-empty";
+    empty.textContent = {
+      loading:"جارٍ تحميل سجل تحديثات اليوم...",
+      error:"تعذر تحميل سجل التحديثات.",
+      ready:"مفيش عمليات مطابقة في سجل اليوم."
+    }[adminAuditStatus];
+    fragment.append(empty);
+  }else{
+    filtered.slice(0,adminAuditLimit).forEach(item=>fragment.append(renderAdminAuditItem(item,open)));
+  }
+  list.replaceChildren(fragment);
+}
 
-  if(!filtered.length){
-    list.innerHTML = '<div class="admin-audit-empty">لا توجد تحديثات مسجلة لهذا التصنيف.</div>';
-    return;
+function renderAdminAuditItem(item,open){
+  const row = document.createElement("article");
+  row.className = "admin-audit-item";
+  const actor = document.createElement("div");
+  actor.className = "admin-audit-actor";
+  const actorName = document.createElement("div");
+  actorName.className = "admin-audit-actor-name";
+  const roleLabel = AUDIT_ROLE_LABELS[item.actorRole] || "مستخدم";
+  actorName.textContent = item.actorName || roleLabel;
+  actor.append(actorName);
+
+  const main = document.createElement("div");
+  main.className = "admin-audit-main";
+  const summary = document.createElement("div");
+  summary.className = "admin-audit-summary";
+  summary.textContent = item.summary || AUDIT_ACTION_GROUPS[auditActionGroup(item.action)]?.[0] || "تحديث";
+  const meta = document.createElement("div");
+  meta.className = "admin-audit-meta";
+  const role = document.createElement("span");
+  role.className = "admin-audit-role";
+  role.dataset.role = item.actorRole || "";
+  role.textContent = roleLabel;
+  meta.append(role);
+  [item.clinicName,item.roomId && "حجرة "+item.roomId].filter(Boolean).forEach(value=>{
+    const label = document.createElement("span");
+    label.textContent = value;
+    meta.append(label);
+  });
+
+  const time = document.createElement("div");
+  time.className = "admin-audit-time num";
+  time.textContent = auditDisplayTime.format(item.createdAt);
+
+  const details = document.createElement("details");
+  details.dataset.auditId = item.id;
+  details.open = open.has(item.id);
+  const toggle = document.createElement("summary");
+  toggle.textContent = "عرض التفاصيل";
+  details.append(toggle);
+  const turnChange = item.action === "queue_number" && String(item.summary).match(/من\s+(\S+)\s+إلى\s+(\S+)$/);
+  const fields = [
+    ["العملية",summary.textContent],
+    ["المنفّذ",actorName.textContent+" · "+roleLabel],
+    ["الحساب",item.actorEmail],
+    ["العيادة",item.clinicName],
+    ["الحجرة",item.roomId],
+    ["التوقيت بالقاهرة",auditDisplayDate.format(item.createdAt)+" · "+time.textContent],
+    ["الرقم قبل التغيير",turnChange?.[1]],
+    ["الرقم بعد التغيير",turnChange?.[2]],
+    ["التمريض السابق",item.action === "nurse_control_enter" && item.details?.previousNurse],
+    ["التمريض المستلم",item.action === "nurse_control_enter" && item.actorName]
+  ];
+  fields.forEach(([label,value])=>{
+    if(value === false || value == null || value === "") return;
+    const line = document.createElement("div");
+    line.textContent = label + " · " + value;
+    details.append(line);
+  });
+  if(Array.isArray(item.details?.changes)){
+    const changes = document.createElement("ul");
+    item.details.changes.forEach(change=>{
+      if(typeof change !== "string") return;
+      const line = document.createElement("li");
+      line.textContent = change;
+      changes.append(line);
+    });
+    details.append(changes);
   }
 
-  filtered.forEach(item=>{
-    const when = adminAuditDateTime(item.createdAt);
-    const row = document.createElement("article");
-    row.className = "admin-audit-item";
+  main.append(summary,meta,details);
+  row.append(actor,main,time);
+  return row;
+}
 
-    const actor = document.createElement("div");
-    actor.className = "admin-audit-actor";
-    const actorName = document.createElement("div");
-    actorName.className = "admin-audit-actor-name";
-    actorName.textContent = item.actorName || AUDIT_ROLE_LABELS[item.actorRole] || "مستخدم";
-    const actorEmail = document.createElement("div");
-    actorEmail.className = "admin-audit-actor-email";
-    actorEmail.textContent = item.actorEmail || "";
-    actor.append(actorName,actorEmail);
-
-    const main = document.createElement("div");
-    main.className = "admin-audit-main";
-    const summary = document.createElement("div");
-    summary.className = "admin-audit-summary";
-    summary.textContent = item.summary || item.action || "تحديث";
-    const meta = document.createElement("div");
-    meta.className = "admin-audit-meta";
-    const role = document.createElement("span");
-    role.className = "admin-audit-role";
-    role.dataset.role = item.actorRole || "";
-    role.textContent = AUDIT_ROLE_LABELS[item.actorRole] || item.actorRole || "مستخدم";
-    meta.appendChild(role);
-    if(item.clinicName){
-      const clinic = document.createElement("span");
-      clinic.textContent = item.clinicName;
-      meta.appendChild(clinic);
-    }
-    if(item.roomId){
-      const room = document.createElement("span");
-      room.textContent = "حجرة " + item.roomId;
-      meta.appendChild(room);
-    }
-    main.append(summary,meta);
-
-    const time = document.createElement("div");
-    time.className = "admin-audit-time num";
-    time.innerHTML = '<div>' + when.time + '</div><div>' + when.date + '</div>';
-
-    row.append(actor,main,time);
-    list.appendChild(row);
+function queueAdminAuditRender(){
+  if(adminAuditFrame !== undefined) return;
+  adminAuditFrame = requestAnimationFrame(()=>{
+    adminAuditFrame = undefined;
+    renderAdminAuditLog();
   });
 }
 
 function startAdminAuditListener(){
-  if(adminAuditListening || !isAdminUser()) return;
-  adminAuditQuery = auditLogsRef.limitToLast(200);
-  adminAuditQuery.on("value", snapshot=>{
-    const value = snapshot.val() || {};
-    adminAuditItems = Object.entries(value)
-      .map(([id,item])=>({id,...(item || {})}))
-      .sort((a,b)=>Number(b.createdAt || 0) - Number(a.createdAt || 0));
-    renderAdminAuditLog();
-  }, error=>{
-    const list = $("#adminAuditList");
-    if(list) list.innerHTML = '<div class="admin-audit-empty">تعذر قراءة سجل التحديثات. راجع Firebase Rules.</div>';
+  if(adminAuditQuery || !isAdminUser()) return;
+  const now = Date.now()+dailyVisitServerOffset;
+  const start = auditDayBoundary(now);
+  const end = auditDayBoundary(now,1);
+  const query = auditLogsRef.orderByChild("createdAt").startAt(start).endAt(end-1);
+  adminAuditQuery = query;
+  adminAuditStatus = "loading";
+  renderAdminAuditLog();
+
+  const onError = error=>{
+    if(adminAuditQuery !== query) return;
+    adminAuditStatus = "error";
+    queueAdminAuditRender();
     console.warn("Audit log read failed:",error?.code || error?.message || error);
-  });
-  adminAuditListening = true;
+  };
+  const upsert = snapshot=>{
+    if(adminAuditQuery !== query) return;
+    const item = snapshot.val();
+    if(!Number.isFinite(item?.createdAt) || item.createdAt < start || item.createdAt >= end) return;
+    adminAuditItems.set(snapshot.key,{...item,id:snapshot.key});
+    if(adminAuditStatus === "ready") queueAdminAuditRender();
+  };
+  query.on("child_added",upsert,onError);
+  query.on("child_changed",upsert,onError);
+  query.on("child_removed",snapshot=>{
+    if(adminAuditQuery !== query) return;
+    adminAuditItems.delete(snapshot.key);
+    if(adminAuditStatus === "ready") queueAdminAuditRender();
+  },onError);
+  query.once("value",()=>{
+    if(adminAuditQuery !== query || adminAuditStatus === "error") return;
+    adminAuditStatus = "ready";
+    queueAdminAuditRender();
+  },onError).catch(onError);
+
+  adminAuditTimer = setTimeout(()=>{
+    stopAdminAuditListener();
+    startAdminAuditListener();
+  },Math.max(1,end-(Date.now()+dailyVisitServerOffset)));
 }
 
 function stopAdminAuditListener(){
-  if(adminAuditQuery) adminAuditQuery.off();
+  adminAuditQuery?.off();
   adminAuditQuery = null;
-  adminAuditListening = false;
-  adminAuditItems = [];
+  clearTimeout(adminAuditTimer);
+  if(adminAuditFrame !== undefined) cancelAnimationFrame(adminAuditFrame);
+  adminAuditFrame = undefined;
+  adminAuditItems.clear();
+  adminAuditLimit = AUDIT_PAGE_SIZE;
 }
 
 function adminRoomData(room){
@@ -11923,7 +12086,6 @@ function renderAdminDashboard(){
   if(!grid || !isAdminUser()) return;
 
   startAdminAuditListener();
-  renderAdminAuditLog();
   startAdminPresenceListener();
   startAdminDailyVisitsListener();
   grid.innerHTML = "";
@@ -12012,9 +12174,24 @@ document.getElementById("adminAuditToolbar")?.addEventListener("click", event=>{
   const button = event.target.closest("[data-audit-filter]");
   if(!button) return;
   adminAuditFilter = button.dataset.auditFilter || "all";
+  adminAuditLimit = AUDIT_PAGE_SIZE;
   document.querySelectorAll("#adminAuditToolbar [data-audit-filter]").forEach(item=>{
     item.classList.toggle("active", item === button);
   });
+  renderAdminAuditLog();
+});
+
+AUDIT_ACTION_GROUPS.forEach(([label], index)=>{
+  $("#adminAuditType").add(new Option(label,String(index)));
+});
+["adminAuditSearch","adminAuditType","adminAuditFrom","adminAuditTo"].forEach(id=>{
+  $("#"+id).addEventListener("input",()=>{
+    adminAuditLimit = AUDIT_PAGE_SIZE;
+    queueAdminAuditRender();
+  });
+});
+$("#adminAuditMore").addEventListener("click",()=>{
+  adminAuditLimit += AUDIT_PAGE_SIZE;
   renderAdminAuditLog();
 });
 
