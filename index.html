@@ -8780,6 +8780,21 @@
 <!-- ============================================================
      دخول الأدمن — حساب واحد للتحكم في جميع الحجرات
 ============================================================ -->
+
+<section id="view-nurse-individual" class="hidden-view min-h-screen flex items-center justify-center p-5">
+  <form id="individualNurseLogin" class="w-full max-w-sm bg-white rounded-2xl shadow p-5 space-y-3">
+    <h1 class="text-xl font-bold">دخول التمريض</h1>
+    <label class="block">الاسم المسجل في حسابك
+      <input id="individualNurseName" required maxlength="150" autocomplete="username" class="w-full rounded-xl bg-slate-100 px-3 py-2">
+    </label>
+    <label class="block">كلمة السر
+      <input id="individualNursePassword" required type="password" autocomplete="current-password" class="w-full rounded-xl bg-slate-100 px-3 py-2">
+    </label>
+    <button type="submit" class="w-full rounded-xl bg-sky-600 text-white p-3 font-bold">تسجيل الدخول</button>
+    <p id="individualNurseMessage" role="status"></p>
+  </form>
+</section>
+
 <section id="view-admin-login" class="hidden-view min-h-screen flex items-center justify-center p-5">
   <form id="adminLoginForm" class="w-full max-w-sm bg-white rounded-3xl shadow-xl shadow-slate-300/40 p-7">
     <img src="logo.png" alt="مجمع الإصلاح الطبي" class="site-login-logo" onerror="this.style.display='none'">
@@ -8809,6 +8824,21 @@
       </div>
       <button id="adminLogout" type="button" class="px-4 py-2.5 rounded-xl bg-slate-100 text-slate-600 text-sm font-bold">تسجيل الخروج</button>
     </header>
+
+
+    <details id="nursingAccountPanel" class="admin-audit-panel">
+      <summary class="font-bold cursor-pointer">حسابات التمريض</summary>
+      <form id="nursingAccountForm" class="space-y-3 mt-3">
+        <label class="block">اسم التمريض
+          <select id="nursingAccountStaffId" required class="w-full rounded-xl bg-slate-100 px-3 py-2"></select>
+        </label>
+        <label class="block">كلمة سر جديدة
+          <input id="nursingAccountPassword" required type="password" minlength="8" maxlength="128" autocomplete="new-password" class="w-full rounded-xl bg-slate-100 px-3 py-2">
+        </label>
+        <button type="submit" class="rounded-xl bg-sky-600 text-white px-4 py-2 font-bold">حفظ الحساب</button>
+        <p id="nursingAccountMessage" role="status"></p>
+      </form>
+    </details>
 
     <div id="adminMetricsDate" class="admin-metrics-date" aria-label="تاريخ الإحصائية"></div>
     <div class="admin-metrics-grid">
@@ -9947,16 +9977,17 @@ function receptionManagerEntry(){
   catch(error){ return ""; }
 }
 const AUTH_SCOPE_KEY = "islahAuthScope:" + location.pathname;
-const AUTH_SCOPES = ["nurse", "reception", "clinics-manager", "nursing-manager", "admin"];
+const AUTH_SCOPES = ["nurse", "nurse-individual", "reception", "clinics-manager", "nursing-manager", "admin"];
 function authScopeForRoute(hash, previous = "nurse"){
   const view = (hash || "#/home").replace("#/", "");
+  if(view === "nurse-individual") return view;
   if(["admin", "admin-login"].includes(view)) return "admin";
   if(["reception", "reception-login"].includes(view)) return "reception";
   if(view === "clinics-manager" || view === "nursing-manager") return view;
   if(["staff-manager", "staff-manager-login"].includes(view))
     return ["clinics-manager", "nursing-manager"].includes(previous) ? previous : "clinics-manager";
   if(view === "nursing-control" || view === "login") return "nurse";
-  if(["setup", "nurse"].includes(view)) return previous === "admin" ? "admin" : "nurse";
+  if(["setup", "nurse"].includes(view)) return ["admin","nurse-individual"].includes(previous) ? previous : "nurse";
   return AUTH_SCOPES.includes(previous) ? previous : "nurse";
 }
 let savedAuthScope = "nurse";
@@ -10025,7 +10056,15 @@ const NURSING_EMAIL = "nurse@islah.clinic";
 function isSharedNurseUser(user = auth.currentUser){
   return Boolean(user && !user.isAnonymous && String(user.email || "").toLowerCase() === NURSING_EMAIL);
 }
+let individualNursingAccount = null;
+function individualNurseIdentity(user = auth.currentUser){
+  return user && individualNursingAccount?.uid === user.uid ? individualNursingAccount : null;
+}
+function hasNursingDirectoryAccess(user = auth.currentUser){
+  return isSharedNurseUser(user) || Boolean(individualNurseIdentity(user));
+}
 function showNursingLogin(){
+  if(AUTH_SCOPE === "nurse-individual"){ show("nurse-individual"); return; }
   $("#loginEmail").value = "nurse";
   show("login");
 }
@@ -10423,6 +10462,7 @@ function pageTitleForView(viewName){
   const titles = {
     home:"نظام متابعة الأدوار",
     login:"دخول التمريض",
+    "nurse-individual":"دخول التمريض",
     setup:"إعداد العيادة",
     nurse:"التمريض",
     tv:"شاشة الأدوار",
@@ -11709,7 +11749,7 @@ function auditActorInfo(context = {}){
     actorName = "مسؤول التمريض";
   }else{
     roomId = roomId || authorizedRoomForUser(user) || DISPLAY_SLOT_ID;
-    actorName = String(currentNursingIdentity()?.nurse || context.nurseName || setupData?.nurse || "").trim();
+    actorName = individualNurseIdentity()?.name || String(currentNursingIdentity()?.nurse || context.nurseName || setupData?.nurse || "").trim();
     if(!actorName || actorName === "—") actorName = "تمريض حجرة " + roomId;
   }
 
@@ -12199,7 +12239,7 @@ function syncAdminRoomControls(){
   const admin = isAdminUser();
   $("#setupAdminRoomsBtn")?.classList.toggle("hidden-view", !admin);
   $("#adminSwitchRoomBtn")?.classList.toggle("hidden-view", !admin);
-  $("#nursingSwitchRoomBtn")?.classList.toggle("hidden-view", !isSharedNurseUser());
+  $("#nursingSwitchRoomBtn")?.classList.toggle("hidden-view", !hasNursingDirectoryAccess());
   $("#resetSameClinicBtn").style.display = admin ? "" : "none";
   const logout = $("#logoutBtn");
   if(logout) logout.textContent = admin ? "تسجيل الخروج" : "تسليم الوردية";
@@ -12537,10 +12577,10 @@ function isAdminUser(user = auth.currentUser){
 }
 
 const VIEWS = [
-  "mobile","home","login","setup","nurse","tv","qr","reception","patient","reception-login",
+  "mobile","home","login","nurse-individual","setup","nurse","tv","qr","reception","patient","reception-login",
   "staff-manager-login","staff-manager","admin-login","admin"
 ];
-const SETUP_KEY = "islahQueueSetup:" + DISPLAY_SLOT_ID;
+const SETUP_KEY = (AUTH_SCOPE === "nurse-individual" ? "islahIndividualQueueSetup:" : "islahQueueSetup:") + DISPLAY_SLOT_ID;
 let setupData = null;
 
 try{
@@ -12766,7 +12806,7 @@ function route(){
     show("reception-login");
     return;
   }
-  if(restoreNursingResume()) return;
+  if(location.hash !== "#/nurse-individual" && restoreNursingResume()) return;
   const h = (location.hash || "#/home").replace("#/","");
   if(["nurse","setup","nursing-control"].includes(h) && !nursingAuthReady){
     if(h === "nurse" && (nursingResume || setupData)){ show("nurse"); }
@@ -12775,6 +12815,12 @@ function route(){
   }
   syncAdminRoomControls();
   if(["mobile","mobile-third","mobile-ground"].includes(h)){ show("mobile"); renderMobileFollow(); }
+  else if(h === "nurse-individual"){
+    if(individualNurseIdentity()){
+      nursingSetupMode = "enter";
+      location.hash = "#/setup";
+    } else showNursingLogin();
+  }
   else if(h === "home")      { show("home"); }
   else if(h === "tv")   { setTvDisplayMode("all"); show("tv"); startClock(); }
   else if(h === "tv-scan-cycle"){startScanCycle();}
@@ -12946,6 +12992,7 @@ function handleStaffDirectorySnapshot(snapshot){
   if(nurseMenuOpen) renderNurseOptions($("#setupNurseSearch").value);
 
   if(isStaffManagerUser() && !staffManualSaving) renderStaffManager();
+  if(isAdminUser()) renderNursingAccountOptions();
 }
 
 function startStaffDirectoryListener(){
@@ -13270,6 +13317,7 @@ function selectNurse(nurse, closeMenu = true){
 }
 
 function fillNurseOptions(selectedNurse){
+  selectedNurse = individualNurseIdentity()?.name || selectedNurse;
   $("#setupNurse").value = "";
   $("#setupNurseSearch").value = "";
   closeNurseMenu();
@@ -13281,7 +13329,7 @@ function fillNurseOptions(selectedNurse){
 }
 
 
-const NURSING_ROOMS_KEY = "islahNursingRooms";
+const NURSING_ROOMS_KEY = AUTH_SCOPE === "nurse-individual" ? "islahIndividualNursingRooms" : "islahNursingRooms";
 let nursingSetupMode = "enter";
 let nursingSetupSaving = false;
 let nursingSetupDraft = false;
@@ -13404,7 +13452,7 @@ window.addEventListener("pagehide",saveNursingResume);
 window.addEventListener("pageshow",()=>{ if(nursingResumePending) route(); });
 
 function nursingRoomAccess(){
-  return Boolean(auth.currentUser && (isAdminUser() || isSharedNurseUser() || (!auth.currentUser.isAnonymous && authorizedRoomForUser(auth.currentUser) === DISPLAY_SLOT_ID)));
+  return Boolean(auth.currentUser && (isAdminUser() || hasNursingDirectoryAccess() || (!auth.currentUser.isAnonymous && authorizedRoomForUser(auth.currentUser) === DISPLAY_SLOT_ID)));
 }
 function currentNursingIdentity(){
   const entry = nursingRooms[DISPLAY_SLOT_ID];
@@ -13446,7 +13494,7 @@ function rememberNursingRoom(data,nurse){
   renderBookingStatus();
 }
 function switchNursingRoom(){
-  if(nursingSetupSaving || !isSharedNurseUser()) return;
+  if(nursingSetupSaving || !hasNursingDirectoryAccess()) return;
   saveNursingResume();
   nursingSetupDraft = false;
   nursingSetupMode = "enter";
@@ -13473,7 +13521,7 @@ function renderNursingRoomSwitch(){
     wrap.appendChild(button);
   });
   const add = $("#nursingAddRoomBtn");
-  add.style.display = rooms.length < 2 && (isSharedNurseUser() || isAdminUser()) ? "" : "none";
+  add.style.display = rooms.length < 2 && (hasNursingDirectoryAccess() || isAdminUser()) ? "" : "none";
   add.onclick = ()=>{ nursingSetupDraft = false; sessionStorage.removeItem(SETUP_ROOM_STEP_KEY); nursingSetupMode = "enter";location.hash = "#/setup"; };
 }
 function renderNursingSetup(){
@@ -13484,7 +13532,8 @@ function renderNursingSetup(){
   const takeover = existing && nursingSetupMode === "enter";
   $("#setupHoursWrap").hidden = takeover;
   if(!ready) setupWizardStep = 0;
-  else if(setupWizardStep === 0) setupWizardStep = takeover ? 3 : 1;
+  else if(setupWizardStep === 0) setupWizardStep = takeover ? (individualNurseIdentity() ? 4 : 3) : 1;
+  if(ready && individualNurseIdentity()) fillNurseOptions(individualNurseIdentity().name);
   document.querySelectorAll("#setupWizard [data-setup-step]").forEach(panel=>{
     panel.hidden = Number(panel.dataset.setupStep) !== setupWizardStep;
   });
@@ -13515,7 +13564,7 @@ function renderNursingSetup(){
       preview.appendChild(row);
     });
   }
-  const captions = {1:"١ من ٤ — اختر التخصص",2:"٢ من ٤ — اختر الطبيب",3:"٣ من ٤ — اختر اسمك",4:"٤ من ٤ — راجع البيانات وأكد الدخول"};
+  const captions = individualNurseIdentity() ? {1:"١ من ٣ — اختر التخصص",2:"٢ من ٣ — اختر الطبيب",4:"٣ من ٣ — راجع البيانات وأكد الدخول"} : {1:"١ من ٤ — اختر التخصص",2:"٢ من ٤ — اختر الطبيب",3:"٣ من ٤ — اختر اسمك",4:"٤ من ٤ — راجع البيانات وأكد الدخول"};
   $("#setupStepCaption").textContent = !selected ? "اختر الحجرة أولًا" : !ready ? "جاري قراءة بيانات الحجرة..." : takeover ? (setupWizardStep === 3 ? "اختر اسمك لاستلام الفترة الحالية" : "راجع الفترة الحالية وأكد الدخول") : captions[setupWizardStep];
   if(setupWizardStep === 4){
     $("#setupReviewTitle").textContent = takeover ? "بيانات استلام العيادة قبل التأكيد" : nursingSetupMode === "edit" ? "البيانات المعدلة قبل الحفظ" : "بيانات الفترة الجديدة قبل الحفظ";
@@ -13651,14 +13700,14 @@ function ensureNursingAuth(){
 }
 
 let setupWizardStep = 0;
-const SETUP_ROOM_STEP_KEY = "islahSetupRoomStep";
+const SETUP_ROOM_STEP_KEY = AUTH_SCOPE === "nurse-individual" ? "islahIndividualSetupRoomStep" : "islahSetupRoomStep";
 function setupWizardRooms(){
-  return isAdminUser() || isSharedNurseUser() ? ROOM_OPTIONS : !auth.currentUser || auth.currentUser.isAnonymous ? [] : ROOM_OPTIONS.filter(room=>room.id === authorizedRoomForUser(auth.currentUser));
+  return isAdminUser() || hasNursingDirectoryAccess() ? ROOM_OPTIONS : !auth.currentUser || auth.currentUser.isAnonymous ? [] : ROOM_OPTIONS.filter(room=>room.id === authorizedRoomForUser(auth.currentUser));
 }
 function setSetupWizardStep(step){
   closeClinicMenu();closeDoctorMenu();closeNurseMenu();
   ["#setupClinicSearch","#setupDoctorSearch","#setupNurseSearch"].forEach(id=>$(id).blur());
-  setupWizardStep = step;
+  setupWizardStep = individualNurseIdentity() && step === 3 ? (setupWizardStep === 4 ? 2 : 4) : step;
   renderNursingSetup();
 }
 $("#setupWizardBack").onclick = ()=>setSetupWizardStep(setupWizardStep-1);
@@ -13957,8 +14006,9 @@ $("#saveSetupBtn").addEventListener("click", async ()=>{
   if(!nursingRoomAccess() || !nursingPeriod || $("#setupRoomSelect").value !== DISPLAY_SLOT_ID) return void (msg.textContent = "اختر الحجرة وانتظر تحميل بياناتها");
   const rooms = Object.keys(nursingRooms).filter(id=>nursingRooms[id].uid === auth.currentUser.uid && nursingRooms[id].day === operationalDayKey());
   if(!rooms.includes(DISPLAY_SLOT_ID) && rooms.length >= 2) return void (msg.textContent = "يمكن التحكم في حجرتين فقط. اخرج من غرفة التحكم لإعادة اختيار الحجرات.");
-  const nurse = $("#setupNurse").value.trim();
-  if(!nurse || !selectableNurseNames().includes(nurse)) return void (msg.textContent = "اختر اسمك من قائمة التمريض");
+  const individual = individualNurseIdentity();
+  const nurse = individual?.name || $("#setupNurse").value.trim();
+  if(!nurse || (!individual && !selectableNurseNames().includes(nurse))) return void (msg.textContent = "اختر اسمك من قائمة التمريض");
   const takeover = nursingSetupMode === "enter" && periodIsCurrent(nursingPeriod);
   const edit = nursingSetupMode === "edit";
   const clinicHours = takeover ? nursingPeriod.clinicHours : readClinicHours("setupHours");
@@ -17157,10 +17207,83 @@ function doLogin(){
     });
 }
 
+
+const individualNurseNameKey = "islahIndividualNurseName:" + location.pathname;
+const individualNurseForm = $("#individualNurseLogin");
+if(AUTH_SCOPE === "nurse-individual"){
+  try{ $("#individualNurseName").value = localStorage.getItem(individualNurseNameKey) || ""; }catch(error){}
+}
+individualNurseForm.addEventListener("submit", async event=>{
+  event.preventDefault();
+  if(AUTH_SCOPE !== "nurse-individual") return;
+  const button = individualNurseForm.querySelector("button");
+  const message = $("#individualNurseMessage");
+  const enteredName = $("#individualNurseName").value.trim();
+  const passwordInput = $("#individualNursePassword");
+  if(button.disabled || !enteredName || !passwordInput.value) return;
+  button.disabled = true;
+  message.textContent = "";
+  try{
+    const normalized = enteredName.normalize("NFC").trim().replace(/\s+/g," ").toLowerCase();
+    const digest = await crypto.subtle.digest("SHA-256",new TextEncoder().encode(normalized));
+    const hex = Array.from(new Uint8Array(digest).slice(0,20),byte=>byte.toString(16).padStart(2,"0")).join("");
+    await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+    await auth.signInWithEmailAndPassword("nursing-" + hex + "@nursing.islah.invalid",passwordInput.value);
+    try{ localStorage.setItem(individualNurseNameKey,enteredName); }catch(error){}
+  }catch(error){
+    message.textContent = LOGIN_ERRORS[error.code] || "تعذر تسجيل الدخول. تأكد من الاسم وكلمة السر.";
+  }finally{
+    passwordInput.value = "";
+    button.disabled = false;
+  }
+});
+
+function renderNursingAccountOptions(){
+  const select = $("#nursingAccountStaffId");
+  const previous = select.value;
+  select.replaceChildren(new Option("اختر اسم التمريض",""));
+  for(const item of staffDirectoryState.nurses){
+    if(item.active !== false && item.name) select.add(new Option(item.name,item.id));
+  }
+  if(Array.from(select.options).some(option=>option.value === previous)) select.value = previous;
+}
+$("#nursingAccountPanel").addEventListener("toggle",()=>{
+  if(isAdminUser() && $("#nursingAccountPanel").open) renderNursingAccountOptions();
+});
+$("#nursingAccountForm").addEventListener("submit",async event=>{
+  event.preventDefault();
+  const form = event.currentTarget;
+  const button = form.querySelector("button");
+  const message = $("#nursingAccountMessage");
+  const staffId = $("#nursingAccountStaffId").value;
+  const password = $("#nursingAccountPassword");
+  if(button.disabled || !isAdminUser() || !staffId) return;
+  button.disabled = true;
+  message.textContent = "";
+  try{
+    const token = await auth.currentUser.getIdToken();
+    const url = "https://europe-west1-" + firebaseConfig.projectId + ".cloudfunctions.net/saveNursingAccount";
+    const response = await fetch(url,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer " + token},body:JSON.stringify({data:{staffId,password:password.value}})});
+    const result = await response.json();
+    if(!response.ok || !result.result?.name){
+      const safeMessages = ["INVALID_ARGUMENT","FAILED_PRECONDITION","ALREADY_EXISTS","PERMISSION_DENIED"];
+      throw new Error(safeMessages.includes(result.error?.status) ? result.error.message : "");
+    }
+    message.textContent = "تم حفظ حساب " + result.result.name + ".";
+  }catch(error){
+    message.textContent = error instanceof TypeError || error instanceof SyntaxError || !error.message
+      ? "تعذر حفظ الحساب. تحقق من خدمة إنشاء الحسابات والاتصال."
+      : error.message;
+  }finally{
+    password.value = "";
+    button.disabled = false;
+  }
+});
+
 $("#logoutBtn").addEventListener("click", async ()=>{
   const message = isAdminUser() ? "تسجيل الخروج من حساب الأدمن؟" : "تسجيل الخروج وتسليم الوردية؟";
   if(!confirm(message)) return;
-  location.hash = "#/home";
+  location.hash = AUTH_SCOPE === "nurse-individual" ? "#/nurse-individual" : "#/home";
   nursingRooms = {}; sessionStorage.removeItem(NURSING_ROOMS_KEY); clearNursingResume();
   await auth.signOut();
   route();
@@ -17266,8 +17389,30 @@ $("#receptionLogout").addEventListener("click", async ()=>{
     route();
   }catch(error){ alert("تعذّر تسجيل الخروج. حاول مرة أخرى"); }
 });
-auth.onAuthStateChanged(user=>{
+auth.onAuthStateChanged(async user=>{
   if(!ensureAuthScope()) return;
+  if(AUTH_SCOPE === "nurse-individual"){
+    individualNursingAccount = null;
+    const initialUser = user;
+    if(user && !user.isAnonymous){
+      try{
+        const data = (await queueApp.database().ref("nursingAccounts").child(user.uid).once("value")).val();
+        if(auth.currentUser !== initialUser) return;
+        if(data?.active === true && typeof data.name === "string" && data.name.trim()){
+          individualNursingAccount = {uid:user.uid,name:data.name};
+        } else {
+          $("#individualNurseMessage").textContent = "الحساب غير مفعّل.";
+        }
+      }catch(error){
+        $("#individualNurseMessage").textContent = "تعذر التحقق من الحساب. راجع الاتصال وحاول مرة تانية.";
+      }
+      if(auth.currentUser !== initialUser) return;
+      if(!individualNursingAccount){
+        await auth.signOut();
+        return;
+      }
+    }
+  }
   nursingAuthReady = true;
   if(user) clearNursingAuthWait();
   renderBookingStatus();
@@ -17279,7 +17424,7 @@ auth.onAuthStateChanged(user=>{
     sessionStorage.removeItem(SETUP_KEY);
     setupData = null;
     const currentView = (location.hash || "#/home").replace("#/","");
-    if(!["mobile","mobile-third","mobile-ground","home","nurse","setup","nursing-control","tv","tv-scan-cycle","tv-slideshow","tv-individual","tv-third","tv-third-slideshow","tv-ground","qr","reception","patient","clinics-manager","nursing-manager","staff-manager-login","staff-manager","admin-login","admin"].includes(currentView)){
+    if(!["nurse-individual","mobile","mobile-third","mobile-ground","home","nurse","setup","nursing-control","tv","tv-scan-cycle","tv-slideshow","tv-individual","tv-third","tv-third-slideshow","tv-ground","qr","reception","patient","clinics-manager","nursing-manager","staff-manager-login","staff-manager","admin-login","admin"].includes(currentView)){
       location.hash = "#/home";
     }
     route();
@@ -17294,7 +17439,7 @@ auth.onAuthStateChanged(user=>{
   }
   startStaffDirectoryListener();
 
-  if(isSharedNurseUser(user)){
+  if(hasNursingDirectoryAccess(user)){
     stopAdminAuditListener(); stopAdminPresenceListener();
     route(); return;
   }
@@ -17602,7 +17747,7 @@ window.officialCounts = (()=>{
       const raw=e.input.value.trim().replace(/[٠-٩]/g,x=>String('٠١٢٣٤٥٦٧٨٩'.indexOf(x))).replace(/[۰-۹]/g,x=>String('۰۱۲۳۴۵۶۷۸۹'.indexOf(x)));
       if(!/^\d{1,5}$/.test(raw)||Number(raw)>10000){e.message.textContent='أدخل عددًا صحيحًا من ٠ إلى ١٠٠٠٠.';return;}
       busy=true;updateEditor(kind);e.message.textContent='جارٍ الحفظ...';
-      const uid=auth.currentUser.uid,email=auth.currentUser.email,actorName=kind==='nurse'?(c.nurse||'التمريض'):'الاستعلامات';
+      const uid=auth.currentUser.uid,email=auth.currentUser.email,actorName=kind==='nurse'?(individualNurseIdentity()?.name||c.nurse||'التمريض'):'الاستعلامات';
       try{
         const result=await root.child(c.room).transaction(old=>{
           if((Number(old?.updatedAt)||0)!==e.version)return;
