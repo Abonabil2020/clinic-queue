@@ -8622,6 +8622,83 @@
  #view-qr.scan-cycle .qr-code-box{width:min(40cqw,88cqh);height:min(40cqw,88cqh);box-sizing:border-box;min-width:0;max-width:none;padding:clamp(6px,1.1cqw,18px);background:white}
 }
 </style>
+<style>
+  #view-admin #nursingAccountPanel {
+    margin: 16px 0;
+    border: 1px solid #dbe7ef;
+    border-radius: 18px;
+    background: #fff;
+    color: #193447;
+    box-shadow: 0 4px 16px #1934470d;
+  }
+  #nursingAccountPanel summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 20px;
+    cursor: pointer;
+    list-style: none;
+  }
+  #nursingAccountPanel summary::-webkit-details-marker { display: none; }
+  #nursingAccountPanel summary::after {
+    content: "";
+    border-right: 2px solid #1976a0;
+    border-bottom: 2px solid #1976a0;
+    width: 9px;
+    height: 9px;
+    transform: rotate(45deg);
+    margin: 0 6px 4px;
+  }
+  #nursingAccountPanel[open] summary::after { transform: rotate(225deg); }
+  #nursingAccountPanel strong { display: block; font-size: 1.1rem; }
+  #nursingAccountPanel small { display: block; margin-top: 3px; color: #52677a; }
+  #nursingAccountForm {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    border-top: 1px solid #e4edf3;
+    padding: 16px 20px 20px;
+  }
+  #nursingAccountForm > div { display: grid; gap: 8px; align-content: start; min-width: 0; }
+  #nursingAccountForm label { font-weight: 700; font-size: .9rem; }
+  #nursingAccountForm input, #nursingAccountForm select {
+    width: 100%;
+    min-height: 42px;
+    padding: 8px 12px;
+    border: 1px solid #c8dbe7;
+    border-radius: 10px;
+    background: #f7fafc;
+    color: #193447;
+  }
+  #nursingAccountForm :focus-visible, #nursingAccountPanel summary:focus-visible {
+    outline: 2px solid #087ca8;
+    outline-offset: 2px;
+  }
+  #nursingAccountForm button {
+    justify-self: start;
+    padding: 9px 16px;
+    border-radius: 10px;
+    background: #08698f;
+    color: #fff;
+    font-weight: 700;
+  }
+  #nursingAccountForm :disabled { opacity: .55; cursor: default; }
+  #nursingAccountStatus {
+    width: fit-content;
+    padding: 4px 9px;
+    border-radius: 8px;
+    background: #eaf3f8;
+    color: #204b61;
+    font-size: .9rem;
+  }
+  #nursingAccountStatus[data-state="active"], #nursingAccountMessage[data-kind="success"] { color: #116449; }
+  #nursingAccountMessage[data-kind="error"] { color: #a12828; }
+  #nursingAccountMessage:empty { display: none; }
+  @media (max-width: 640px) {
+    #nursingAccountForm { grid-template-columns: 1fr; }
+  }
+</style>
 </head>
 <body>
 <div id="networkStatusIndicator" class="network-status-indicator" role="status" aria-live="polite">
@@ -8826,17 +8903,25 @@
     </header>
 
 
-    <details id="nursingAccountPanel" class="admin-audit-panel">
-      <summary class="font-bold cursor-pointer">حسابات التمريض</summary>
-      <form id="nursingAccountForm" class="space-y-3 mt-3">
-        <label class="block">اسم التمريض
-          <select id="nursingAccountStaffId" required class="w-full rounded-xl bg-slate-100 px-3 py-2"></select>
-        </label>
-        <label class="block">كلمة سر جديدة
-          <input id="nursingAccountPassword" required type="password" minlength="8" maxlength="128" autocomplete="new-password" class="w-full rounded-xl bg-slate-100 px-3 py-2">
-        </label>
-        <button type="submit" class="rounded-xl bg-sky-600 text-white px-4 py-2 font-bold">حفظ الحساب</button>
-        <p id="nursingAccountMessage" role="status"></p>
+    <details id="nursingAccountPanel">
+      <summary>
+        <span><strong>حسابات التمريض</strong><small>إنشاء حساب أو إعادة تعيين كلمة السر</small></span>
+      </summary>
+      <form id="nursingAccountForm">
+        <div class="nursing-account-picker">
+          <label for="nursingAccountSearch">بحث في أسماء التمريض</label>
+          <input id="nursingAccountSearch" type="search" placeholder="اكتب الاسم أو رقم التمريض" autocomplete="off">
+          <label for="nursingAccountStaffId">اختيار اسم التمريض</label>
+          <select id="nursingAccountStaffId" required></select>
+        </div>
+        <div class="nursing-account-action">
+          <p id="nursingAccountStatus" role="status">اختر اسمًا لعرض حالة الحساب.</p>
+          <label for="nursingAccountPassword">كلمة سر جديدة</label>
+          <input id="nursingAccountPassword" required disabled type="password" minlength="8" maxlength="128" autocomplete="new-password" aria-describedby="nursingAccountPasswordHint">
+          <small id="nursingAccountPasswordHint">٨ أحرف على الأقل</small>
+          <button type="submit" disabled>إنشاء حساب</button>
+          <p id="nursingAccountMessage" role="status"></p>
+        </div>
       </form>
     </details>
 
@@ -17238,17 +17323,84 @@ individualNurseForm.addEventListener("submit", async event=>{
   }
 });
 
+let nursingAccountRecords = null;
+let nursingAccountLoadSerial = 0;
+let nursingAccountLoadFailed = false;
+let nursingAccountSaving = false;
+
+function updateNursingAccountStatus(){
+  const staffId = $("#nursingAccountStaffId").value;
+  const account = nursingAccountRecords?.get(staffId);
+  const status = $("#nursingAccountStatus");
+  const button = $("#nursingAccountForm button");
+  const ready = isAdminUser() && Boolean(staffId) && nursingAccountRecords !== null;
+  status.dataset.state = ready && account?.active === true ? "active" : "";
+  status.textContent = nursingAccountLoadFailed ? "تعذر تحميل حالة الحسابات. اقفل القسم وافتحه للمحاولة مرة تانية."
+    : nursingAccountRecords === null ? "جاري تحميل حالة الحسابات…"
+    : !staffId ? "اختر اسمًا لعرض حالة الحساب."
+    : account?.active === true ? "حساب مفعّل"
+    : account ? "حساب غير مفعّل"
+    : "لسه مفيش حساب";
+  button.textContent = account ? "إعادة تعيين كلمة السر" : "إنشاء حساب";
+  button.disabled = !ready || nursingAccountSaving;
+  $("#nursingAccountPassword").disabled = button.disabled;
+  $("#nursingAccountStaffId").disabled = nursingAccountSaving || $("#nursingAccountStaffId").options.length < 2;
+  $("#nursingAccountSearch").disabled = nursingAccountSaving;
+}
+
 function renderNursingAccountOptions(){
   const select = $("#nursingAccountStaffId");
   const previous = select.value;
-  select.replaceChildren(new Option("اختر اسم التمريض",""));
-  for(const item of staffDirectoryState.nurses){
-    if(item.active !== false && item.name) select.add(new Option(item.name,item.id));
-  }
-  if(Array.from(select.options).some(option=>option.value === previous)) select.value = previous;
+  const query = normalizeArabicSearch($("#nursingAccountSearch").value);
+  const sorted = [...staffDirectoryState.nurses]
+    .sort((a,b)=>String(a.name || "").localeCompare(String(b.name || ""),"ar"));
+  const options = sorted.flatMap((item,index)=>{
+    if(item.active === false || !item.name) return [];
+    const number = index + 1;
+    if(query && !normalizeArabicSearch(item.name).includes(query) &&
+        ![String(number),ar(number)].some(value=>normalizeArabicSearch(value) === query)) return [];
+    return [new Option(ar(number) + " — " + item.name,item.id)];
+  });
+  const label = options.length ? "اختر اسم التمريض"
+    : !staffDirectoryLoaded ? "جاري تحميل الأسماء…"
+    : query ? "مفيش اسم مطابق للبحث" : "مفيش أسماء مفعّلة";
+  select.replaceChildren(new Option(label,""),...options);
+  if(options.some(option=>option.value === previous)) select.value = previous;
+  else if(previous) $("#nursingAccountPassword").value = "";
+  updateNursingAccountStatus();
 }
+
+async function loadNursingAccountStatus(){
+  const serial = ++nursingAccountLoadSerial;
+  const user = auth.currentUser;
+  nursingAccountRecords = null;
+  nursingAccountLoadFailed = false;
+  updateNursingAccountStatus();
+  try{
+    const response = await queueApp.database().ref("nursingAccounts").once("value");
+    if(serial !== nursingAccountLoadSerial || auth.currentUser !== user) return;
+    nursingAccountRecords = new Map();
+    response.forEach(child=>{
+      const account = child.val();
+      if(typeof account?.staffId === "string") nursingAccountRecords.set(account.staffId,account);
+    });
+  }catch(error){
+    if(serial !== nursingAccountLoadSerial || auth.currentUser !== user) return;
+    nursingAccountLoadFailed = true;
+  }
+  updateNursingAccountStatus();
+}
+
 $("#nursingAccountPanel").addEventListener("toggle",()=>{
-  if(isAdminUser() && $("#nursingAccountPanel").open) renderNursingAccountOptions();
+  if(!isAdminUser() || !$("#nursingAccountPanel").open) return;
+  renderNursingAccountOptions();
+  loadNursingAccountStatus();
+});
+$("#nursingAccountSearch").addEventListener("input",renderNursingAccountOptions);
+$("#nursingAccountStaffId").addEventListener("change",()=>{
+  $("#nursingAccountPassword").value = "";
+  $("#nursingAccountMessage").textContent = "";
+  updateNursingAccountStatus();
 });
 $("#nursingAccountForm").addEventListener("submit",async event=>{
   event.preventDefault();
@@ -17257,26 +17409,36 @@ $("#nursingAccountForm").addEventListener("submit",async event=>{
   const message = $("#nursingAccountMessage");
   const staffId = $("#nursingAccountStaffId").value;
   const password = $("#nursingAccountPassword");
-  if(button.disabled || !isAdminUser() || !staffId) return;
-  button.disabled = true;
+  if(button.disabled || !isAdminUser() || !staffId || !nursingAccountRecords) return;
+  const existing = nursingAccountRecords.get(staffId);
+  const name = staffDirectoryState.nurses.find(item=>item.id === staffId && item.active !== false)?.name;
+  if(!name) return;
+  if(existing && !confirm("إعادة تعيين كلمة السر لـ " + name + "؟")) return;
+  const newPassword = password.value;
+  nursingAccountSaving = true;
+  updateNursingAccountStatus();
   message.textContent = "";
   try{
     const token = await auth.currentUser.getIdToken();
     const url = "https://europe-west1-" + firebaseConfig.projectId + ".cloudfunctions.net/saveNursingAccount";
-    const response = await fetch(url,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer " + token},body:JSON.stringify({data:{staffId,password:password.value}})});
+    const response = await fetch(url,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer " + token},body:JSON.stringify({data:{staffId,password:newPassword}})});
     const result = await response.json();
     if(!response.ok || !result.result?.name){
       const safeMessages = ["INVALID_ARGUMENT","FAILED_PRECONDITION","ALREADY_EXISTS","PERMISSION_DENIED"];
       throw new Error(safeMessages.includes(result.error?.status) ? result.error.message : "");
     }
-    message.textContent = "تم حفظ حساب " + result.result.name + ".";
+    nursingAccountRecords?.set(staffId,{active:true,name:result.result.name});
+    message.dataset.kind = "success";
+    message.textContent = (existing ? "تم تعيين كلمة سر جديدة لـ " : "تم إنشاء حساب ") + result.result.name + ".";
   }catch(error){
+    message.dataset.kind = "error";
     message.textContent = error instanceof TypeError || error instanceof SyntaxError || !error.message
       ? "تعذر حفظ الحساب. تحقق من خدمة إنشاء الحسابات والاتصال."
       : error.message;
   }finally{
     password.value = "";
-    button.disabled = false;
+    nursingAccountSaving = false;
+    updateNursingAccountStatus();
   }
 });
 
