@@ -8755,15 +8755,15 @@
 </style>
 <style>
   #view-nurse-individual {
-    background: radial-gradient(ellipse at 75% 8%, #ddf2f1, transparent 58%), #edf3f7;
+    background: radial-gradient(ellipse at 75% 8%, #f8d9d8, transparent 58%), #f9f1f1;
   }
   #individualNurseLogin {
     width: min(100%, 420px);
-    border: 1px solid #d6e5e9;
+    border: 1px solid #ead8d8;
     border-radius: 24px;
     overflow: hidden;
     background: #fff;
-    color: #143646;
+    color: #432529;
     box-shadow: 0 18px 52px #184e611c;
   }
   #individualNurseLogin .individual-nurse-header {
@@ -8771,42 +8771,52 @@
     justify-items: center;
     gap: 12px;
     padding: 24px 18px 20px;
-    background: #f2faf9;
-    border-bottom: 1px solid #dcebea;
+    background: #fff4f3;
+    border-bottom: 1px solid #f0dbda;
     text-align: center;
   }
-  #individualNurseLogin .individual-nurse-header img { object-fit: contain; }
-  #individualNurseLogin h1 { font-size: clamp(1.25rem, 5vw, 1.6rem); font-weight: 800; }
+  #individualNurseLogin .individual-nurse-header img { object-fit: contain; width: min(225px, 85%); height: auto; }
+  #individualNurseLogin h1 { font-size: clamp(1.25rem, 5vw, 1.6rem); font-weight: 800; color: #a62a32; }
   #individualNurseLogin .individual-nurse-fields { display: grid; gap: 14px; padding: 20px; }
   #individualNurseLogin label { display: block; font-weight: 700; margin-bottom: 5px; }
   #individualNurseLogin input, #individualNurseLogin select {
     width: 100%;
     min-height: 46px;
     padding: 9px 12px;
-    border: 1px solid #bfd6db;
+    border: 1px solid #e3c6c7;
     border-radius: 12px;
-    background: #f6fafb;
-    color: #143646;
+    background: #fffafa;
+    color: #432529;
     font-size: 1rem;
   }
   #individualNurseLogin button[type="submit"] {
     min-height: 48px;
     border-radius: 12px;
-    background: #126968;
+    background: #bd353b;
     color: white;
     font-weight: 800;
   }
   #individualNurseLogin button:disabled { opacity: .62; }
-  #individualNurseLogin :focus-visible { outline: 2px solid #137b81; outline-offset: 2px; }
+  #individualNurseLogin :focus-visible { outline: 2px solid #bd353b; outline-offset: 2px; }
   #individualNurseLogin .individual-nurse-privacy {
-    background: #edf5f7;
+    background: #fff2ef;
     padding: 9px 12px;
     border-radius: 10px;
-    color: #294a58;
+    color: #773a3c;
     font-size: .875rem;
   }
   #individualNurseLogin #individualNurseMessage { color: #a12828; }
   #individualNurseLogin #individualNurseMessage:empty { display: none; }
+
+  #individualNurseLogin .individual-nurse-picker { position: relative; }
+  #individualNurseLogin .individual-nurse-picker input { padding-inline-end: 48px; }
+  #individualNurseNameToggle { position: absolute; inset-inline-end: 3px; top: 3px; width: 42px; height: 40px; border-radius: 9px; color: #a62a32; }
+  #individualNurseNameToggle:disabled { opacity: .5; }
+  #individualNurseNameResults { max-height: 215px; overflow: auto; margin-top: 5px; border: 1px solid #e3c6c7; border-radius: 10px; background: #fff; }
+  #individualNurseNameResults button { display: block; width: 100%; text-align: start; padding: 8px 12px; }
+  #individualNurseNameResults button:hover, #individualNurseNameResults button:focus-visible { background: #fff0ee; }
+  #individualNurseRosterStatus { color: #773a3c; font-size: .83rem; margin-top: 5px; }
+  #individualNurseRosterStatus:empty { display: none; }
 </style>
 </head>
 <body>
@@ -8970,19 +8980,18 @@
 <section id="view-nurse-individual" class="hidden-view min-h-screen flex items-center justify-center p-5" dir="rtl">
   <form id="individualNurseLogin">
     <header class="individual-nurse-header">
-      <img src="logo.png" alt="مجمع الإصلاح الطبي" width="76" height="76" onerror="this.hidden=true">
+      <img src="logo.png" alt="مجمع الإصلاح الطبي" width="225" onerror="this.hidden=true">
       <h1>حساب التمريض الشخصي</h1>
     </header>
     <div class="individual-nurse-fields">
       <div>
-        <label for="individualNurseAccount">الاسم المسجل في الحساب</label>
-        <select id="individualNurseAccount">
-          <option value="">إدخال اسم الحساب</option>
-        </select>
-      </div>
-      <div id="individualNurseNameField">
-        <label for="individualNurseName">الاسم الكامل</label>
-        <input id="individualNurseName" required maxlength="150" autocomplete="username" placeholder="اكتبي الاسم المسجل لدى الأدمن">
+        <label for="individualNurseName">اسم التمريض</label>
+        <div class="individual-nurse-picker">
+          <input id="individualNurseName" required type="search" maxlength="150" autocomplete="username" placeholder="ابحثي بالاسم أو اختاري من القائمة" aria-controls="individualNurseNameResults">
+          <button id="individualNurseNameToggle" type="button" aria-label="فتح قائمة التمريض" aria-controls="individualNurseNameResults" aria-expanded="false" disabled>⌄</button>
+        </div>
+        <div id="individualNurseNameResults" role="group" aria-label="أسماء التمريض" hidden></div>
+        <p id="individualNurseRosterStatus" role="status"></p>
       </div>
       <div>
         <label for="individualNursePassword">كلمة السر</label>
@@ -10281,7 +10290,7 @@ function hasNursingDirectoryAccess(user = auth.currentUser){
   return isSharedNurseUser(user) || Boolean(individualNurseIdentity(user));
 }
 function showNursingLogin(){
-  if(AUTH_SCOPE === "nurse-individual"){ show("nurse-individual"); return; }
+  if(AUTH_SCOPE === "nurse-individual"){ show("nurse-individual"); loadIndividualNurseNames(); return; }
   $("#loginEmail").value = "nurse";
   show("login");
 }
@@ -17427,37 +17436,91 @@ function doLogin(){
 
 const individualNurseNameKey = "islahIndividualNurseName:" + location.pathname;
 const individualNurseForm = $("#individualNurseLogin");
-const individualNurseAccountSelect = $("#individualNurseAccount");
-function syncIndividualNurseNameField(){
-  const useSavedName = Boolean(individualNurseAccountSelect.value);
-  $("#individualNurseNameField").hidden = useSavedName;
-  $("#individualNurseName").required = !useSavedName;
-  $("#individualNurseName").disabled = useSavedName;
+const individualNurseNameField = $("#individualNurseName");
+const individualNurseNameResults = $("#individualNurseNameResults");
+const individualNurseNameToggle = $("#individualNurseNameToggle");
+let individualNurseNames = null;
+let individualNurseNamesLoading = false;
+
+function closeIndividualNurseNames(){
+  individualNurseNameResults.hidden = true;
+  individualNurseNameToggle.setAttribute("aria-expanded","false");
 }
-function showSavedIndividualNurse(name){
-  individualNurseAccountSelect.replaceChildren();
-  if(name) individualNurseAccountSelect.add(new Option(name,name));
-  individualNurseAccountSelect.add(new Option(name ? "تغيير الاسم" : "إدخال اسم الحساب",""));
-  individualNurseAccountSelect.value = name || "";
-  syncIndividualNurseNameField();
+
+function renderIndividualNurseNames(query){
+  const search = normalizeArabicSearch(query);
+  const names = (individualNurseNames || []).filter(name=>normalizeArabicSearch(name).includes(search));
+  const rows = names.map(name=>{
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = name;
+    button.addEventListener("click",()=>{
+      individualNurseNameField.value = name;
+      $("#individualNursePassword").value = "";
+      $("#individualNurseMessage").textContent = "";
+      closeIndividualNurseNames();
+      $("#individualNursePassword").focus();
+    });
+    return button;
+  });
+  individualNurseNameResults.replaceChildren(...rows);
+  individualNurseNameResults.hidden = !rows.length;
+  individualNurseNameToggle.setAttribute("aria-expanded",String(rows.length > 0));
 }
+
+async function loadIndividualNurseNames(){
+  if(individualNurseNames !== null || individualNurseNamesLoading) return;
+  const status = $("#individualNurseRosterStatus");
+  individualNurseNamesLoading = true;
+  status.textContent = "جاري تحميل الأسماء…";
+  try{
+    const url = "https://europe-west1-" + firebaseConfig.projectId + ".cloudfunctions.net/listNursingNames";
+    const response = await fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({data:{}})});
+    const result = await response.json();
+    if(!response.ok || !Array.isArray(result.result?.names)) throw new Error("names-unavailable");
+    individualNurseNames = result.result.names.filter(name=>typeof name === "string");
+    individualNurseNameToggle.disabled = !individualNurseNames.length;
+    status.textContent = individualNurseNames.length ? "" : "مفيش أسماء معتمدة متاحة حاليًا.";
+    if(document.activeElement === individualNurseNameField) renderIndividualNurseNames(individualNurseNameField.value);
+  }catch(error){
+    status.textContent = "تعذر تحميل القائمة. تقدري تكتبي الاسم المسجل بالكامل.";
+  }finally{
+    individualNurseNamesLoading = false;
+  }
+}
+
 if(AUTH_SCOPE === "nurse-individual"){
-  let savedName = "";
-  try{ savedName = localStorage.getItem(individualNurseNameKey) || ""; }catch(error){}
-  showSavedIndividualNurse(savedName);
+  try{ individualNurseNameField.value = localStorage.getItem(individualNurseNameKey) || ""; }catch(error){}
 }
-individualNurseAccountSelect.addEventListener("change",()=>{
+individualNurseNameToggle.addEventListener("click",()=>{
+  if(individualNurseNameResults.hidden) renderIndividualNurseNames("");
+  else closeIndividualNurseNames();
+});
+individualNurseNameField.addEventListener("input",()=>{
   $("#individualNursePassword").value = "";
   $("#individualNurseMessage").textContent = "";
-  syncIndividualNurseNameField();
-  if(!individualNurseAccountSelect.value) $("#individualNurseName").focus();
+  renderIndividualNurseNames(individualNurseNameField.value);
 });
+individualNurseForm.addEventListener("keydown",event=>{
+  if(event.key === "Escape" && !individualNurseNameResults.hidden){
+    closeIndividualNurseNames();
+    individualNurseNameField.focus();
+  }else if(event.target === individualNurseNameField && event.key === "ArrowDown"){
+    if(individualNurseNameResults.hidden) renderIndividualNurseNames(individualNurseNameField.value);
+    const first = individualNurseNameResults.querySelector("button");
+    if(first){ event.preventDefault(); first.focus(); }
+  }
+});
+individualNurseForm.addEventListener("focusout",event=>{
+  if(!individualNurseForm.contains(event.relatedTarget)) closeIndividualNurseNames();
+});
+$("#individualNursePassword").addEventListener("focus",closeIndividualNurseNames);
 individualNurseForm.addEventListener("submit", async event=>{
   event.preventDefault();
   if(AUTH_SCOPE !== "nurse-individual") return;
   const button = individualNurseForm.querySelector('button[type="submit"]');
   const message = $("#individualNurseMessage");
-  const enteredName = (individualNurseAccountSelect.value || $("#individualNurseName").value).trim();
+  const enteredName = individualNurseNameField.value.trim();
   const passwordInput = $("#individualNursePassword");
   if(button.disabled || !enteredName || !passwordInput.value) return;
   button.disabled = true;
@@ -17775,8 +17838,8 @@ auth.onAuthStateChanged(async user=>{
         if(data?.active === true && typeof data.name === "string" && data.name.trim()){
           individualNursingAccount = {uid:user.uid,name:data.name};
           try{ localStorage.setItem(individualNurseNameKey,data.name); }catch(error){}
-          $("#individualNurseName").value = "";
-          showSavedIndividualNurse(data.name);
+          individualNurseNameField.value = data.name;
+          closeIndividualNurseNames();
         } else {
           $("#individualNurseMessage").textContent = "الحساب غير مفعّل.";
         }
