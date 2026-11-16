@@ -8797,6 +8797,13 @@
     font-weight: 800;
   }
   #individualNurseLogin button:disabled { opacity: .62; }
+  #individualNurseLogin .individual-nurse-password-row { display: grid; grid-template-columns: minmax(0, 1fr) 46px; gap: 8px; }
+  #individualNursePasswordToggle {
+    display: grid; place-items: center; border: 1px solid #e3c6c7; border-radius: 12px;
+    background: #fff4f3; color: #a62a32;
+  }
+  #individualNursePasswordToggle .individual-nurse-eye-slash { display: none; }
+  #individualNursePasswordToggle[data-visible="true"] .individual-nurse-eye-slash { display: inline; }
   #individualNurseLogin :focus-visible { outline: 2px solid #bd353b; outline-offset: 2px; }
   #individualNurseLogin .individual-nurse-privacy {
     background: #fff2ef;
@@ -8995,7 +9002,16 @@
       </div>
       <div>
         <label for="individualNursePassword">كلمة السر</label>
-        <input id="individualNursePassword" required type="password" autocomplete="current-password">
+        <div class="individual-nurse-password-row">
+          <input id="individualNursePassword" required type="password" autocomplete="current-password">
+          <button id="individualNursePasswordToggle" type="button" aria-controls="individualNursePassword" aria-label="إظهار كلمة السر" title="إظهار كلمة السر">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <path d="M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6S2 12 2 12Z"/>
+              <circle cx="12" cy="12" r="2.6"/>
+              <path class="individual-nurse-eye-slash" d="m4 4 16 16" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
       </div>
       <button type="submit">تسجيل الدخول</button>
       <p id="individualNurseMessage" role="status"></p>
@@ -17554,6 +17570,18 @@ individualNurseForm.addEventListener("focusout",event=>{
   if(!individualNurseForm.contains(event.relatedTarget)) closeIndividualNurseNames();
 });
 $("#individualNursePassword").addEventListener("focus",closeIndividualNurseNames);
+function setIndividualNursePasswordVisible(visible){
+  const password = $("#individualNursePassword");
+  const toggle = $("#individualNursePasswordToggle");
+  const label = visible ? "إخفاء كلمة السر" : "إظهار كلمة السر";
+  password.type = visible ? "text" : "password";
+  toggle.dataset.visible = String(visible);
+  toggle.setAttribute("aria-label",label);
+  toggle.title = label;
+}
+$("#individualNursePasswordToggle").addEventListener("click",()=>{
+  setIndividualNursePasswordVisible($("#individualNursePassword").type === "password");
+});
 individualNurseForm.addEventListener("submit", async event=>{
   event.preventDefault();
   if(AUTH_SCOPE !== "nurse-individual") return;
@@ -17574,6 +17602,7 @@ individualNurseForm.addEventListener("submit", async event=>{
     message.textContent = LOGIN_ERRORS[error.code] || "تعذر تسجيل الدخول. تأكد من الاسم وكلمة السر.";
   }finally{
     passwordInput.value = "";
+    setIndividualNursePasswordVisible(false);
     button.disabled = false;
   }
 });
