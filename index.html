@@ -8753,6 +8753,61 @@
     #nursingAccountForm { grid-template-columns: 1fr; }
   }
 </style>
+<style>
+  #view-nurse-individual {
+    background: radial-gradient(ellipse at 75% 8%, #ddf2f1, transparent 58%), #edf3f7;
+  }
+  #individualNurseLogin {
+    width: min(100%, 420px);
+    border: 1px solid #d6e5e9;
+    border-radius: 24px;
+    overflow: hidden;
+    background: #fff;
+    color: #143646;
+    box-shadow: 0 18px 52px #184e611c;
+  }
+  #individualNurseLogin .individual-nurse-header {
+    display: grid;
+    justify-items: center;
+    gap: 12px;
+    padding: 24px 18px 20px;
+    background: #f2faf9;
+    border-bottom: 1px solid #dcebea;
+    text-align: center;
+  }
+  #individualNurseLogin .individual-nurse-header img { object-fit: contain; }
+  #individualNurseLogin h1 { font-size: clamp(1.25rem, 5vw, 1.6rem); font-weight: 800; }
+  #individualNurseLogin .individual-nurse-fields { display: grid; gap: 14px; padding: 20px; }
+  #individualNurseLogin label { display: block; font-weight: 700; margin-bottom: 5px; }
+  #individualNurseLogin input, #individualNurseLogin select {
+    width: 100%;
+    min-height: 46px;
+    padding: 9px 12px;
+    border: 1px solid #bfd6db;
+    border-radius: 12px;
+    background: #f6fafb;
+    color: #143646;
+    font-size: 1rem;
+  }
+  #individualNurseLogin button[type="submit"] {
+    min-height: 48px;
+    border-radius: 12px;
+    background: #126968;
+    color: white;
+    font-weight: 800;
+  }
+  #individualNurseLogin button:disabled { opacity: .62; }
+  #individualNurseLogin :focus-visible { outline: 2px solid #137b81; outline-offset: 2px; }
+  #individualNurseLogin .individual-nurse-privacy {
+    background: #edf5f7;
+    padding: 9px 12px;
+    border-radius: 10px;
+    color: #294a58;
+    font-size: .875rem;
+  }
+  #individualNurseLogin #individualNurseMessage { color: #a12828; }
+  #individualNurseLogin #individualNurseMessage:empty { display: none; }
+</style>
 </head>
 <body>
 <div id="networkStatusIndicator" class="network-status-indicator" role="status" aria-live="polite">
@@ -8912,17 +8967,31 @@
      دخول الأدمن — حساب واحد للتحكم في جميع الحجرات
 ============================================================ -->
 
-<section id="view-nurse-individual" class="hidden-view min-h-screen flex items-center justify-center p-5">
-  <form id="individualNurseLogin" class="w-full max-w-sm bg-white rounded-2xl shadow p-5 space-y-3">
-    <h1 class="text-xl font-bold">دخول التمريض</h1>
-    <label class="block">الاسم المسجل في حسابك
-      <input id="individualNurseName" required maxlength="150" autocomplete="username" class="w-full rounded-xl bg-slate-100 px-3 py-2">
-    </label>
-    <label class="block">كلمة السر
-      <input id="individualNursePassword" required type="password" autocomplete="current-password" class="w-full rounded-xl bg-slate-100 px-3 py-2">
-    </label>
-    <button type="submit" class="w-full rounded-xl bg-sky-600 text-white p-3 font-bold">تسجيل الدخول</button>
-    <p id="individualNurseMessage" role="status"></p>
+<section id="view-nurse-individual" class="hidden-view min-h-screen flex items-center justify-center p-5" dir="rtl">
+  <form id="individualNurseLogin">
+    <header class="individual-nurse-header">
+      <img src="logo.png" alt="مجمع الإصلاح الطبي" width="76" height="76" onerror="this.hidden=true">
+      <h1>حساب التمريض الشخصي</h1>
+    </header>
+    <div class="individual-nurse-fields">
+      <div>
+        <label for="individualNurseAccount">الاسم المسجل في الحساب</label>
+        <select id="individualNurseAccount">
+          <option value="">إدخال اسم الحساب</option>
+        </select>
+      </div>
+      <div id="individualNurseNameField">
+        <label for="individualNurseName">الاسم الكامل</label>
+        <input id="individualNurseName" required maxlength="150" autocomplete="username" placeholder="اكتبي الاسم المسجل لدى الأدمن">
+      </div>
+      <div>
+        <label for="individualNursePassword">كلمة السر</label>
+        <input id="individualNursePassword" required type="password" autocomplete="current-password">
+      </div>
+      <button type="submit">تسجيل الدخول</button>
+      <p id="individualNurseMessage" role="status"></p>
+      <p class="individual-nurse-privacy">حسابك للاستخدام الشخصي. ما تشاركيش بيانات الدخول أو كلمة السر مع أي حد.</p>
+    </div>
   </form>
 </section>
 
@@ -17358,15 +17427,37 @@ function doLogin(){
 
 const individualNurseNameKey = "islahIndividualNurseName:" + location.pathname;
 const individualNurseForm = $("#individualNurseLogin");
-if(AUTH_SCOPE === "nurse-individual"){
-  try{ $("#individualNurseName").value = localStorage.getItem(individualNurseNameKey) || ""; }catch(error){}
+const individualNurseAccountSelect = $("#individualNurseAccount");
+function syncIndividualNurseNameField(){
+  const useSavedName = Boolean(individualNurseAccountSelect.value);
+  $("#individualNurseNameField").hidden = useSavedName;
+  $("#individualNurseName").required = !useSavedName;
+  $("#individualNurseName").disabled = useSavedName;
 }
+function showSavedIndividualNurse(name){
+  individualNurseAccountSelect.replaceChildren();
+  if(name) individualNurseAccountSelect.add(new Option(name,name));
+  individualNurseAccountSelect.add(new Option(name ? "تغيير الاسم" : "إدخال اسم الحساب",""));
+  individualNurseAccountSelect.value = name || "";
+  syncIndividualNurseNameField();
+}
+if(AUTH_SCOPE === "nurse-individual"){
+  let savedName = "";
+  try{ savedName = localStorage.getItem(individualNurseNameKey) || ""; }catch(error){}
+  showSavedIndividualNurse(savedName);
+}
+individualNurseAccountSelect.addEventListener("change",()=>{
+  $("#individualNursePassword").value = "";
+  $("#individualNurseMessage").textContent = "";
+  syncIndividualNurseNameField();
+  if(!individualNurseAccountSelect.value) $("#individualNurseName").focus();
+});
 individualNurseForm.addEventListener("submit", async event=>{
   event.preventDefault();
   if(AUTH_SCOPE !== "nurse-individual") return;
-  const button = individualNurseForm.querySelector("button");
+  const button = individualNurseForm.querySelector('button[type="submit"]');
   const message = $("#individualNurseMessage");
-  const enteredName = $("#individualNurseName").value.trim();
+  const enteredName = (individualNurseAccountSelect.value || $("#individualNurseName").value).trim();
   const passwordInput = $("#individualNursePassword");
   if(button.disabled || !enteredName || !passwordInput.value) return;
   button.disabled = true;
@@ -17377,7 +17468,6 @@ individualNurseForm.addEventListener("submit", async event=>{
     const hex = Array.from(new Uint8Array(digest).slice(0,20),byte=>byte.toString(16).padStart(2,"0")).join("");
     await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
     await auth.signInWithEmailAndPassword("nursing-" + hex + "@nursing.islah.invalid",passwordInput.value);
-    try{ localStorage.setItem(individualNurseNameKey,enteredName); }catch(error){}
   }catch(error){
     message.textContent = LOGIN_ERRORS[error.code] || "تعذر تسجيل الدخول. تأكد من الاسم وكلمة السر.";
   }finally{
@@ -17684,6 +17774,9 @@ auth.onAuthStateChanged(async user=>{
         if(auth.currentUser !== initialUser) return;
         if(data?.active === true && typeof data.name === "string" && data.name.trim()){
           individualNursingAccount = {uid:user.uid,name:data.name};
+          try{ localStorage.setItem(individualNurseNameKey,data.name); }catch(error){}
+          $("#individualNurseName").value = "";
+          showSavedIndividualNurse(data.name);
         } else {
           $("#individualNurseMessage").textContent = "الحساب غير مفعّل.";
         }
