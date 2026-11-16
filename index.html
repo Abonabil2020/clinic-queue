@@ -10220,7 +10220,15 @@ function receptionManagerEntry(){
 }
 const AUTH_SCOPE_KEY = "islahAuthScope:" + location.pathname;
 const AUTH_SCOPES = ["nurse", "nurse-individual", "reception", "clinics-manager", "nursing-manager", "admin"];
-function authScopeForRoute(hash, previous = "nurse"){
+const INDIVIDUAL_NURSE_MODE_PARAM = "nurse-access";
+function rememberIndividualNurseRoute(){
+  if(location.hash !== "#/nurse-individual") return;
+  const url = new URL(location.href);
+  if(url.searchParams.get(INDIVIDUAL_NURSE_MODE_PARAM) === "individual") return;
+  url.searchParams.set(INDIVIDUAL_NURSE_MODE_PARAM,"individual");
+  history.replaceState(history.state,"",url);
+}
+function authScopeForRoute(hash, previous = "nurse", search = location.search){
   const view = (hash || "#/home").replace("#/", "");
   if(view === "nurse-individual") return view;
   if(["admin", "admin-login"].includes(view)) return "admin";
@@ -10228,17 +10236,24 @@ function authScopeForRoute(hash, previous = "nurse"){
   if(view === "clinics-manager" || view === "nursing-manager") return view;
   if(["staff-manager", "staff-manager-login"].includes(view))
     return ["clinics-manager", "nursing-manager"].includes(previous) ? previous : "clinics-manager";
-  if(view === "nursing-control" || view === "login") return "nurse";
-  if(["setup", "nurse"].includes(view)) return ["admin","nurse-individual"].includes(previous) ? previous : "nurse";
+  const individualRoute = new URLSearchParams(search).get(INDIVIDUAL_NURSE_MODE_PARAM) === "individual";
+  if(view === "nursing-control" || view === "login") return individualRoute ? "nurse-individual" : "nurse";
+  if(["setup", "nurse"].includes(view)){
+    if(previous === "admin") return "admin";
+    return individualRoute || previous === "nurse-individual" ? "nurse-individual" : "nurse";
+  }
+  if(individualRoute && previous === "nurse") return "nurse-individual";
   return AUTH_SCOPES.includes(previous) ? previous : "nurse";
 }
 let savedAuthScope = "nurse";
 try { savedAuthScope = sessionStorage.getItem(AUTH_SCOPE_KEY) || "nurse"; } catch(e) {}
+rememberIndividualNurseRoute();
 const AUTH_SCOPE = authScopeForRoute(location.hash, savedAuthScope);
 try { sessionStorage.setItem(AUTH_SCOPE_KEY, AUTH_SCOPE); } catch(e) {}
 let authScopeReloading = false;
 function ensureAuthScope(){
   if(authScopeReloading) return false;
+  rememberIndividualNurseRoute();
   const next = authScopeForRoute(location.hash, AUTH_SCOPE);
   if(next === AUTH_SCOPE) return true;
   authScopeReloading = true;
@@ -13714,6 +13729,7 @@ window.addEventListener("pagehide",saveNursingResume);
 window.addEventListener("pageshow",()=>{ if(nursingResumePending) route(); });
 
 function nursingRoomAccess(){
+  if(AUTH_SCOPE === "nurse-individual") return Boolean(individualNurseIdentity());
   return Boolean(auth.currentUser && (isAdminUser() || hasNursingDirectoryAccess() || (!auth.currentUser.isAnonymous && authorizedRoomForUser(auth.currentUser) === DISPLAY_SLOT_ID)));
 }
 function currentNursingIdentity(){
@@ -17450,6 +17466,7 @@ function openAuthorizedRoom(roomId, hash = "#/setup"){
 }
 
 function doLogin(){
+  if(AUTH_SCOPE === "nurse-individual"){ showNursingLogin(); return; }
   const em = loginEmailFromUsername($("#loginEmail").value);
   const pw = $("#loginPass").value;
   const msg = $("#loginMsg");
