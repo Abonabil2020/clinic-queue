@@ -13116,7 +13116,7 @@ function handleStaffDirectorySnapshot(snapshot){
   if(nurseMenuOpen) renderNurseOptions($("#setupNurseSearch").value);
 
   if(isStaffManagerUser() && !staffManualSaving) renderStaffManager();
-  if(isAdminUser()) renderNursingAccountOptions();
+  if(isAdminUser() && $("#nursingAccountPanel").open) renderNursingAccountOptions();
 }
 
 function startStaffDirectoryListener(){
@@ -17371,7 +17371,7 @@ function updateNursingAccountStatus(){
   const staffId = $("#nursingAccountStaffId").value;
   const account = nursingAccountRecords?.get(staffId);
   const status = $("#nursingAccountStatus");
-  const button = $("#nursingAccountForm button");
+  const button = $('#nursingAccountForm button[type="submit"]');
   const ready = isAdminUser() && Boolean(staffId) && nursingAccountRecords !== null;
   status.dataset.state = ready && account?.active === true ? "active" : "";
   status.textContent = nursingAccountLoadFailed ? "تعذر تحميل حالة الحسابات. اقفل القسم وافتحه للمحاولة مرة تانية."
@@ -17485,7 +17485,7 @@ $("#nursingAccountSearch").addEventListener("keydown",event=>{
 $("#nursingAccountForm").addEventListener("submit",async event=>{
   event.preventDefault();
   const form = event.currentTarget;
-  const button = form.querySelector("button");
+  const button = form.querySelector('button[type="submit"]');
   const message = $("#nursingAccountMessage");
   const staffId = $("#nursingAccountStaffId").value;
   const password = $("#nursingAccountPassword");
