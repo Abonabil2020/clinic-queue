@@ -8684,6 +8684,21 @@
     font-weight: 700;
   }
   #nursingAccountForm :disabled { opacity: .55; cursor: default; }
+  #nursingAccountForm .nursing-account-password-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 42px;
+    gap: 8px;
+  }
+  #nursingAccountPasswordToggle {
+    display: grid;
+    place-items: center;
+    color: #08698f;
+    background: #eef6fb;
+    border: 1px solid #c8dbe7;
+    border-radius: 10px;
+  }
+  #nursingAccountPasswordToggle .nursing-account-eye-slash { display: none; }
+  #nursingAccountPasswordToggle[data-visible="true"] .nursing-account-eye-slash { display: inline; }
   #nursingAccountStatus {
     width: fit-content;
     padding: 4px 9px;
@@ -8956,8 +8971,17 @@
         <div class="nursing-account-action">
           <p id="nursingAccountStatus" role="status">اختر اسمًا لعرض حالة الحساب.</p>
           <label for="nursingAccountPassword">كلمة سر جديدة</label>
-          <input id="nursingAccountPassword" required disabled type="password" minlength="8" maxlength="128" autocomplete="new-password" aria-describedby="nursingAccountPasswordHint">
-          <small id="nursingAccountPasswordHint">٨ أحرف على الأقل</small>
+          <div class="nursing-account-password-row">
+            <input id="nursingAccountPassword" required disabled type="password" minlength="6" maxlength="128" autocomplete="new-password" aria-describedby="nursingAccountPasswordHint">
+            <button id="nursingAccountPasswordToggle" type="button" disabled aria-controls="nursingAccountPassword" aria-label="إظهار كلمة السر" title="إظهار كلمة السر">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                <path d="M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6S2 12 2 12Z"/>
+                <circle cx="12" cy="12" r="2.6"/>
+                <path class="nursing-account-eye-slash" d="m4 4 16 16" stroke-linecap="round"/>
+              </svg>
+            </button>
+          </div>
+          <small id="nursingAccountPasswordHint">٦ أحرف على الأقل</small>
           <button type="submit" disabled>إنشاء حساب</button>
           <p id="nursingAccountMessage" role="status"></p>
         </div>
@@ -17367,6 +17391,23 @@ let nursingAccountLoadSerial = 0;
 let nursingAccountLoadFailed = false;
 let nursingAccountSaving = false;
 
+function setNursingAccountPasswordVisible(visible){
+  const password = $("#nursingAccountPassword");
+  const toggle = $("#nursingAccountPasswordToggle");
+  const label = visible ? "إخفاء كلمة السر" : "إظهار كلمة السر";
+  password.type = visible ? "text" : "password";
+  toggle.dataset.visible = String(visible);
+  toggle.setAttribute("aria-label",label);
+  toggle.title = label;
+}
+function clearNursingAccountPassword(){
+  $("#nursingAccountPassword").value = "";
+  setNursingAccountPasswordVisible(false);
+}
+$("#nursingAccountPasswordToggle").addEventListener("click",()=>{
+  setNursingAccountPasswordVisible($("#nursingAccountPassword").type === "password");
+});
+
 function updateNursingAccountStatus(){
   const staffId = $("#nursingAccountStaffId").value;
   const account = nursingAccountRecords?.get(staffId);
@@ -17383,6 +17424,7 @@ function updateNursingAccountStatus(){
   button.textContent = account ? "إعادة تعيين كلمة السر" : "إنشاء حساب";
   button.disabled = !ready || nursingAccountSaving;
   $("#nursingAccountPassword").disabled = button.disabled;
+  $("#nursingAccountPasswordToggle").disabled = button.disabled;
   $("#nursingAccountResults").querySelectorAll("button").forEach(result=>{ result.disabled = nursingAccountSaving; });
   $("#nursingAccountSearch").disabled = nursingAccountSaving;
 }
@@ -17396,7 +17438,7 @@ function renderNursingAccountOptions(){
   if(selected.value && !sorted.some(item=>item.id === selected.value && item.active !== false && item.name)){
     selected.value = "";
     search.value = "";
-    $("#nursingAccountPassword").value = "";
+    clearNursingAccountPassword();
     $("#nursingAccountMessage").textContent = "";
   }
   const query = normalizeArabicSearch(search.value);
@@ -17423,7 +17465,7 @@ function renderNursingAccountOptions(){
     row.addEventListener("click",()=>{
       if(nursingAccountSaving) return;
       if(selected.value !== item.id){
-        $("#nursingAccountPassword").value = "";
+        clearNursingAccountPassword();
         $("#nursingAccountMessage").textContent = "";
       }
       selected.value = item.id;
@@ -17473,7 +17515,7 @@ $("#nursingAccountPanel").addEventListener("toggle",()=>{
 });
 $("#nursingAccountSearch").addEventListener("input",()=>{
   $("#nursingAccountStaffId").value = "";
-  $("#nursingAccountPassword").value = "";
+  clearNursingAccountPassword();
   $("#nursingAccountMessage").textContent = "";
   renderNursingAccountOptions();
 });
@@ -17516,7 +17558,7 @@ $("#nursingAccountForm").addEventListener("submit",async event=>{
       ? "تعذر حفظ الحساب. تحقق من خدمة إنشاء الحسابات والاتصال."
       : error.message;
   }finally{
-    password.value = "";
+    clearNursingAccountPassword();
     nursingAccountSaving = false;
     renderNursingAccountOptions();
   }
