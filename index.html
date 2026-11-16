@@ -8662,7 +8662,7 @@
   }
   #nursingAccountForm > div { display: grid; gap: 8px; align-content: start; min-width: 0; }
   #nursingAccountForm label { font-weight: 700; font-size: .9rem; }
-  #nursingAccountForm input, #nursingAccountForm select {
+  #nursingAccountForm input:not([type="hidden"]) {
     width: 100%;
     min-height: 42px;
     padding: 8px 12px;
@@ -8675,7 +8675,7 @@
     outline: 2px solid #087ca8;
     outline-offset: 2px;
   }
-  #nursingAccountForm button {
+  #nursingAccountForm button[type="submit"] {
     justify-self: start;
     padding: 9px 16px;
     border-radius: 10px;
@@ -8695,6 +8695,45 @@
   #nursingAccountStatus[data-state="active"], #nursingAccountMessage[data-kind="success"] { color: #116449; }
   #nursingAccountMessage[data-kind="error"] { color: #a12828; }
   #nursingAccountMessage:empty { display: none; }
+  #nursingAccountResults {
+    max-height: 235px;
+    overflow: auto;
+    padding: 4px;
+    border: 1px solid #dbe7ef;
+    border-radius: 12px;
+  }
+  #nursingAccountResults button {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 2.4rem minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 9px;
+    padding: 6px;
+    text-align: right;
+    border-radius: 8px;
+    overflow-wrap: anywhere;
+  }
+  #nursingAccountResults button:hover, #nursingAccountResults button[aria-pressed="true"] { background: #eaf5fb; }
+  #nursingAccountResults .nursing-account-number {
+    display: grid;
+    place-items: center;
+    min-height: 30px;
+    border-radius: 8px;
+    background: #e2eff8;
+    color: #07476a;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+  }
+  #nursingAccountResults .nursing-account-existing {
+    padding: 3px 7px;
+    border-radius: 7px;
+    color: #116449;
+    background: #e6f5ed;
+    font-size: .75rem;
+    white-space: nowrap;
+  }
+  #nursingAccountResults .nursing-account-empty { padding: 8px; color: #52677a; }
+
   @media (max-width: 640px) {
     #nursingAccountForm { grid-template-columns: 1fr; }
   }
@@ -8909,10 +8948,10 @@
       </summary>
       <form id="nursingAccountForm">
         <div class="nursing-account-picker">
-          <label for="nursingAccountSearch">بحث في أسماء التمريض</label>
-          <input id="nursingAccountSearch" type="search" placeholder="اكتب الاسم أو رقم التمريض" autocomplete="off">
-          <label for="nursingAccountStaffId">اختيار اسم التمريض</label>
-          <select id="nursingAccountStaffId" required></select>
+          <label for="nursingAccountSearch">اسم التمريض</label>
+          <input id="nursingAccountSearch" type="search" placeholder="ابحث بالاسم أو الرقم واختر من القائمة" autocomplete="off" aria-controls="nursingAccountResults">
+          <input id="nursingAccountStaffId" type="hidden">
+          <div id="nursingAccountResults" role="group" aria-label="أسماء التمريض"></div>
         </div>
         <div class="nursing-account-action">
           <p id="nursingAccountStatus" role="status">اختر اسمًا لعرض حالة الحساب.</p>
@@ -17344,29 +17383,65 @@ function updateNursingAccountStatus(){
   button.textContent = account ? "إعادة تعيين كلمة السر" : "إنشاء حساب";
   button.disabled = !ready || nursingAccountSaving;
   $("#nursingAccountPassword").disabled = button.disabled;
-  $("#nursingAccountStaffId").disabled = nursingAccountSaving || $("#nursingAccountStaffId").options.length < 2;
+  $("#nursingAccountResults").querySelectorAll("button").forEach(result=>{ result.disabled = nursingAccountSaving; });
   $("#nursingAccountSearch").disabled = nursingAccountSaving;
 }
 
 function renderNursingAccountOptions(){
-  const select = $("#nursingAccountStaffId");
-  const previous = select.value;
-  const query = normalizeArabicSearch($("#nursingAccountSearch").value);
+  const selected = $("#nursingAccountStaffId");
+  const search = $("#nursingAccountSearch");
+  const results = $("#nursingAccountResults");
   const sorted = [...staffDirectoryState.nurses]
     .sort((a,b)=>String(a.name || "").localeCompare(String(b.name || ""),"ar"));
-  const options = sorted.flatMap((item,index)=>{
+  if(selected.value && !sorted.some(item=>item.id === selected.value && item.active !== false && item.name)){
+    selected.value = "";
+    search.value = "";
+    $("#nursingAccountPassword").value = "";
+    $("#nursingAccountMessage").textContent = "";
+  }
+  const query = normalizeArabicSearch(search.value);
+  const rows = sorted.flatMap((item,index)=>{
     if(item.active === false || !item.name) return [];
     const number = index + 1;
-    if(query && !normalizeArabicSearch(item.name).includes(query) &&
+    if(selected.value !== item.id && query && !normalizeArabicSearch(item.name).includes(query) &&
         ![String(number),ar(number)].some(value=>normalizeArabicSearch(value) === query)) return [];
-    return [new Option(ar(number) + " — " + item.name,item.id)];
+    const row = document.createElement("button");
+    row.type = "button";
+    row.setAttribute("aria-pressed",String(selected.value === item.id));
+    const badge = document.createElement("span");
+    badge.className = "nursing-account-number";
+    badge.textContent = ar(number);
+    const name = document.createElement("span");
+    name.textContent = item.name;
+    row.append(badge,name);
+    if(nursingAccountRecords?.has(item.id)){
+      const status = document.createElement("span");
+      status.className = "nursing-account-existing";
+      status.textContent = "حساب موجود";
+      row.append(status);
+    }
+    row.addEventListener("click",()=>{
+      if(nursingAccountSaving) return;
+      if(selected.value !== item.id){
+        $("#nursingAccountPassword").value = "";
+        $("#nursingAccountMessage").textContent = "";
+      }
+      selected.value = item.id;
+      search.value = item.name;
+      renderNursingAccountOptions();
+      $("#nursingAccountPassword").focus();
+    });
+    return [row];
   });
-  const label = options.length ? "اختر اسم التمريض"
-    : !staffDirectoryLoaded ? "جاري تحميل الأسماء…"
-    : query ? "مفيش اسم مطابق للبحث" : "مفيش أسماء مفعّلة";
-  select.replaceChildren(new Option(label,""),...options);
-  if(options.some(option=>option.value === previous)) select.value = previous;
-  else if(previous) $("#nursingAccountPassword").value = "";
+  if(rows.length){
+    results.replaceChildren(...rows);
+  }else{
+    const empty = document.createElement("p");
+    empty.className = "nursing-account-empty";
+    empty.textContent = !staffDirectoryLoaded ? "جاري تحميل الأسماء…"
+      : search.value ? "مفيش اسم مطابق للبحث" : "مفيش أسماء مفعّلة";
+    results.replaceChildren(empty);
+  }
   updateNursingAccountStatus();
 }
 
@@ -17388,7 +17463,7 @@ async function loadNursingAccountStatus(){
     if(serial !== nursingAccountLoadSerial || auth.currentUser !== user) return;
     nursingAccountLoadFailed = true;
   }
-  updateNursingAccountStatus();
+  renderNursingAccountOptions();
 }
 
 $("#nursingAccountPanel").addEventListener("toggle",()=>{
@@ -17396,11 +17471,16 @@ $("#nursingAccountPanel").addEventListener("toggle",()=>{
   renderNursingAccountOptions();
   loadNursingAccountStatus();
 });
-$("#nursingAccountSearch").addEventListener("input",renderNursingAccountOptions);
-$("#nursingAccountStaffId").addEventListener("change",()=>{
+$("#nursingAccountSearch").addEventListener("input",()=>{
+  $("#nursingAccountStaffId").value = "";
   $("#nursingAccountPassword").value = "";
   $("#nursingAccountMessage").textContent = "";
-  updateNursingAccountStatus();
+  renderNursingAccountOptions();
+});
+$("#nursingAccountSearch").addEventListener("keydown",event=>{
+  if(event.key !== "Enter" && event.key !== "ArrowDown") return;
+  event.preventDefault();
+  $("#nursingAccountResults").querySelector("button")?.focus();
 });
 $("#nursingAccountForm").addEventListener("submit",async event=>{
   event.preventDefault();
@@ -17438,7 +17518,7 @@ $("#nursingAccountForm").addEventListener("submit",async event=>{
   }finally{
     password.value = "";
     nursingAccountSaving = false;
-    updateNursingAccountStatus();
+    renderNursingAccountOptions();
   }
 });
 
