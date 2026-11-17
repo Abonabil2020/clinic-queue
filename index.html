@@ -16,9 +16,20 @@
 <link rel="preload" href="./fonts/RB-Bold.ttf" as="font" type="font/ttf" crossorigin>
 <script>
 (function(){
+  var individualNurse = new URLSearchParams(location.search).get("nurse-access") === "individual";
+  if(individualNurse && (!location.hash || location.hash === "#")){
+    var entry = new URL(location.href);
+    entry.hash = "#/nurse-individual";
+    history.replaceState(history.state, "", entry);
+  }
+
   function updateInstallManifest(){
     var isPublicFollow = /^#\/mobile(?:-|$)/.test(location.hash);
-    document.getElementById("appManifest").setAttribute("href", isPublicFollow ? "manifest-mobile.json" : "manifest.json");
+    var isNurse = location.hash === "#/nurse-individual" ||
+      (new URLSearchParams(location.search).get("nurse-access") === "individual" &&
+       ["#/setup", "#/nurse", "#/nursing-control", "#/login"].includes(location.hash));
+    var manifest = isPublicFollow ? "manifest-mobile.json" : isNurse ? "manifest-nurse.json" : "manifest.json";
+    document.getElementById("appManifest").setAttribute("href", manifest);
   }
   updateInstallManifest();
   window.addEventListener("hashchange", updateInstallManifest);
@@ -13097,6 +13108,7 @@ function route(){
   syncAdminRoomControls();
   if(["mobile","mobile-third","mobile-ground"].includes(h)){ show("mobile"); renderMobileFollow(); }
   else if(h === "nurse-individual"){
+    if(!nursingAuthReady) return;
     if(individualNurseIdentity()){
       clearNursingSetupRoom();
       pendingSetupRoom = "";
