@@ -10270,6 +10270,7 @@ const explicitRoom = new URLSearchParams(location.search).get("room");
 const individualRoomNavigationKey = "islahIndividualRoomNavigation:" + location.pathname;
 let individualRoomNavigation = null;
 let individualSelectedRoom = "";
+let individualNursingRefresh = false;
 if(AUTH_SCOPE === "nurse-individual"){
   try{
     const handoff = JSON.parse(sessionStorage.getItem(individualRoomNavigationKey) || "null");
@@ -10279,13 +10280,18 @@ if(AUTH_SCOPE === "nurse-individual"){
   }catch(error){}
   nursingResume = null;
   if(location.hash === "#/nurse" && !individualRoomNavigation){
-    const url = new URL(location.href);
-    url.hash = "#/setup";
-    history.replaceState(history.state,"",url);
+    const navigation = performance.getEntriesByType?.("navigation")[0];
+    individualNursingRefresh = (navigation ? navigation.type === "reload" : performance.navigation?.type === 1) &&
+      (!explicitRoom || ROOM_OPTIONS.some(room=>room.id === explicitRoom));
+    if(!individualNursingRefresh){
+      const url = new URL(location.href);
+      url.hash = "#/setup";
+      history.replaceState(history.state,"",url);
+    }
   }
 }
-let nursingResumePending = Boolean(nursingResume && nursingResume.view === "nurse" && location.hash === "#/nurse" && (!explicitRoom || explicitRoom === nursingResume.roomId));
-const requestedRoom = explicitRoom || (nursingResumePending ? nursingResume.roomId : null);
+let nursingResumePending = individualNursingRefresh || Boolean(nursingResume && nursingResume.view === "nurse" && location.hash === "#/nurse" && (!explicitRoom || explicitRoom === nursingResume.roomId));
+const requestedRoom = explicitRoom || (nursingResumePending ? nursingResume?.roomId : null);
 const DISPLAY_SLOT_ID = ROOM_OPTIONS.some(room=>room.id === requestedRoom) ? requestedRoom : "311";
 const CURRENT_ROOM = ROOM_OPTIONS.find(room=>room.id === DISPLAY_SLOT_ID);
 
@@ -13671,6 +13677,7 @@ if(nursingResumePending && nursingResume?.rooms){
   nursingRooms = {...nursingResume.rooms,...nursingRooms};
 }
 function clearNursingResume(){
+  individualNursingRefresh = false;
   nursingResumePending = false;
   nursingResume = null;
   try { localStorage.removeItem(NURSING_RESUME_KEY); } catch(e) {}
@@ -13684,6 +13691,30 @@ function saveNursingResume(){
 }
 function restoreNursingResume(){
   if(!nursingResumePending) return false;
+  if(individualNursingRefresh){
+    if(location.hash !== "#/nurse"){
+      clearNursingResume();
+      return false;
+    }
+    if(!nursingAuthReady) return true;
+    const identity = currentNursingIdentity();
+    if(nursingRoomAccess() && identity?.handoverId){
+      if(!nursingRoomLoaded) return true;
+      const period = {...state,sessionStart:nursingLiveSessionStart,handoverId:nursingLiveHandoverId};
+      if(period.status !== "finished" && identity.sessionStart === nursingLiveSessionStart &&
+         nursingHandoverMatches(period,identity) && periodIsCurrent(period)){
+        clearNursingResume();
+        rememberNursingRoom(period,individualNurseIdentity().name);
+        renderAll(false);
+        return false;
+      }
+    }
+    clearNursingResume();
+    clearNursingSetupRoom();
+    nursingSetupMode = "enter";
+    location.hash = "#/setup";
+    return false;
+  }
   // Wait for Firebase's restored account before touching the saved nursing identity.
   if(!nursingAuthReady) return true;
   const saved = nursingResume;
