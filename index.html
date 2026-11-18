@@ -13091,7 +13091,20 @@ function startScanCycle(){
   paint();tick();
   scanCycleTimer = setInterval(tick,250);
 }
+function cleanRouteSearchParams(){
+  const hash = location.hash || "#/home";
+  if(["#/nurse-individual", "#/login", "#/setup", "#/nursing-control", "#/nurse"].includes(hash)) return;
+  const url = new URL(location.href);
+  const keepPatientRoom = hash === "#/patient";
+  const hasNurseParam = url.searchParams.has(INDIVIDUAL_NURSE_MODE_PARAM);
+  const hasRoomParam = !keepPatientRoom && url.searchParams.has("room");
+  if(!hasNurseParam && !hasRoomParam) return;
+  url.searchParams.delete(INDIVIDUAL_NURSE_MODE_PARAM);
+  if(!keepPatientRoom) url.searchParams.delete("room");
+  history.replaceState(history.state, "", url);
+}
 function route(){
+  cleanRouteSearchParams();
   if(["#/mobile","#/mobile-third","#/mobile-ground"].includes(location.hash)){
     show("mobile"); renderMobileFollow(); return;
   }
