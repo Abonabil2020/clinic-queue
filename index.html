@@ -10734,6 +10734,9 @@ networkConnectionRef.on("value", snapshot=>{
   renderBookingStatus();
   if(firebaseConnected) registerPresenceSession();
   if(firebaseConnected) recordDailyVisit().catch(()=>{});
+  if(firebaseConnected && AUTH_SCOPE === "nurse-individual" && !nursingAuthReady && auth.currentUser){
+    scheduleIndividualNurseAuthRetry(auth.currentUser, 200);
+  }
 });
 
 updateNetworkStatusIndicator();
@@ -13653,8 +13656,9 @@ function showNursingAuthWait(){
   if(nursingAuthWaitTimer !== null) return;
   nursingAuthWaitTimer = setTimeout(()=>{
     nursingAuthWaitTimer = null;
-    if(!auth.currentUser && !nursingAuthError && ["setup","nursing-control"].includes((location.hash || "").replace("#/",""))){
+    if(!nursingAuthReady && !nursingAuthError && ["setup","nursing-control"].includes((location.hash || "").replace("#/",""))){
       msg.textContent = nursingAuthSlowMessage;
+      if(AUTH_SCOPE === "nurse-individual" && auth.currentUser) scheduleIndividualNurseAuthRetry(auth.currentUser, 200);
     }
   },10000);
 }
@@ -17984,9 +17988,50 @@ $("#receptionLogout").addEventListener("click", async ()=>{
     route();
   }catch(error){ alert("تعذّر تسجيل الخروج. حاول مرة أخرى"); }
 });
-auth.onAuthStateChanged(async user=>{
+// One cancellable account read at a time: a stalled Firebase read must not keep the room picker waiting forever.
+const INDIVIDUAL_NURSE_ACCOUNT_READ_TIMEOUT_MS = 12000;
+const INDIVIDUAL_NURSE_AUTH_RETRY_MS = 5000;
+let individualNurseAuthRetryTimer = null;
+let individualNurseAuthRetryPending = false;
+let individualNurseAuthVerifyingUser = null;
+function readIndividualNurseAccount(uid){
+  const ref = queueApp.database().ref("nursingAccounts").child(uid);
+  return new Promise((resolve,reject)=>{
+    let completed = false;
+    let timeout = null;
+    const onData = snapshot => finish(snapshot.val());
+    const onError = error => finish(null,error);
+    function finish(data,error){
+      if(completed) return;
+      completed = true;
+      clearTimeout(timeout);
+      ref.off("value",onData);
+      if(error) reject(error); else resolve(data);
+    }
+    timeout = setTimeout(()=>finish(null,Object.assign(new Error("account-read-timeout"),{code:"account-read-timeout"})),INDIVIDUAL_NURSE_ACCOUNT_READ_TIMEOUT_MS);
+    try{ ref.on("value",onData,onError); }
+    catch(error){ finish(null,error); }
+  });
+}
+function scheduleIndividualNurseAuthRetry(user, delay = INDIVIDUAL_NURSE_AUTH_RETRY_MS){
+  if(AUTH_SCOPE !== "nurse-individual" || !user || auth.currentUser !== user || nursingAuthReady) return;
+  individualNurseAuthRetryPending = true;
+  if(!firebaseConnected || individualNurseAuthVerifyingUser === user || individualNurseAuthRetryTimer !== null) return;
+  individualNurseAuthRetryTimer = setTimeout(()=>{
+    individualNurseAuthRetryTimer = null;
+    if(!individualNurseAuthRetryPending || !firebaseConnected || auth.currentUser !== user || nursingAuthReady) return;
+    individualNurseAuthRetryPending = false;
+    handleNursingAuthStateChanged(user);
+  },delay);
+}
+async function handleNursingAuthStateChanged(user){
   if(!ensureAuthScope()) return;
   if(AUTH_SCOPE === "nurse-individual"){
+    if(user && individualNurseAuthVerifyingUser === user) return;
+    clearTimeout(individualNurseAuthRetryTimer);
+    individualNurseAuthRetryTimer = null;
+    individualNurseAuthRetryPending = false;
+    nursingAuthReady = false;
     if(individualNursingAccount?.uid !== user?.uid){
       individualSelectedRoom = "";
       pendingSetupRoom = "";
@@ -17995,9 +18040,12 @@ auth.onAuthStateChanged(async user=>{
     if(!user || user.isAnonymous) individualRoomNavigation = null;
     const initialUser = user;
     if(user && !user.isAnonymous){
+      individualNurseAuthVerifyingUser = user;
       try{
-        const data = (await queueApp.database().ref("nursingAccounts").child(user.uid).once("value")).val();
+        if(!firebaseConnected) throw Object.assign(new Error("disconnected"),{code:"auth-offline"});
+        const data = await readIndividualNurseAccount(user.uid);
         if(auth.currentUser !== initialUser) return;
+        if(!firebaseConnected) throw Object.assign(new Error("disconnected"),{code:"auth-offline"});
         if(data?.active === true && typeof data.name === "string" && data.name.trim()){
           const fingerprint = await crypto.subtle.digest("SHA-256",new TextEncoder().encode("islah-room-owner:" + user.uid));
           if(auth.currentUser !== initialUser) return;
@@ -18016,13 +18064,26 @@ auth.onAuthStateChanged(async user=>{
           $("#individualNurseMessage").textContent = "الحساب غير مفعّل.";
         }
       }catch(error){
+        if(auth.currentUser !== initialUser) return;
         $("#individualNurseMessage").textContent = "تعذر التحقق من الحساب. راجع الاتصال وحاول مرة تانية.";
+        if(!String(error?.code || "").toLowerCase().includes("permission")){
+          individualNurseAuthRetryPending = true;
+          return;
+        }
+      }finally{
+        if(individualNurseAuthVerifyingUser === user){
+          individualNurseAuthVerifyingUser = null;
+          if(individualNurseAuthRetryPending) scheduleIndividualNurseAuthRetry(initialUser);
+        }
       }
       if(auth.currentUser !== initialUser) return;
       if(!individualNursingAccount){
         await auth.signOut();
         return;
       }
+      individualNurseAuthRetryPending = false;
+      clearTimeout(individualNurseAuthRetryTimer);
+      individualNurseAuthRetryTimer = null;
     }
   }
   nursingAuthReady = true;
@@ -18098,7 +18159,8 @@ auth.onAuthStateChanged(async user=>{
     }
   }
   route();
-});
+}
+auth.onAuthStateChanged(handleNursingAuthStateChanged);
 /* ==========================================================
    ⑨  ساعة التلفزيون + ملء الشاشة
    ========================================================== */
