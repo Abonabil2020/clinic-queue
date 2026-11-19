@@ -10300,7 +10300,16 @@ if(AUTH_SCOPE === "nurse-individual"){
   }
 }
 let nursingResumePending = individualNursingRefresh || Boolean(nursingResume && nursingResume.view === "nurse" && location.hash === "#/nurse" && (!explicitRoom || explicitRoom === nursingResume.roomId));
-const requestedRoom = explicitRoom || (nursingResumePending ? nursingResume?.roomId : null);
+const individualShortcutKey = "islahIndividualLastRoom:" + location.pathname;
+let shortcutRoom = null;
+let shortcutPeriod = null;
+if(AUTH_SCOPE === "nurse-individual" && location.hash === "#/nurse-individual"){
+  try {
+    const saved = JSON.parse(localStorage.getItem(individualShortcutKey));
+    if(saved?.handoverId && ROOM_OPTIONS.some(room=>room.id === saved.roomId)) shortcutRoom = saved;
+  } catch(error) {}
+}
+const requestedRoom = shortcutRoom?.roomId || explicitRoom || (nursingResumePending ? nursingResume?.roomId : null);
 const DISPLAY_SLOT_ID = ROOM_OPTIONS.some(room=>room.id === requestedRoom) ? requestedRoom : "311";
 const CURRENT_ROOM = ROOM_OPTIONS.find(room=>room.id === DISPLAY_SLOT_ID);
 
@@ -13124,12 +13133,16 @@ function route(){
   else if(h === "nurse-individual"){
     if(!nursingAuthReady) return;
     if(individualNurseIdentity()){
+      if(resumeShortcutRoom()) return;
       clearNursingSetupRoom();
       pendingSetupRoom = "";
       nursingSetupDraft = false;
       nursingSetupMode = "enter";
       location.hash = "#/setup";
-    } else showNursingLogin();
+    } else {
+      shortcutRoom = null;
+      showNursingLogin();
+    }
   }
   else if(h === "home")      { show("home"); }
   else if(h === "tv")   { setTvDisplayMode("all"); show("tv"); startClock(); }
@@ -13184,6 +13197,7 @@ function route(){
     if(!nursingRoomAccess()){ showNursingLogin(); }
     else if(h === "nurse" && (isAdminUser() || currentNursingIdentity()) && (setupData || restoreNursingSetupFromIdentity())){
       if(nursingRoomLoaded && !isAdminUser() && !nursingHandoverMatches({handoverId:nursingLiveHandoverId})){ requireNursingHandover(); return; }
+      if(AUTH_SCOPE === "nurse-individual" && canControlCurrentRoom()) rememberShortcutRoom(currentNursingIdentity());
       show("nurse"); renderNursingRoomSwitch(); saveNursingResume();
     }
     else {
@@ -13819,11 +13833,51 @@ function restoreNursingSetupFromIdentity(){
   rememberNursingRoom({...state,sessionStart:nursingLiveSessionStart,handoverId:nursingLiveHandoverId},identity.nurse);
   return true;
 }
+function rememberShortcutRoom(identity){
+  if(AUTH_SCOPE !== "nurse-individual" || !identity?.handoverId) return;
+  const {uid,day,handoverId,sessionStart} = identity;
+  try {
+    const saved = JSON.stringify({roomId:DISPLAY_SLOT_ID,uid,day,handoverId,sessionStart});
+    if(localStorage.getItem(individualShortcutKey) !== saved) localStorage.setItem(individualShortcutKey,saved);
+  } catch(error) {}
+}
+function resumeShortcutRoom(){
+  const saved = shortcutRoom;
+  if(!saved) return false;
+  const account = individualNurseIdentity();
+  if(saved.uid === account.uid && saved.day === operationalDayKey()){
+    if(!nursingRoomLoaded) return true;
+    const period = shortcutPeriod;
+    if(firebaseConnected && period && period.status !== "finished" && periodIsCurrent(period) &&
+       period.nurseOwnerKey === account.roomOwnerKey && nursingHandoverMatches(period,saved) &&
+       Number(period.sessionStart) === saved.sessionStart){
+      shortcutRoom = null;
+      shortcutPeriod = null;
+      rememberNursingRoom(period,account.name);
+      const url = new URL(location.href);
+      url.searchParams.set("room",DISPLAY_SLOT_ID);
+      url.hash = "#/nurse";
+      history.replaceState(history.state,"",url);
+      route();
+      return true;
+    }
+  }
+  shortcutRoom = null;
+  shortcutPeriod = null;
+  return false;
+}
+function forgetShortcutRoom(){
+  if(AUTH_SCOPE !== "nurse-individual") return;
+  shortcutRoom = null;
+  shortcutPeriod = null;
+  try { localStorage.removeItem(individualShortcutKey); } catch(error) {}
+}
 function rememberNursingRoom(data,nurse){
   Object.keys(nursingRooms).forEach(id=>{
     if(nursingRooms[id].uid !== auth.currentUser.uid || nursingRooms[id].day !== operationalDayKey()) delete nursingRooms[id];
   });
   nursingRooms[DISPLAY_SLOT_ID] = {uid:auth.currentUser.uid,day:operationalDayKey(),nurse,handoverId:data.handoverId || "",sessionStart:Number(data.sessionStart || 0),doctor:data.doctor,clinicName:data.clinicName || data.specialty};
+  rememberShortcutRoom(nursingRooms[DISPLAY_SLOT_ID]);
   const clinic = directorySpecialties().find(item=>item.name === (data.clinicName || data.specialty));
   setupData = {clinicId:clinic?.id || "",clinicName:data.clinicName || data.specialty,doctor:data.doctor,nurse,operationalDayKey:operationalDayKey()};
   persistNursingSessionItem(NURSING_ROOMS_KEY,JSON.stringify(nursingRooms));
@@ -14503,6 +14557,7 @@ $("#adminSwitchRoomBtn").addEventListener("click", ()=>{
 $("#setupLogoutBtn").addEventListener("click", async ()=>{
   if(!confirm("تسجيل الخروج؟")) return;
   location.hash = "#/home";
+  forgetShortcutRoom();
   nursingRooms = {}; sessionStorage.removeItem(NURSING_ROOMS_KEY); clearNursingResume();
   await auth.signOut();
   route();
@@ -16652,6 +16707,8 @@ let lastSeen = null;
 function applyClinicSnapshot(raw){
   if(!firebaseConnected && (!raw || typeof raw !== "object" || !Object.keys(raw).length)) return;
   const d = operationalDataForToday(raw || {});
+  const firstRoomSnapshot = !nursingRoomLoaded;
+  if(shortcutRoom) shortcutPeriod = d;
   nursingRoomLoaded = true;
   nursingLiveSessionStart = Number(d.sessionStart || 0);
   nursingLiveHandoverId = d.handoverId || "";
@@ -16683,9 +16740,10 @@ function applyClinicSnapshot(raw){
   renderAll(changed);
   renderBookingStatus();
   window.officialCounts?.render();
-  if(nursingResumePending){ route(); return; }
+  if(nursingResumePending || (shortcutRoom && location.hash === "#/nurse-individual")){ route(); return; }
   if(!nursingSetupSaving && (location.hash || "") === "#/nurse") {
     const entry = currentNursingIdentity();
+    if(firstRoomSnapshot && AUTH_SCOPE === "nurse-individual" && canControlCurrentRoom() && periodIsCurrent(d)) rememberShortcutRoom(entry);
     if(entry && !isAdminUser() && !nursingHandoverMatches(d,entry)){
       requireNursingHandover();
       return;
@@ -17894,6 +17952,7 @@ $("#logoutBtn").addEventListener("click", async ()=>{
   const message = isAdminUser() ? "تسجيل الخروج من حساب الأدمن؟" : "تسجيل الخروج وتسليم الوردية؟";
   if(!confirm(message)) return;
   location.hash = AUTH_SCOPE === "nurse-individual" ? "#/nurse-individual" : "#/home";
+  forgetShortcutRoom();
   nursingRooms = {}; sessionStorage.removeItem(NURSING_ROOMS_KEY); clearNursingResume();
   await auth.signOut();
   route();
