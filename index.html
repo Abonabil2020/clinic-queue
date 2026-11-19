@@ -10303,11 +10303,42 @@ let nursingResumePending = individualNursingRefresh || Boolean(nursingResume && 
 const individualShortcutKey = "islahIndividualLastRoom:" + location.pathname;
 let shortcutRoom = null;
 let shortcutPeriod = null;
+const diagnoseShortcut = AUTH_SCOPE === "nurse-individual" && location.hash === "#/nurse-individual" &&
+  new URLSearchParams(location.search).get("room-check") === "1";
+let shortcutNote = null;
+function reportShortcut(message){
+  if(!diagnoseShortcut) return;
+  if(!shortcutNote){
+    shortcutNote = document.createElement("p");
+    shortcutNote.setAttribute("role","status");
+    shortcutNote.dir = "rtl";
+    shortcutNote.style.cssText = "margin:6px auto;padding:2px 12px;max-width:36rem;color:#526371;font-size:.875rem;line-height:1.6";
+    document.body.prepend(shortcutNote);
+  }
+  shortcutNote.textContent = message;
+}
+function explainShortcutFailure(saved,account,period){
+  if(saved.uid !== account.uid) return "الحجرة محفوظة لحساب تمريض مختلف.";
+  if(saved.day !== operationalDayKey()) return "الحجرة محفوظة من يوم تشغيل سابق.";
+  if(!firebaseConnected) return "الاتصال بالنظام لم يكتمل وقت التحقق.";
+  if(!period || !Object.keys(period).length) return "لم تصل بيانات وردية حالية لهذه الحجرة.";
+  if(period.status === "finished") return "العيادة انتهت.";
+  if(!periodIsCurrent(period)) return "بيانات الفترة الحالية لا تطابق وردية شغالة اليوم.";
+  if(!period.nurseOwnerKey) return "بيانات الوردية لا تتضمن معرّف حساب المستلم.";
+  if(period.nurseOwnerKey !== account.roomOwnerKey) return "حساب المستلم الحالي مختلف.";
+  if(!nursingHandoverMatches(period,saved)) return "رقم الاستلام الحالي مختلف عن المحفوظ.";
+  return "توقيت بداية الوردية مختلف عن المحفوظ.";
+}
 if(AUTH_SCOPE === "nurse-individual" && location.hash === "#/nurse-individual"){
   try {
-    const saved = JSON.parse(localStorage.getItem(individualShortcutKey));
+    const raw = localStorage.getItem(individualShortcutKey);
+    const saved = JSON.parse(raw);
     if(saved?.handoverId && ROOM_OPTIONS.some(room=>room.id === saved.roomId)) shortcutRoom = saved;
-  } catch(error) {}
+    if(diagnoseShortcut) reportShortcut(shortcutRoom ? "الحجرة " + saved.roomId + " محفوظة. جاري التحقق من الحساب والوردية…" :
+      raw === null ? "مفيش حجرة محفوظة على الموبايل ده في المتصفح الحالي." : "بيانات الحجرة المحفوظة غير مكتملة.");
+  } catch(error) {
+    if(diagnoseShortcut) reportShortcut(error instanceof SyntaxError ? "تعذّرت قراءة صيغة بيانات الحجرة المحفوظة." : "المتصفح لم يسمح بقراءة بيانات الحجرة المحفوظة.");
+  }
 }
 const requestedRoom = shortcutRoom?.roomId || explicitRoom || (nursingResumePending ? nursingResume?.roomId : null);
 const DISPLAY_SLOT_ID = ROOM_OPTIONS.some(room=>room.id === requestedRoom) ? requestedRoom : "311";
@@ -12902,6 +12933,11 @@ try{
 }
 
 function show(v){
+  if(shortcutNote){
+    const anchor = {setup:"setupWizard",nurse:"nursingCurrentPeriod","nurse-individual":"individualNurseMessage"}[v];
+    shortcutNote.hidden = !anchor;
+    if(anchor) document.getElementById(anchor)?.before(shortcutNote);
+  }
   if(v !== "tv"){
     stopTvPageTimer();
     stopTvIndividualTimer();
@@ -13140,6 +13176,7 @@ function route(){
       nursingSetupMode = "enter";
       location.hash = "#/setup";
     } else {
+      if(diagnoseShortcut && shortcutRoom) reportShortcut("الحجرة محفوظة. حساب التمريض غير مسجّل الدخول أو لم يتم التحقق منه.");
       shortcutRoom = null;
       showNursingLogin();
     }
@@ -13846,11 +13883,15 @@ function resumeShortcutRoom(){
   if(!saved) return false;
   const account = individualNurseIdentity();
   if(saved.uid === account.uid && saved.day === operationalDayKey()){
-    if(!nursingRoomLoaded) return true;
+    if(!nursingRoomLoaded){
+      if(diagnoseShortcut) reportShortcut("الحجرة " + saved.roomId + " محفوظة. جاري انتظار بيانات الوردية…");
+      return true;
+    }
     const period = shortcutPeriod;
     if(firebaseConnected && period && period.status !== "finished" && periodIsCurrent(period) &&
        period.nurseOwnerKey === account.roomOwnerKey && nursingHandoverMatches(period,saved) &&
        Number(period.sessionStart) === saved.sessionStart){
+      if(diagnoseShortcut) reportShortcut("تم التحقق من استلام الحجرة " + saved.roomId + ".");
       shortcutRoom = null;
       shortcutPeriod = null;
       rememberNursingRoom(period,account.name);
@@ -13862,6 +13903,7 @@ function resumeShortcutRoom(){
       return true;
     }
   }
+  if(diagnoseShortcut) reportShortcut("الحجرة " + saved.roomId + " محفوظة. " + explainShortcutFailure(saved,account,shortcutPeriod));
   shortcutRoom = null;
   shortcutPeriod = null;
   return false;
