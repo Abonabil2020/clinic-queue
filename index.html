@@ -10291,9 +10291,7 @@ if(AUTH_SCOPE === "nurse-individual"){
   }catch(error){}
   nursingResume = null;
   if(location.hash === "#/nurse" && !individualRoomNavigation){
-    const navigation = performance.getEntriesByType?.("navigation")[0];
-    individualNursingRefresh = (navigation ? navigation.type === "reload" : performance.navigation?.type === 1) &&
-      (!explicitRoom || ROOM_OPTIONS.some(room=>room.id === explicitRoom));
+    individualNursingRefresh = !explicitRoom || ROOM_OPTIONS.some(room=>room.id === explicitRoom);
     if(!individualNursingRefresh){
       const url = new URL(location.href);
       url.hash = "#/setup";
