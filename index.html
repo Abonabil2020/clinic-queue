@@ -9055,8 +9055,7 @@
       <div class="admin-head-main">
         <img src="logo.png" alt="مجمع الإصلاح الطبي" class="admin-head-logo" onerror="this.style.display='none'">
         <div>
-          <h1>لوحة الأدمن — اختيار الحجرة</h1>
-          <p>اختر أي حجرة للدخول عليها مباشرة بنفس حساب الأدمن.</p>
+          <h1>لوحة تحكم الأدمن</h1>
         </div>
       </div>
       <button id="adminLogout" type="button" class="px-4 py-2.5 rounded-xl bg-slate-100 text-slate-600 text-sm font-bold">تسجيل الخروج</button>
@@ -9117,11 +9116,27 @@
       </section>
     </div>
 
-    <div id="adminRoomGrid" class="admin-room-grid"></div>
+    <details class="admin-fold admin-audit-panel">
+      <summary>التحكم في الحجرات</summary>
+      <div id="adminRoomGrid" class="admin-room-grid"></div>
+    </details>
 
-    <section id="periodReport" class="admin-audit-panel" aria-labelledby="periodReportTitle">
+    <details id="periodReport" class="admin-fold admin-audit-panel">
+      <summary>تجهيز فترات العيادات</summary>
       <style>
-        #view-admin #periodReport{padding:clamp(14px,3vw,28px);background:#f5f8fa;color:#183448;text-align:start}
+        #view-admin .admin-fold{margin-top:10px}
+        #view-admin .admin-fold>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 18px;list-style:none;cursor:pointer;color:#193a50;background:white;font-size:16px;font-weight:700}
+        #view-admin .admin-fold>summary::-webkit-details-marker{display:none}
+        #view-admin .admin-fold>summary::after{content:"";width:8px;height:8px;border:solid #276a72;border-width:0 2px 2px 0;transform:rotate(45deg);flex:none}
+        #view-admin .admin-fold[open]>summary{background:#edf5f5;border-bottom:1px solid #d5e1e6}
+        #view-admin .admin-fold[open]>summary::after{transform:rotate(225deg)}
+        #view-admin .admin-fold>summary:focus-visible{outline:2px solid #276a72;outline-offset:-3px}
+        #view-admin .admin-fold>#adminRoomGrid{margin:0;padding:12px}
+        #view-admin #periodReport{background:#f5f8fa;color:#183448;text-align:start}
+        #periodReport .report-content{padding:14px}
+        #periodReport .period-meta{display:flex;align-items:center;flex-wrap:wrap;gap:8px 20px;margin-top:8px}
+        #periodReport .clinic-time{display:inline-flex;align-items:center;gap:8px;padding:4px 10px;border-radius:8px;background:#eaf3f6;color:#234e61;font-size:13px}
+        #periodReport .clinic-time strong{font-size:16px}
         #periodReport .report-heading,#periodReport .group-head,#periodReport .clinic-line{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
         #periodReport .report-heading h2{font-size:clamp(18px,2vw,23px);color:#17374a}
         #periodReport button{background:#145568;color:white;border-radius:10px;padding:9px 16px;font-weight:700}
@@ -9145,18 +9160,20 @@
         #periodReport dd.on-time{color:#166341}
         #periodReport dd.late{color:#975009}
       </style>
-      <div class="report-heading"><h2 id="periodReportTitle" class="admin-audit-title">تجهيز فترات العيادات</h2>
+      <div class="report-content">
+      <div class="report-heading">
         <button type="button" id="periodReportLoad">عرض تقرير اليوم</button></div>
       <p id="periodReportStatus" role="status"></p>
       <div id="periodReportBody" hidden>
         <div class="report-search"><label for="periodReportSearch">بحث</label><input id="periodReportSearch" type="search" placeholder="اسم الممرضة أو الطبيب أو العيادة أو الحجرة"></div>
         <div id="periodReportRows"></div>
       </div>
-    </section>
-    <section class="admin-audit-panel" aria-label="سجل تحديثات النظام">
+      </div>
+    </details>
+    <details class="admin-fold admin-audit-panel">
+      <summary>سجل تحديثات النظام</summary>
       <div class="admin-audit-head">
         <div>
-          <h2 class="admin-audit-title">سجل تحديثات النظام</h2>
           <p class="admin-audit-subtitle">عمليات اليوم من ٣ الفجر إلى ٣ الفجر بتوقيت القاهرة.</p>
         </div>
         <span class="admin-audit-live">متابعة مباشرة</span>
@@ -9180,7 +9197,7 @@
         <div class="admin-audit-empty">جارٍ تحميل سجل التحديثات...</div>
       </div>
       <button id="adminAuditMore" class="admin-audit-filter admin-audit-more" type="button" hidden>عرض المزيد</button>
-    </section>
+    </details>
   </main>
 </section>
 
@@ -12385,11 +12402,11 @@ function reportMetric(label,value,tone=""){
 function renderReportPeriod(row){
   const delayText = row.delay===null ? "—" : row.delay ? ar(row.delay)+" د" : "في الموعد";
   return '<article class="period-entry"><div class="clinic-line"><h4>'+escapeHtml(row.clinic)+'</h4>'+
-    '<span class="room">حجرة '+escapeHtml(row.room)+'</span></div><p class="doctor">الطبيب · '+escapeHtml(row.doctor)+'</p><dl>'+
-    reportMetric("موعد الفترة",row.schedule==="غير متاح" ? "—" : row.schedule)+
+    '<span class="room">حجرة '+escapeHtml(row.room)+'</span></div><div class="period-meta"><p class="doctor">الطبيب · '+escapeHtml(row.doctor)+'</p>'+
+    '<span class="clinic-time">موعد العيادة <strong>'+escapeHtml(row.schedule==="غير متاح" ? "—" : row.schedule)+'</strong></span></div><dl>'+
     reportMetric("انتهاء السابقة",row.previous ? reportClock(row.previous) : "—")+
-    reportMetric("فتح الفترة",reportClock(row.opened))+
-    reportMetric("تأخير الفتح",delayText,row.delay ? "late" : "on-time")+
+    reportMetric("موعد استلام العيادة",reportClock(row.opened))+
+    reportMetric("تأخير الاستلام",delayText,row.delay ? "late" : "on-time")+
     reportMetric("أول دور مسجّل",row.first ? reportClock(row.first) : "—")+'</dl></article>';
 }
 function filterPeriodReport(){
