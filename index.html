@@ -9121,25 +9121,36 @@
 
     <section id="periodReport" class="admin-audit-panel" aria-labelledby="periodReportTitle">
       <style>
-        #periodReport .report-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-        #periodReport button{background:#125a67;color:white;border-radius:10px;padding:8px 16px;font-weight:700}
-        #periodReport .report-search{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:14px 0}
-        #periodReport input{border:1px solid #b7cbd1;border-radius:8px;padding:7px 10px;max-width:100%;color:#163942;background:white}
-        #periodReport .report-scroll{overflow-x:auto}
-        #periodReport table{width:100%;border-collapse:collapse;text-align:right;white-space:nowrap}
-        #periodReport th,#periodReport td{padding:10px 12px;border-bottom:1px solid #dbe6e8}
-        #periodReport th{background:#edf5f5;color:#174853}
-        #periodReport .on-time{color:#19603d;font-weight:700}
-        #periodReport .late{color:#874a10;font-weight:700}
+        #view-admin #periodReport{padding:clamp(14px,3vw,28px);background:#f5f8fa;color:#183448;text-align:start}
+        #periodReport .report-heading,#periodReport .group-head,#periodReport .clinic-line{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+        #periodReport .report-heading h2{font-size:clamp(18px,2vw,23px);color:#17374a}
+        #periodReport button{background:#145568;color:white;border-radius:10px;padding:9px 16px;font-weight:700}
+        #periodReport .report-search{display:flex;align-items:center;gap:10px;margin:12px 0;color:#425866}
+        #periodReport input{width:min(330px,80%);border:1px solid #bfced5;border-radius:9px;padding:8px 12px;color:#203847;background:white}
+        #periodReportStatus{color:#526773;font-size:13px;margin-block-start:8px}
+        #periodReportRows{display:grid;gap:16px}
+        #periodReport .nurse-group{overflow:hidden;background:white;border:1px solid #d5e1e6;border-radius:14px}
+        #periodReport .group-head{padding:12px 16px;background:#e7f1f2;border-inline-start:4px solid #276a72;color:#16444c}
+        #periodReport .group-head h3{font-size:17px;font-weight:700}
+        #periodReport .period-count{font-size:12px}
+        #periodReport .period-entry{padding:14px 18px}
+        #periodReport .period-entry+.period-entry{border-top:1px solid #dbe5e8}
+        #periodReport .clinic-line h4{font-size:16px;color:#193a50;font-weight:700}
+        #periodReport .doctor{font-size:14px;color:#536775;margin-block-start:3px}
+        #periodReport .room{font-size:12px;color:#456071;background:#f0f4f7;padding:3px 9px;border-radius:6px}
+        #periodReport dl{display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:10px;margin:12px 0 0}
+        #periodReport dt{color:#5b707c;font-size:12px}
+        #periodReport dd{color:#193a50;font-weight:700;margin:3px 0 0;font-size:14px}
+        #periodReport dd.muted{color:#748494}
+        #periodReport dd.on-time{color:#166341}
+        #periodReport dd.late{color:#975009}
       </style>
       <div class="report-heading"><h2 id="periodReportTitle" class="admin-audit-title">تجهيز فترات العيادات</h2>
         <button type="button" id="periodReportLoad">عرض تقرير اليوم</button></div>
       <p id="periodReportStatus" role="status"></p>
       <div id="periodReportBody" hidden>
-        <div class="report-search"><label for="periodReportSearch">بحث</label><input id="periodReportSearch" type="search" placeholder="اسم التمريض أو العيادة أو الحجرة"></div>
-        <div class="report-scroll"><table aria-labelledby="periodReportTitle"><thead><tr>
-          <th>التمريض عند التجهيز</th><th>العيادة</th><th>الحجرة</th><th>موعد الفترة</th><th>انتهاء السابقة</th><th>فتح الفترة</th><th>تأخير فتح الفترة</th><th>أول دور مسجّل</th>
-        </tr></thead><tbody id="periodReportRows"></tbody></table></div>
+        <div class="report-search"><label for="periodReportSearch">بحث</label><input id="periodReportSearch" type="search" placeholder="اسم الممرضة أو الطبيب أو العيادة أو الحجرة"></div>
+        <div id="periodReportRows"></div>
       </div>
     </section>
     <section class="admin-audit-panel" aria-label="سجل تحديثات النظام">
@@ -12345,7 +12356,9 @@ function buildPeriodReport(events){
     const event = row.event;
     const room = ROOM_OPTIONS.find(item=>item.id===event.roomId);
     const live = room && adminRoomData(room);
-    const hours = row.session && live?.sessionStart===row.session ? live.clinicHours : null;
+    const samePeriod = row.session > 0 && Number(live?.sessionStart) === row.session;
+    const hours = samePeriod ? live.clinicHours : null;
+    const doctor = samePeriod && live.doctor && live.doctor !== "—" ? doctorDisplayFromData(live) : "—";
     let delay = null, schedule = "غير متاح";
     if(validClinicHours(hours)){
       schedule = clinicHourText(hours.from)+" – "+clinicHourText(hours.to);
@@ -12359,30 +12372,40 @@ function buildPeriodReport(events){
         delay = Math.max(0,minute(row.opened)-Math.max(target,row.previous ? minute(row.previous) : -Infinity));
       }
     }
-    const cells = [event.actorRole==="nurse" ? event.actorName || "غير مسجّل" : "غير مسجّل",
-      event.clinicName || "غير مسجّل",event.roomId,schedule,row.previous ? reportClock(row.previous) : "—",
-      reportClock(row.opened),delay===null ? "غير متاح" : delay ? ar(delay)+" د" : "في الموعد",
-      row.first ? reportClock(row.first) : "غير مسجّل"];
-    return {cells,delay,key:reportSearchKey(cells.slice(0,3).join(" "))};
-  });
+    const nurse = event.actorRole === "nurse" && event.actorName ? event.actorName.trim() : "غير مسجّل";
+    const clinic = event.clinicName || "—";
+    return {nurse,clinic,doctor,room:event.roomId,opened:row.opened,previous:row.previous,
+      first:row.first,schedule,delay,key:reportSearchKey([nurse,clinic,doctor,samePeriod ? live.doctor : "",event.roomId].join(" "))};
+  }).sort((a,b)=>a.opened-b.opened);
+}
+function reportMetric(label,value,tone=""){
+  const style = value==="—" ? "muted" : tone;
+  return '<div><dt>'+label+'</dt><dd class="'+style+'">'+escapeHtml(value)+'</dd></div>';
+}
+function renderReportPeriod(row){
+  const delayText = row.delay===null ? "—" : row.delay ? ar(row.delay)+" د" : "في الموعد";
+  return '<article class="period-entry"><div class="clinic-line"><h4>'+escapeHtml(row.clinic)+'</h4>'+
+    '<span class="room">حجرة '+escapeHtml(row.room)+'</span></div><p class="doctor">الطبيب · '+escapeHtml(row.doctor)+'</p><dl>'+
+    reportMetric("موعد الفترة",row.schedule==="غير متاح" ? "—" : row.schedule)+
+    reportMetric("انتهاء السابقة",row.previous ? reportClock(row.previous) : "—")+
+    reportMetric("فتح الفترة",reportClock(row.opened))+
+    reportMetric("تأخير الفتح",delayText,row.delay ? "late" : "on-time")+
+    reportMetric("أول دور مسجّل",row.first ? reportClock(row.first) : "—")+'</dl></article>';
 }
 function filterPeriodReport(){
   const needle = reportSearchKey($("#periodReportSearch").value);
-  const fragment = document.createDocumentFragment();
+  const groups = new Map();
   let count = 0;
   for(const row of periodReportSnapshot){
     if(!row.key.includes(needle)) continue;
-    const tr = document.createElement("tr");
-    row.cells.forEach((value,index)=>{
-      const td=document.createElement("td");
-      td.textContent=value;
-      if(index===6 && row.delay!==null) td.className=row.delay ? "late" : "on-time";
-      tr.append(td);
-    });
-    fragment.append(tr);
+    if(!groups.has(row.nurse)) groups.set(row.nurse,[]);
+    groups.get(row.nurse).push(row);
     count++;
   }
-  $("#periodReportRows").replaceChildren(fragment);
+  $("#periodReportRows").innerHTML = Array.from(groups,([name,periods])=>
+    '<section class="nurse-group"><header class="group-head"><h3>'+escapeHtml(name)+'</h3>'+
+    '<span class="period-count">عدد الفترات: '+ar(periods.length)+'</span></header>'+
+    periods.map(renderReportPeriod).join("")+'</section>').join("");
   $("#periodReportStatus").textContent=count ? "عدد الفترات المعروضة: "+ar(count) :
     needle ? "لا توجد نتائج مطابقة." : "لا توجد فترات تجهيز مسجّلة اليوم.";
 }
