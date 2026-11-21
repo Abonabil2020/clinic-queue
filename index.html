@@ -9119,6 +9119,29 @@
 
     <div id="adminRoomGrid" class="admin-room-grid"></div>
 
+    <section id="periodReport" class="admin-audit-panel" aria-labelledby="periodReportTitle">
+      <style>
+        #periodReport .report-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+        #periodReport button{background:#125a67;color:white;border-radius:10px;padding:8px 16px;font-weight:700}
+        #periodReport .report-search{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:14px 0}
+        #periodReport input{border:1px solid #b7cbd1;border-radius:8px;padding:7px 10px;max-width:100%;color:#163942;background:white}
+        #periodReport .report-scroll{overflow-x:auto}
+        #periodReport table{width:100%;border-collapse:collapse;text-align:right;white-space:nowrap}
+        #periodReport th,#periodReport td{padding:10px 12px;border-bottom:1px solid #dbe6e8}
+        #periodReport th{background:#edf5f5;color:#174853}
+        #periodReport .on-time{color:#19603d;font-weight:700}
+        #periodReport .late{color:#874a10;font-weight:700}
+      </style>
+      <div class="report-heading"><h2 id="periodReportTitle" class="admin-audit-title">تجهيز فترات العيادات</h2>
+        <button type="button" id="periodReportLoad">عرض تقرير اليوم</button></div>
+      <p id="periodReportStatus" role="status"></p>
+      <div id="periodReportBody" hidden>
+        <div class="report-search"><label for="periodReportSearch">بحث</label><input id="periodReportSearch" type="search" placeholder="اسم التمريض أو العيادة أو الحجرة"></div>
+        <div class="report-scroll"><table aria-labelledby="periodReportTitle"><thead><tr>
+          <th>التمريض عند التجهيز</th><th>العيادة</th><th>الحجرة</th><th>موعد الفترة</th><th>انتهاء السابقة</th><th>فتح الفترة</th><th>تأخير فتح الفترة</th><th>أول دور مسجّل</th>
+        </tr></thead><tbody id="periodReportRows"></tbody></table></div>
+      </div>
+    </section>
     <section class="admin-audit-panel" aria-label="سجل تحديثات النظام">
       <div class="admin-audit-head">
         <div>
@@ -12287,6 +12310,105 @@ function queueAdminAuditRender(){
   });
 }
 
+let periodReportSnapshot = [];
+const reportDigits = value=>String(value).replace(/[٠-٩]/g,c=>"٠١٢٣٤٥٦٧٨٩".indexOf(c));
+function reportSearchKey(value){
+  return normalizeArabicSearch(reportDigits(value));
+}
+function reportClock(timestamp){
+  const t = auditCairoParts(timestamp);
+  return clinicHourText(t.hour*60+t.minute);
+}
+function buildPeriodReport(events){
+  const rows = [], rooms = new Map();
+  for(const event of events){
+    if(!event.roomId) continue;
+    const prior = rooms.get(event.roomId);
+    if(event.action === "clinic_prepared"){
+      const session = Number(event.details?.sessionStart);
+      const opened = session || event.createdAt;
+      const row = {event,session,opened,previous:prior?.end || 0,uncertain:!!prior && !prior.end};
+      rooms.set(event.roomId,row);
+      rows.push(row);
+    }else if(event.action === "clinic_reset"){
+      rooms.set(event.roomId,{});
+    }else if(prior && event.action === "clinic_finished"){
+      if(!prior.end) prior.end = event.createdAt;
+    }else if(prior?.event && !prior.end && !prior.first && event.action === "queue_number" &&
+      /من 0 إلى [1-9]/.test(reportDigits(event.summary))){
+      prior.first = event.createdAt;
+    }else if(!prior && event.action === "clinic_finished"){
+      rooms.set(event.roomId,{end:event.createdAt});
+    }
+  }
+  return rows.map(row=>{
+    const event = row.event;
+    const room = ROOM_OPTIONS.find(item=>item.id===event.roomId);
+    const live = room && adminRoomData(room);
+    const hours = row.session && live?.sessionStart===row.session ? live.clinicHours : null;
+    let delay = null, schedule = "غير متاح";
+    if(validClinicHours(hours)){
+      schedule = clinicHourText(hours.from)+" – "+clinicHourText(hours.to);
+      if(!row.uncertain){
+        // Compare civil minutes within the same Cairo operational day, starting at 03:00.
+        const minute = stamp=>{
+          const t=auditCairoParts(stamp);
+          return (t.hour*60+t.minute+1260)%1440;
+        };
+        const target = (hours.from+1260)%1440-30;
+        delay = Math.max(0,minute(row.opened)-Math.max(target,row.previous ? minute(row.previous) : -Infinity));
+      }
+    }
+    const cells = [event.actorRole==="nurse" ? event.actorName || "غير مسجّل" : "غير مسجّل",
+      event.clinicName || "غير مسجّل",event.roomId,schedule,row.previous ? reportClock(row.previous) : "—",
+      reportClock(row.opened),delay===null ? "غير متاح" : delay ? ar(delay)+" د" : "في الموعد",
+      row.first ? reportClock(row.first) : "غير مسجّل"];
+    return {cells,delay,key:reportSearchKey(cells.slice(0,3).join(" "))};
+  });
+}
+function filterPeriodReport(){
+  const needle = reportSearchKey($("#periodReportSearch").value);
+  const fragment = document.createDocumentFragment();
+  let count = 0;
+  for(const row of periodReportSnapshot){
+    if(!row.key.includes(needle)) continue;
+    const tr = document.createElement("tr");
+    row.cells.forEach((value,index)=>{
+      const td=document.createElement("td");
+      td.textContent=value;
+      if(index===6 && row.delay!==null) td.className=row.delay ? "late" : "on-time";
+      tr.append(td);
+    });
+    fragment.append(tr);
+    count++;
+  }
+  $("#periodReportRows").replaceChildren(fragment);
+  $("#periodReportStatus").textContent=count ? "عدد الفترات المعروضة: "+ar(count) :
+    needle ? "لا توجد نتائج مطابقة." : "لا توجد فترات تجهيز مسجّلة اليوم.";
+}
+function clearPeriodReport(){
+  periodReportSnapshot=[];
+  $("#periodReportBody").hidden=true;
+  $("#periodReportSearch").value="";
+  $("#periodReportRows").replaceChildren();
+  $("#periodReportStatus").textContent="";
+}
+$("#periodReportLoad").addEventListener("click",()=>{
+  if(!isAdminUser()) return;
+  if(adminAuditStatus!=="ready"){
+    clearPeriodReport();
+    $("#periodReportStatus").textContent=adminAuditStatus==="error" ? "تعذّر تحميل سجل اليوم." : "سجل اليوم قيد التحميل. اضغط مرة أخرى بعد اكتماله.";
+    return;
+  }
+  const start=auditDayBoundary(Date.now()+dailyVisitServerOffset);
+  const end=auditDayBoundary(Date.now()+dailyVisitServerOffset,1);
+  const events=Array.from(adminAuditItems.values()).filter(e=>e.createdAt>=start && e.createdAt<end)
+    .sort((a,b)=>a.createdAt-b.createdAt || a.id.localeCompare(b.id));
+  periodReportSnapshot=buildPeriodReport(events);
+  $("#periodReportBody").hidden=false;
+  filterPeriodReport();
+});
+$("#periodReportSearch").addEventListener("input",filterPeriodReport);
 function startAdminAuditListener(){
   if(adminAuditQuery || !isAdminUser()) return;
   const now = Date.now()+dailyVisitServerOffset;
@@ -12330,6 +12452,7 @@ function startAdminAuditListener(){
 }
 
 function stopAdminAuditListener(){
+  clearPeriodReport();
   adminAuditQuery?.off();
   adminAuditQuery = null;
   clearTimeout(adminAuditTimer);
