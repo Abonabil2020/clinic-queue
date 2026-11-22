@@ -18922,6 +18922,121 @@ route();
  for(const event of ['online','offline'])window.addEventListener(event,()=>{if(root.classList.contains('hidden-view'))return;const indicator=document.getElementById('mf-connection');const online=firebaseConnected&&navigator.onLine!==false;indicator.dataset.connection=online?'online':'offline';indicator.textContent=online?'متصل بمتابعة الأدوار':'الاتصال منقطع — البيانات المعروضة قد تكون غير محدثة';});
 })();
 </script>
+<script id="islah-nurse-code-update-check">
+/* GitHub Pages code updates for personal nursing entry only; no Firebase reads or writes. */
+(() => {
+  if (typeof AUTH_SCOPE === "undefined" || AUTH_SCOPE !== "nurse-individual") return;
+
+  const CHECK_EVERY_MS = 5 * 60 * 1000;
+  const ETAG_KEY = "islahNurseCodeETag:" + location.pathname;
+  const loadedModifiedAt = Date.parse(document.lastModified) || 0;
+  let knownETag = "";
+  let checking = false;
+  let lastCheckedAt = 0;
+  let updateAvailable = false;
+  let availableETag = "";
+  let notice = null;
+  let hiddenUntil = 0;
+
+  try { knownETag = localStorage.getItem(ETAG_KEY) || ""; } catch (_) {}
+
+  function showUpdateNotice() {
+    if (notice || Date.now() < hiddenUntil) return;
+    const bar = document.createElement("div");
+    bar.id = "islahNurseCodeUpdateNotice";
+    bar.setAttribute("role", "status");
+    bar.style.cssText = "position:fixed;left:50%;bottom:max(12px,env(safe-area-inset-bottom));transform:translateX(-50%);width:calc(100% - 24px);max-width:460px;z-index:2000;box-sizing:border-box;padding:12px;border:1px solid #e2e8f0;border-right:4px solid #8d2345;border-radius:14px;background:#fff;color:#334155;box-shadow:0 9px 28px rgba(15,23,42,.16);direction:rtl;font-family:inherit";
+
+    const message = document.createElement("div");
+    message.textContent = "يتوفر تحديث جديد للنظام. حدّثي بعد الانتهاء من أي عملية حفظ أو استدعاء.";
+    message.style.cssText = "font-size:13px;font-weight:700;line-height:1.6";
+
+    const actions = document.createElement("div");
+    actions.style.cssText = "display:flex;gap:8px;margin-top:9px";
+    const updateButton = document.createElement("button");
+    updateButton.type = "button";
+    updateButton.textContent = "تحديث الآن";
+    updateButton.style.cssText = "flex:1;min-height:38px;padding:7px 12px;border:0;border-radius:9px;background:#8d2345;color:#fff;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer";
+    updateButton.addEventListener("click", () => {
+      if (typeof wheelWritePending !== "undefined" && wheelWritePending) {
+        alert("جارٍ حفظ رقم الكشف. انتظري تأكيد الحفظ قبل تحديث الصفحة.");
+        return;
+      }
+      if (!confirm("تأكدي من انتهاء أي عملية حفظ أو استدعاء قبل التحديث. هل تريدين تحديث النظام الآن؟")) return;
+      if (availableETag) {
+        try { localStorage.setItem(ETAG_KEY, availableETag); } catch (_) {}
+      }
+      location.reload();
+    });
+
+    const laterButton = document.createElement("button");
+    laterButton.type = "button";
+    laterButton.textContent = "لاحقًا";
+    laterButton.style.cssText = "min-height:38px;padding:7px 12px;border:1px solid #e2e8f0;border-radius:9px;background:#f8fafc;color:#475569;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer";
+    laterButton.addEventListener("click", () => {
+      hiddenUntil = Date.now() + 10 * 60 * 1000;
+      bar.remove();
+      notice = null;
+    });
+
+    actions.append(updateButton, laterButton);
+    bar.append(message, actions);
+    document.body.appendChild(bar);
+    notice = bar;
+  }
+
+  async function checkCodeVersion() {
+    if (checking || updateAvailable || document.hidden || navigator.onLine === false) return;
+    checking = true;
+    lastCheckedAt = Date.now();
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+    try {
+      const url = new URL("./index.html", location.href);
+      url.search = "";
+      url.hash = "";
+      url.searchParams.set("_islah_update_check", String(Date.now()));
+      const response = await fetch(url, {
+        method: "HEAD", cache: "no-store", credentials: "same-origin", signal: controller.signal
+      });
+      if (!response.ok) return;
+
+      const remoteModifiedAt = Date.parse(response.headers.get("Last-Modified") || "") || 0;
+      const remoteETag = response.headers.get("ETag") || "";
+      const sameModificationTime = remoteModifiedAt && loadedModifiedAt &&
+        Math.abs(remoteModifiedAt - loadedModifiedAt) < 1500;
+      const newerModificationTime = remoteModifiedAt && loadedModifiedAt &&
+        remoteModifiedAt > loadedModifiedAt + 1500;
+      const changedETag = knownETag && remoteETag && remoteETag !== knownETag;
+
+      if (newerModificationTime || (changedETag && !sameModificationTime)) {
+        updateAvailable = true;
+        availableETag = remoteETag;
+        showUpdateNotice();
+      } else if (remoteETag) {
+        knownETag = remoteETag;
+        try { localStorage.setItem(ETAG_KEY, remoteETag); } catch (_) {}
+      }
+    } catch (_) {
+      // A failed update check must never affect nursing control.
+    } finally {
+      clearTimeout(timeout);
+      checking = false;
+    }
+  }
+
+  setTimeout(checkCodeVersion, 6000);
+  setInterval(() => {
+    if (updateAvailable) showUpdateNotice();
+    else checkCodeVersion();
+  }, CHECK_EVERY_MS);
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) return;
+    if (updateAvailable) showUpdateNotice();
+    else if (Date.now() - lastCheckedAt >= CHECK_EVERY_MS) checkCodeVersion();
+  });
+})();
+</script>
 </body>
 </html>
                                                                                                                                     
