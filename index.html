@@ -9066,14 +9066,25 @@
 
     <div class="section-line"><h2>مؤشرات الاستخدام</h2><div id="adminMetricsDate" class="admin-metrics-date" aria-label="تاريخ الإحصائية"></div></div>
     <div class="admin-metrics-grid">
-      <section id="adminConnectionsPanel" class="admin-connections-panel" data-health="loading" data-read-state="pending" aria-label="المتصلون بالنظام حاليًا">
+      <section id="adminConnectionsPanel" class="admin-connections-panel" data-health="loading" data-read-state="pending" aria-label="المستخدمون النشطون الآن">
         <div class="admin-connections-head">
           <div class="admin-connections-title">
             <span class="admin-metric-dot" aria-hidden="true"></span>
-            <h2 class="admin-connections-label">المتصلون بالنظام حاليًا</h2>
+            <h2 class="admin-connections-label">المستخدمون النشطون الآن</h2>
           </div>
           <span class="metric-icon"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h5l3-7 4 14 3-7h5"/></svg></span><strong id="adminConnectionsCount" class="admin-connections-value num" aria-live="polite">—</strong>
         </div>
+        <small>نشاط خلال آخر دقيقتين</small>
+      </section>
+      <section id="adminDailyVisitsPanel" class="admin-connections-panel" data-health="loading" data-read-state="pending" aria-label="عدد مستخدمي النظام اليوم">
+        <div class="admin-connections-head">
+          <div class="admin-connections-title">
+            
+            <h2 class="admin-connections-label">عدد مستخدمي النظام اليوم</h2>
+          </div>
+          <span class="metric-icon"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="8" r="3"/><path d="M3 20a7 7 0 0 1 14 0m0-14a3 3 0 0 1 0 6m2 3a5 5 0 0 1 3 5"/></svg></span><strong id="adminDailyVisitsCount" class="admin-connections-value num" aria-live="polite">—</strong>
+        </div>
+        <small>يشمل زوار رابط المتابعة</small>
       </section>
 
     </div>
@@ -9312,6 +9323,12 @@
  #view-admin .tools-grid>details>summary{gap:10px}
  #view-admin .admin-audit-search :is(input,select){max-width:100%;min-width:0}
 }
+#view-admin .admin-metrics-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+#view-admin .admin-connections-panel{display:block;padding:16px 18px 12px}
+#view-admin .admin-connections-panel small{display:block;color:#71616a;font-size:12px;margin-top:6px}
+#view-admin .admin-connections-value{background:#f8edf1;color:#6d2844;padding:7px 12px;border-radius:12px;font-size:clamp(24px,2.8vw,32px);font-weight:700;line-height:1.2;text-align:center;min-width:2ch}
+#view-admin .admin-connections-label{font-size:clamp(14px,1.6vw,18px)}
+@media(max-width:720px){#view-admin .admin-metrics-grid{grid-template-columns:1fr}#view-admin .admin-connections-panel{min-height:auto}#view-admin .admin-connections-head{grid-template-columns:minmax(0,1fr) auto}#view-admin .admin-connections-title{grid-column:1}#view-admin .admin-connections-value{grid-column:2}#view-admin .metric-icon{display:none}}
 </style>
 </main>
 </section>
@@ -10587,17 +10604,14 @@ function clinicImportLog(data,mode){
 }
 const auditLogsRef = queueApp.database().ref("auditLogs");
 const presenceRootRef = queueApp.database().ref("presence");
-const presenceSessionRef = presenceRootRef.push();
-// Presence activity only; does not modify clinic queues or their listeners.
-const PRESENCE_HEARTBEAT_MS = 60000;
-const PRESENCE_ACTIVE_MS = 150000;
-let presenceRegistered = false;
+const PRESENCE_ACTIVE_MS = 120000;
 let adminPresenceSnapshot = null;
 let adminPresenceRefreshTimer = null;
 let adminPresenceListening = false;
 let adminPresenceValueHandler = null;
 let adminPresenceErrorHandler = null;
-let presenceRegistrationBusy = false;
+let todayMetricRef = null;
+let todayMetricHandler = null;
 const networkConnectionRef = queueApp.database().ref(".info/connected");
 let browserOnline = navigator.onLine;
 let firebaseConnected = false;
@@ -10809,43 +10823,73 @@ function updateNurseConnectionIndicator(){
   }
 }
 
-async function registerPresenceSession(){
-  if(!firebaseConnected || presenceRegistrationBusy) return;
-  presenceRegistrationBusy = true;
-  try{
-    await presenceSessionRef.onDisconnect().remove();
-    await presenceSessionRef.set({
-      connectedAt:firebase.database.ServerValue.TIMESTAMP,
-      lastSeen:firebase.database.ServerValue.TIMESTAMP
-    });
-    presenceRegistered = true;
-  }catch(error){
-    console.warn("Presence registration failed:",error?.code || error?.message || error);
-  }finally{
-    presenceRegistrationBusy = false;
+function trackActiveBrowser(db, getBrowserId){
+  const root = db.ref("presence");
+  let online = false, session = null, lastWrite = 0, busy = false;
+  let lastInput = Date.now();
+  function retire(){
+    const old = session;
+    session = null;
+    lastWrite = 0;
+    if(old && online) old.remove().catch(()=>{});
   }
+  async function publish(){
+    if(!online || document.hidden || busy || Date.now()-lastInput >= 120000 ||
+       Date.now()-lastWrite < 20000 || /^#\/(tv|qr)/.test(location.hash)) return;
+    const id = getBrowserId();
+    if(!id) return;
+    const fresh = !session;
+    const ref = session || root.child("v2_"+id+"_"+root.push().key);
+    session = ref;
+    busy = true;
+    try{
+      if(fresh) await ref.onDisconnect().remove();
+      if(ref !== session || !online || document.hidden) return;
+      const stamp = firebase.database.ServerValue.TIMESTAMP;
+      if(fresh) await ref.set({connectedAt:stamp,lastSeen:stamp});
+      else await ref.update({lastSeen:stamp});
+      if(ref === session) lastWrite = Date.now();
+    }catch(error){
+      if(ref === session){retire();lastWrite=Date.now();}
+    }finally{busy=false;}
+  }
+  function activity(){lastInput=Date.now();publish();}
+  for(const event of ["pointerdown","keydown","scroll"]) document.addEventListener(event,activity,{capture:true,passive:true});
+  document.addEventListener("visibilitychange",()=>{if(document.hidden) retire();else activity();});
+  window.addEventListener("hashchange",()=>{if(/^#\/(tv|qr)/.test(location.hash)) retire();else activity();});
+  window.addEventListener("pagehide",retire);
+  window.addEventListener("pageshow",activity);
+  db.ref(".info/connected").on("value",snap=>{
+    online=snap.val()===true;
+    if(online) publish(); else retire();
+  });
 }
 
-// A small heartbeat prevents abandoned presence records from inflating the count.
-setInterval(()=>{
-  if(!firebaseConnected || !presenceRegistered || presenceRegistrationBusy) return;
-  presenceSessionRef.update({lastSeen:firebase.database.ServerValue.TIMESTAMP}).catch(error=>{
-    console.warn("Presence heartbeat failed:",error?.code || error?.message || error);
-  });
-}, PRESENCE_HEARTBEAT_MS);
+trackActiveBrowser(queueApp.database(),getDailyVisitDeviceId);
 
 function countActivePresence(snapshot){
-  if(!snapshot) return 0;
-  const now = Date.now();
-  let count = 0;
-  snapshot.forEach(child=>{
-    const session = child.val();
-    const lastSeen = Number(session?.lastSeen || session?.connectedAt);
-    if(Number.isFinite(lastSeen) && lastSeen > 0 && now - lastSeen < PRESENCE_ACTIVE_MS && lastSeen <= now + PRESENCE_ACTIVE_MS){
-      count++;
-    }
+  const browsers = new Set();
+  const now = Date.now()+dailyVisitServerOffset;
+  snapshot.forEach(row=>{
+    const id = /^v2_([a-f0-9]{32})_/.exec(row.key)?.[1];
+    const age = now-Number(row.child("lastSeen").val());
+    if(id && age >= -5000 && age < PRESENCE_ACTIVE_MS) browsers.add(id);
   });
-  return count;
+  return browsers.size;
+}
+function syncTodayMetric(){
+  if(!adminPresenceListening) return;
+  const day = cairoVisitDayKey();
+  if(todayMetricRef?.key === day) return;
+  if(todayMetricRef) todayMetricRef.off("value",todayMetricHandler);
+  const ref = dailyVisitsRootRef.child(day);
+  todayMetricRef = ref;
+  const value = document.getElementById("adminDailyVisitsCount");
+  value.textContent = "—";
+  todayMetricHandler = snapshot=>{
+    if(todayMetricRef === ref) value.textContent = snapshot.numChildren().toLocaleString("ar-EG");
+  };
+  ref.on("value",todayMetricHandler,()=>{if(todayMetricRef === ref) value.textContent="—";});
 }
 
 function renderAdminConnectionsCount(count, readError=false){
@@ -10853,7 +10897,7 @@ function renderAdminConnectionsCount(count, readError=false){
   const value = document.getElementById("adminConnectionsCount");
   if(!panel || !value) return;
   panel.dataset.readState = readError ? "error" : "ok";
-  value.textContent = readError ? "—" : String(Math.max(0, Number(count) || 0));
+  value.textContent = readError || !firebaseConnected ? "—" : count.toLocaleString("ar-EG");
   updateAdminMetricsConnectivity();
 }
 
@@ -10875,12 +10919,16 @@ function startAdminPresenceListener(){
 
   presenceRootRef.on("value", adminPresenceValueHandler, adminPresenceErrorHandler);
   adminPresenceRefreshTimer = setInterval(()=>{
+    syncTodayMetric();
     if(adminPresenceSnapshot) renderAdminConnectionsCount(countActivePresence(adminPresenceSnapshot));
   }, 30000);
   adminPresenceListening = true;
+  syncTodayMetric();
 }
 
 function stopAdminPresenceListener(){
+  if(todayMetricRef) todayMetricRef.off("value",todayMetricHandler);
+  todayMetricRef = todayMetricHandler = null;
   if(adminPresenceRefreshTimer) clearInterval(adminPresenceRefreshTimer);
   adminPresenceRefreshTimer = null;
   adminPresenceSnapshot = null;
@@ -10907,16 +10955,17 @@ window.addEventListener("offline", ()=>{
 networkConnectionRef.on("value", snapshot=>{
   firebaseConnected = snapshot.val() === true;
   firebaseConnectionKnown = true;
+  if(adminPresenceListening && !firebaseConnected) renderAdminConnectionsCount(0,true);
   if(firebaseConnected && nurseInitialConnectionPending){
     clearTimeout(nurseInitialConnectionTimer);
     nurseInitialConnectionPending = false;
   }
   updateNetworkStatusIndicator();
   updateAdminMetricsConnectivity();
-  if(!firebaseConnected) presenceRegistered = false;
+
   renderBookingStatus();
   if(firebaseConnected && shortcutRoom && location.hash === "#/nurse-individual") route();
-  if(firebaseConnected) registerPresenceSession();
+
   if(firebaseConnected) recordDailyVisit().catch(()=>{});
   if(firebaseConnected && AUTH_SCOPE === "nurse-individual" && !nursingAuthReady && auth.currentUser){
     scheduleIndividualNurseAuthRetry(auth.currentUser, 200);
@@ -12717,7 +12766,7 @@ function renderAdminDashboard(){
   if(!grid || !isAdminUser()) return;
 
   startAdminAuditListener();
-  startAdminPresenceListener();
+  if(!document.getElementById("view-admin").classList.contains("hidden-view")) startAdminPresenceListener();
   grid.innerHTML = "";
 
   ROOM_OPTIONS.forEach(room=>{
@@ -13190,7 +13239,7 @@ try{
 }
 
 function show(v){
-  if(v !== "admin" && !document.getElementById("view-admin").classList.contains("hidden-view")) clearVisitReport();
+  if(v !== "admin" && !document.getElementById("view-admin").classList.contains("hidden-view")){clearVisitReport();stopAdminPresenceListener();}
   if(v !== "tv"){
     stopTvPageTimer();
     stopTvIndividualTimer();
