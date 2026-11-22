@@ -9058,7 +9058,7 @@
           <p class="brand-name">مجمع الإصلاح الطبي</p><h1>لوحة تحكم الأدمن</h1>
         </div>
       </div>
-      <button id="adminLogout" type="button" class="px-4 py-2.5 rounded-xl bg-slate-100 text-slate-600 text-sm font-bold">تسجيل الخروج</button>
+      <nav class="admin-nav" aria-label="التنقل"><a href="#/home">الصفحة الرئيسية</a><button id="adminLogout" type="button" class="px-4 py-2.5 rounded-xl bg-slate-100 text-slate-600 text-sm font-bold">تسجيل الخروج</button></nav>
     </header>
 
 
@@ -9087,6 +9087,14 @@
       </section>
     </div>
 
+    <section class="visit-report" aria-labelledby="visitTitle">
+      <header><h2 id="visitTitle">إحصائيات المستخدمين</h2><span>بتوقيت القاهرة · بداية اليوم ٣ فجرًا</span></header>
+      <table><thead><tr><th scope="col">مصدر الزيارة</th><th scope="col">اليوم</th><th scope="col">هذا الأسبوع</th><th scope="col">هذا الشهر</th></tr></thead>
+      <tbody><tr><th scope="row">كل المستخدمين</th><td id="allDay">—</td><td id="allWeek">—</td><td id="allMonth">—</td></tr>
+      <tr><th scope="row">زوار رابط المتابعة الجديد <small dir="ltr">queue.islah.me</small></th><td id="publicDay">—</td><td id="publicWeek">—</td><td id="publicMonth">—</td></tr></tbody></table>
+      <p>يُحسب المتصفح مرة كل يوم على كل موقع. يبدأ الأسبوع يوم السبت والشهر من يوم ١. زوار رابط المتابعة ضمن الإجمالي من تاريخ تفعيل التتبع.</p>
+      <p id="visitReadStatus" role="status"></p>
+    </section>
     <div class="section-line"><h2>أدوات الإدارة</h2></div><div class="tools-grid">
     <details class="admin-fold admin-audit-panel">
       <summary><span class="tool-icon"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V4h13v17M9 8h4m-4 4h4m2 4h.01"/></svg></span><span class="tool-label"><strong>التحكم في الحجرات</strong><small>اختيار الحجرة ومتابعة الدور الحالي</small></span></summary>
@@ -9252,6 +9260,26 @@
  #view-admin .tools-grid>details>summary{padding:14px;min-height:76px}
  #view-admin .admin-audit-search label{max-width:100%;flex-wrap:wrap}
 }
+#view-admin .admin-head{background:linear-gradient(110deg,#46192d,#732b46 54%,#492437)}
+#view-admin .brand-name{color:#f0d7df}
+#view-admin .admin-nav{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+#view-admin .admin-nav a,#view-admin #adminLogout{display:inline-flex;align-items:center;min-height:42px;padding:8px 14px;font-size:14px;font-weight:700;border:1px solid #e4b9c7;border-radius:10px;background:transparent;color:#fff;text-decoration:none;box-sizing:border-box}
+#view-admin .admin-nav a{background:#fff5f6;color:#64243b}
+#view-admin .admin-nav :focus-visible{outline:3px solid white;outline-offset:3px}
+#view-admin .visit-report{margin-top:16px;padding:clamp(12px,2vw,24px);background:#fff;border:1px solid #e1d7dc;border-radius:16px}
+#view-admin .visit-report header{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 16px;justify-content:space-between;margin-bottom:14px}
+#view-admin .visit-report h2{color:#6c2d46;font-size:20px;font-weight:700;margin:0}
+#view-admin .visit-report header span,#view-admin .visit-report p{color:#625663;font-size:13px}
+#view-admin .visit-report table{width:100%;table-layout:fixed;border-collapse:collapse;text-align:center}
+#view-admin .visit-report th,#view-admin .visit-report td{padding:10px 4px}
+#view-admin .visit-report th:first-child{width:37%;text-align:start;padding-inline-start:10px}
+#view-admin .visit-report thead{color:#5c555a;font-size:14px;background:#f5f2f4}
+#view-admin .visit-report tbody tr:last-child{background:#fbf0f3;color:#712e49}
+#view-admin .visit-report td{font-size:clamp(18px,2.6vw,30px);font-weight:700;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+#view-admin .visit-report small{display:block;font:12px/1.4 sans-serif;text-align:right}
+#view-admin .visit-report p{margin:12px 0 0}
+#view-admin #visitReadStatus:empty{display:none}
+@media(max-width:520px){#view-admin .visit-report th{font-size:13px}#view-admin .admin-nav{width:100%}}
 </style>
 </main>
 </section>
@@ -10656,6 +10684,56 @@ function stopAdminDailyVisitsListener(){
   adminDailyVisitsDay = "";
 }
 
+function visitPeriodStarts(day){
+  const date = new Date(day + "T12:00:00Z");
+  date.setUTCDate(date.getUTCDate() - (date.getUTCDay() + 1) % 7);
+  return {Week:date.toISOString().slice(0,10), Month:day.slice(0,8) + "01"};
+}
+function visitCounts(snapshot){
+  let publicCount = 0;
+  snapshot.forEach(record=>{ if(record.child("source").val() === "queue-public") publicCount++; });
+  return {all:snapshot.numChildren(),public:publicCount};
+}
+function watchVisitReport(day){
+  const starts = visitPeriodStarts(day);
+  let today = null, past = null, historyFailed = false;
+  function paint(){
+    for(const source of ["all","public"]){
+      for(const period of ["Day","Week","Month"]){
+        let count = today ? today[source] : null;
+        if(period !== "Day" && starts[period] !== day){
+          if(!past) count = null;
+          else if(count !== null) for(const [key,counts] of past){
+            if(key >= starts[period]) count += counts[source];
+          }
+        }
+        document.getElementById(source+period).textContent = count === null ? "—" : count.toLocaleString("ar-EG");
+      }
+    }
+    document.getElementById("visitReadStatus").textContent = historyFailed ? "تعذرت قراءة إحصائيات الأيام السابقة." : "";
+  }
+  paint();
+  const first = starts.Week < starts.Month ? starts.Week : starts.Month;
+  if(first < day){
+    dailyVisitsRootRef.orderByKey().startAt(first).endBefore(day).once("value").then(snapshot=>{
+      if(adminDailyVisitsOnValue !== receive) return;
+      past = new Map();
+      snapshot.forEach(entry=>{past.set(entry.key,visitCounts(entry));});
+      paint();
+    }).catch(()=>{
+      if(adminDailyVisitsOnValue !== receive) return;
+      historyFailed = true; paint();
+    });
+  }
+  function receive(snapshot){
+    if(adminDailyVisitsOnValue !== receive) return;
+    today = snapshot ? visitCounts(snapshot) : null;
+    renderAdminDailyVisits(today?.all || 0,!today);
+    paint();
+  }
+  return receive;
+}
+
 function startAdminDailyVisitsListener(){
   if(!isAdminUser()) return;
   const day = cairoVisitDayKey();
@@ -10665,9 +10743,9 @@ function startAdminDailyVisitsListener(){
   renderAdminDailyVisits(0,false,true);
   updateAdminMetricsDate();
   adminDailyVisitsRef = dailyVisitsRootRef.child(day);
-  adminDailyVisitsOnValue = snapshot=>renderAdminDailyVisits(snapshot.numChildren());
+  adminDailyVisitsOnValue = watchVisitReport(day);
   adminDailyVisitsOnError = error=>{
-    renderAdminDailyVisits(0,true);
+    adminDailyVisitsOnValue?.(null);
     console.warn("Daily visit read failed:",error?.code || error?.message || error);
   };
   adminDailyVisitsRef.on("value",adminDailyVisitsOnValue,adminDailyVisitsOnError);
