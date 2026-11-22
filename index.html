@@ -9055,45 +9055,16 @@
       <div class="admin-head-main">
         <img src="logo.png" alt="مجمع الإصلاح الطبي" class="admin-head-logo" onerror="this.style.display='none'">
         <div>
-          <h1>لوحة تحكم الأدمن</h1>
+          <p class="brand-name">مجمع الإصلاح الطبي</p><h1>لوحة تحكم الأدمن</h1>
         </div>
       </div>
       <button id="adminLogout" type="button" class="px-4 py-2.5 rounded-xl bg-slate-100 text-slate-600 text-sm font-bold">تسجيل الخروج</button>
     </header>
 
 
-    <details id="nursingAccountPanel">
-      <summary>
-        <span><strong>حسابات التمريض</strong><small>إنشاء حساب أو إعادة تعيين كلمة السر</small></span>
-      </summary>
-      <form id="nursingAccountForm">
-        <div class="nursing-account-picker">
-          <label for="nursingAccountSearch">اسم التمريض</label>
-          <input id="nursingAccountSearch" type="search" placeholder="ابحث بالاسم أو الرقم واختر من القائمة" autocomplete="off" aria-controls="nursingAccountResults">
-          <input id="nursingAccountStaffId" type="hidden">
-          <div id="nursingAccountResults" role="group" aria-label="أسماء التمريض"></div>
-        </div>
-        <div class="nursing-account-action">
-          <p id="nursingAccountStatus" role="status">اختر اسمًا لعرض حالة الحساب.</p>
-          <label for="nursingAccountPassword">كلمة سر جديدة</label>
-          <div class="nursing-account-password-row">
-            <input id="nursingAccountPassword" required disabled type="password" minlength="6" maxlength="128" autocomplete="new-password" aria-describedby="nursingAccountPasswordHint">
-            <button id="nursingAccountPasswordToggle" type="button" disabled aria-controls="nursingAccountPassword" aria-label="إظهار كلمة السر" title="إظهار كلمة السر">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                <path d="M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6S2 12 2 12Z"/>
-                <circle cx="12" cy="12" r="2.6"/>
-                <path class="nursing-account-eye-slash" d="m4 4 16 16" stroke-linecap="round"/>
-              </svg>
-            </button>
-          </div>
-          <small id="nursingAccountPasswordHint">٦ أحرف على الأقل</small>
-          <button type="submit" disabled>إنشاء حساب</button>
-          <p id="nursingAccountMessage" role="status"></p>
-        </div>
-      </form>
-    </details>
 
-    <div id="adminMetricsDate" class="admin-metrics-date" aria-label="تاريخ الإحصائية"></div>
+
+    <div class="section-line"><h2>مؤشرات الاستخدام</h2><div id="adminMetricsDate" class="admin-metrics-date" aria-label="تاريخ الإحصائية"></div></div>
     <div class="admin-metrics-grid">
       <section id="adminConnectionsPanel" class="admin-connections-panel" data-health="loading" data-read-state="pending" aria-label="المتصلون بالنظام حاليًا">
         <div class="admin-connections-head">
@@ -9101,7 +9072,7 @@
             <span class="admin-metric-dot" aria-hidden="true"></span>
             <h2 class="admin-connections-label">المتصلون بالنظام حاليًا</h2>
           </div>
-          <strong id="adminConnectionsCount" class="admin-connections-value num" aria-live="polite">—</strong>
+          <span class="metric-icon"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h5l3-7 4 14 3-7h5"/></svg></span><strong id="adminConnectionsCount" class="admin-connections-value num" aria-live="polite">—</strong>
         </div>
       </section>
 
@@ -9111,18 +9082,19 @@
             <span class="admin-metric-dot" aria-hidden="true"></span>
             <h2 class="admin-connections-label">عدد مستخدمي النظام اليوم</h2>
           </div>
-          <strong id="adminDailyVisitsCount" class="admin-connections-value num" aria-live="polite">—</strong>
+          <span class="metric-icon"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M2 20v-2a7 7 0 0 1 14 0v2m0-15a3 3 0 0 1 0 6m2 3a5 5 0 0 1 4 5"/></svg></span><strong id="adminDailyVisitsCount" class="admin-connections-value num" aria-live="polite">—</strong>
         </div>
       </section>
     </div>
 
+    <div class="section-line"><h2>أدوات الإدارة</h2></div><div class="tools-grid">
     <details class="admin-fold admin-audit-panel">
-      <summary>التحكم في الحجرات</summary>
+      <summary><span class="tool-icon"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V4h13v17M9 8h4m-4 4h4m2 4h.01"/></svg></span><span class="tool-label"><strong>التحكم في الحجرات</strong><small>اختيار الحجرة ومتابعة الدور الحالي</small></span></summary>
       <div id="adminRoomGrid" class="admin-room-grid"></div>
     </details>
 
     <details id="periodReport" class="admin-fold admin-audit-panel">
-      <summary>تجهيز فترات العيادات</summary>
+      <summary><span class="tool-icon"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4m10-4v4M3 10h18m-13 5h3m3 0h2"/></svg></span><span class="tool-label"><strong>تجهيز فترات العيادات</strong><small>مواعيد العيادات وتقرير استلام التمريض</small></span></summary>
       <style>
         #view-admin .admin-fold{margin-top:10px}
         #view-admin .admin-fold>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 18px;list-style:none;cursor:pointer;color:#193a50;background:white;font-size:16px;font-weight:700}
@@ -9170,8 +9142,36 @@
       </div>
       </div>
     </details>
+    <details id="nursingAccountPanel">
+      <summary><span class="tool-icon"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="8" r="3"/><path d="M3 20v-2a6 6 0 0 1 11-3m4-4 4 1v3c0 3-4 5-4 5s-4-2-4-5v-3z"/></svg></span><span class="tool-label"><strong>حسابات التمريض</strong><small>إنشاء حساب أو إعادة تعيين كلمة السر</small></span></summary>
+      <form id="nursingAccountForm">
+        <div class="nursing-account-picker">
+          <label for="nursingAccountSearch">اسم التمريض</label>
+          <input id="nursingAccountSearch" type="search" placeholder="ابحث بالاسم أو الرقم واختر من القائمة" autocomplete="off" aria-controls="nursingAccountResults">
+          <input id="nursingAccountStaffId" type="hidden">
+          <div id="nursingAccountResults" role="group" aria-label="أسماء التمريض"></div>
+        </div>
+        <div class="nursing-account-action">
+          <p id="nursingAccountStatus" role="status">اختر اسمًا لعرض حالة الحساب.</p>
+          <label for="nursingAccountPassword">كلمة سر جديدة</label>
+          <div class="nursing-account-password-row">
+            <input id="nursingAccountPassword" required disabled type="password" minlength="6" maxlength="128" autocomplete="new-password" aria-describedby="nursingAccountPasswordHint">
+            <button id="nursingAccountPasswordToggle" type="button" disabled aria-controls="nursingAccountPassword" aria-label="إظهار كلمة السر" title="إظهار كلمة السر">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                <path d="M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6S2 12 2 12Z"/>
+                <circle cx="12" cy="12" r="2.6"/>
+                <path class="nursing-account-eye-slash" d="m4 4 16 16" stroke-linecap="round"/>
+              </svg>
+            </button>
+          </div>
+          <small id="nursingAccountPasswordHint">٦ أحرف على الأقل</small>
+          <button type="submit" disabled>إنشاء حساب</button>
+          <p id="nursingAccountMessage" role="status"></p>
+        </div>
+      </form>
+    </details>
     <details class="admin-fold admin-audit-panel">
-      <summary>سجل تحديثات النظام</summary>
+      <summary><span class="tool-icon"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11a9 9 0 1 1 2 7M3 5v6h6m3-5v6l4 2"/></svg></span><span class="tool-label"><strong>سجل تحديثات النظام</strong><small>مراجعة العمليات والبحث في تحديثات اليوم</small></span></summary>
       <div class="admin-audit-head">
         <div>
           <p class="admin-audit-subtitle">عمليات اليوم من ٣ الفجر إلى ٣ الفجر بتوقيت القاهرة.</p>
@@ -9198,7 +9198,62 @@
       </div>
       <button id="adminAuditMore" class="admin-audit-filter admin-audit-more" type="button" hidden>عرض المزيد</button>
     </details>
-  </main>
+  </div>
+<style>
+
+#view-admin{background:#f2f6f6;color:#153439}
+#view-admin .admin-shell{max-width:1160px;padding:clamp(14px,3vw,36px);box-sizing:border-box}
+#view-admin .admin-shell::before{display:none}
+#view-admin .admin-head{position:relative;isolation:isolate;overflow:hidden;border:0;border-radius:22px;padding:clamp(18px,3vw,34px);background:linear-gradient(105deg,#145852,#113e43 56%,#102e37);box-shadow:0 8px 24px #102f3718}
+#view-admin .admin-head::before{content:"";position:absolute;z-index:-1;inset:0;background:repeating-radial-gradient(circle at 15% 160%,transparent 0 23px,#a0dfcd15 24px 25px,transparent 26px 43px);pointer-events:none}
+#view-admin .admin-head-logo{background:white;border-radius:12px;padding:7px;width:clamp(85px,12vw,145px);box-sizing:border-box}
+#view-admin .admin-head-main{gap:clamp(12px,2vw,24px)}
+#view-admin .admin-head h1{color:white;font-size:clamp(22px,3vw,36px);line-height:1.4;margin:0}
+#view-admin .brand-name{color:#b6ddd4;margin:0 0 3px;font-size:14px}
+#view-admin #adminLogout{background:#16494d;color:white;border:1px solid #78a5a5;border-radius:10px;padding:9px 16px;cursor:pointer;font:inherit;font-size:14px}
+#view-admin .section-line{display:flex;align-items:center;gap:14px;margin:24px 2px 12px;flex-wrap:wrap}
+#view-admin .section-line::after{content:"";height:1px;flex:1;background:#cfdddb}
+#view-admin .section-line h2{margin:0;color:#234744;font-weight:700;font-size:19px}
+#view-admin .admin-metrics-date{order:1;margin:0;font-size:13px;color:#506c6b}
+#view-admin .admin-metrics-grid,#view-admin .tools-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:0}
+#view-admin .admin-connections-panel{background:#fff;border:1px solid #d1e2dd;min-height:136px;padding:18px 22px;border-radius:16px;box-shadow:0 3px 10px #18353806}
+#view-admin .admin-connections-panel::before,#view-admin #adminDailyVisitsPanel::before{inset:0 0 0 auto;width:4px;height:auto;background:#238374}
+#view-admin #adminDailyVisitsPanel::before{background:#4972b2}
+#view-admin .admin-connections-head{display:grid;grid-template-columns:1fr auto;gap:8px 12px}
+#view-admin .admin-connections-label{font-size:clamp(14px,1.7vw,18px);color:#324d52}
+#view-admin .admin-connections-value{grid-row:2;color:#153d3b;font-size:clamp(38px,5vw,56px);justify-self:start}
+#view-admin .metric-icon,#view-admin .tool-icon{display:grid;place-items:center;border-radius:12px;color:#256d63;background:#e5f3ec;width:44px;height:44px;flex:none}
+#view-admin .metric-icon{grid-column:2;grid-row:1 / 3}
+#view-admin #adminDailyVisitsPanel .metric-icon{background:#eaf0fa;color:#365f97}
+#view-admin .tools-grid{align-items:start}
+#view-admin .tools-grid>details,#view-admin #nursingAccountPanel{min-width:0;margin:0;background:white;border:1px solid #d2dfdf;border-radius:15px;box-shadow:0 3px 10px #18353806;overflow:hidden}
+#view-admin .tools-grid>details[open]{grid-column:1/-1;border-color:#7aa9a1}
+#view-admin .tools-grid>details>summary{display:flex;align-items:center;justify-content:flex-start;gap:14px;padding:18px;min-height:84px;background:#fff;cursor:pointer;box-sizing:border-box}
+#view-admin .tools-grid>details>summary:hover,#view-admin .tools-grid>details[open]>summary{background:#f1f8f6}
+#view-admin .tools-grid summary:focus-visible{outline:3px solid #338a80;outline-offset:-4px}
+#view-admin .tools-grid>details>summary::after{margin-inline-start:auto}
+#view-admin .tool-label strong,#view-admin .tool-label small{display:block;text-align:start}
+#view-admin .tool-label strong{font-size:18px;color:#193a40}
+#view-admin .tool-label small{font-size:13px;color:#50656e;font-weight:400;margin-top:3px}
+#view-admin #periodReport .tool-icon{background:#edf0fb;color:#4f60a0}
+#view-admin #nursingAccountPanel .tool-icon{background:#fff1de;color:#8b5c20}
+#view-admin .tools-grid>details:last-child .tool-icon{background:#eaf0f3;color:#466574}
+#view-admin .admin-room-open{background:#17685f}
+@media(max-width:680px){
+ #view-admin .tools-grid{grid-template-columns:1fr}
+ #view-admin .admin-head{gap:12px}
+ #view-admin .admin-head-logo{width:78px}
+ #view-admin .admin-head h1{font-size:22px}
+ #view-admin .admin-metrics-grid{gap:8px}
+ #view-admin .admin-connections-panel{padding:14px 12px;min-height:116px}
+ #view-admin .metric-icon{display:none}
+ #view-admin .admin-connections-head{grid-template-columns:1fr}
+ #view-admin .admin-connections-title{gap:7px}
+ #view-admin .tools-grid>details>summary{padding:14px;min-height:76px}
+ #view-admin .admin-audit-search label{max-width:100%;flex-wrap:wrap}
+}
+</style>
+</main>
 </section>
 
 <!-- ============================================================
