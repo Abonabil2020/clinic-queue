@@ -9263,6 +9263,11 @@
 #view-admin #queueFeedbackAdminPanel .qf-comment-text{color:#2b3033;font-size:15px;line-height:1.8;white-space:pre-wrap;overflow-wrap:anywhere;margin:9px 0 0}
 #view-admin #queueFeedbackAdminPanel .qf-empty{padding:18px;text-align:center;background:#faf7f9;border:1px dashed #e2cbd4;border-radius:13px;color:#796c73}
 #view-admin #queueFeedbackAdminPanel .qf-more{display:block;margin:16px auto 0}
+/* Admin-only floating back-to-top button. */
+#view-admin .admin-back-to-top{position:fixed;z-index:120;inset-inline-end:16px;bottom:16px;width:44px;height:44px;display:grid;place-items:center;border:1px solid #64263c;border-radius:14px;background:#752e49;color:#fff;font-family:inherit;font-size:25px;font-weight:800;line-height:1;box-shadow:0 6px 20px rgba(83,27,52,.25);opacity:0;visibility:hidden;transform:translateY(8px);transition:opacity .2s ease,visibility .2s ease,transform .2s ease;cursor:pointer;pointer-events:none}
+#view-admin .admin-back-to-top.is-visible{opacity:1;visibility:visible;transform:translateY(0);pointer-events:auto}
+#view-admin .admin-back-to-top:focus-visible{outline:3px solid rgba(117,46,73,.3);outline-offset:3px}
+@media(max-width:520px){#view-admin .admin-back-to-top{inset-inline-end:12px;bottom:12px;width:42px;height:42px;border-radius:13px}}
 @media(max-width:520px){#view-admin #queueFeedbackAdminPanel .qf-admin-content{padding:12px}#view-admin #queueFeedbackAdminPanel .qf-stats{grid-template-columns:1fr 1fr;gap:7px}#view-admin #queueFeedbackAdminPanel .qf-stat{padding:11px}}
 
 #view-admin{background:#f2f6f6;color:#153439}
@@ -9380,6 +9385,7 @@
 @media(max-width:720px){#view-admin .admin-metrics-grid{grid-template-columns:1fr}#view-admin .admin-connections-panel{min-height:auto}#view-admin .admin-connections-head{grid-template-columns:minmax(0,1fr) auto}#view-admin .admin-connections-title{grid-column:1}#view-admin .admin-connections-value{grid-column:2}#view-admin .metric-icon{display:none}}
 </style>
 </main>
+  <button id="adminBackToTop" class="admin-back-to-top" type="button" aria-label="العودة إلى أعلى صفحة الأدمن" title="العودة إلى أعلى الصفحة">↑</button>
 </section>
 
 <!-- ============================================================
@@ -19111,6 +19117,7 @@ route();
   const sources = el("queueFeedbackSources");
   const comments = el("queueFeedbackComments");
   let loaded=false, loading=false, cursor=null;
+  const seenReviewIds=new Set();
   const fmt = new Intl.DateTimeFormat("ar-EG",{timeZone:"Africa/Cairo",year:"numeric",month:"short",day:"numeric",hour:"numeric",minute:"2-digit"});
   const value = n=>Number(n||0).toLocaleString("ar-EG");
   const average = (sum,count)=>count ? (Number(sum||0)/count).toFixed(1) : "—";
@@ -19139,8 +19146,11 @@ route();
     const list=Array.isArray(rows)?rows:[];
     let written=0;
     list.forEach(entry=>{
+      const reviewId=typeof entry?.id==="string"?entry.id:"";
+      if(reviewId&&seenReviewIds.has(reviewId))return;
       const note=String(entry?.comment||"").trim();
       if(!note)return;
+      if(reviewId)seenReviewIds.add(reviewId);
       written++;
       const card=node("article","qf-comment");
       const head=node("div","qf-comment-head");
@@ -19168,10 +19178,10 @@ route();
       const response=await fetch(url,{headers:{Authorization:"Bearer "+token},cache:"no-store",signal:controller.signal});
       if(!response.ok)throw Error(response.status===403?"permission":"request");
       const data=await response.json();
-      if(reset){comments.replaceChildren();renderSummary(data.summary||{});}
+      if(reset){comments.replaceChildren();seenReviewIds.clear();renderSummary(data.summary||{});}
       appendReviews(data.reviews);
       cursor=data.nextCursor||null;
-      more.hidden=!data.hasMore;
+      more.hidden=!(data.hasMore&&cursor);
       results.hidden=false;loaded=true;
       status.textContent="تم تحميل التقييمات المحفوظة. النتائج لا تُصفّر يوميًا.";
     }catch(e){
@@ -19181,6 +19191,25 @@ route();
   refresh.addEventListener("click",()=>load(true));
   more.addEventListener("click",()=>load(false));
   panel.addEventListener("toggle",()=>{if(panel.open&&!loaded)load(true);});
+})();
+</script>
+<script>
+/* Admin-only back-to-top control; no Firebase access. */
+(()=>{
+  const view=document.getElementById("view-admin");
+  const button=document.getElementById("adminBackToTop");
+  if(!view||!button)return;
+  function update(){
+    const position=Math.max(window.scrollY||0,document.documentElement.scrollTop||0,document.body.scrollTop||0);
+    button.classList.toggle("is-visible",!view.classList.contains("hidden-view")&&position>240);
+  }
+  window.addEventListener("scroll",update,{passive:true});
+  window.addEventListener("hashchange",()=>requestAnimationFrame(update));
+  button.addEventListener("click",()=>{
+    const reduced=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    window.scrollTo({top:0,behavior:reduced?"auto":"smooth"});
+  });
+  update();
 })();
 </script>
 </body>
