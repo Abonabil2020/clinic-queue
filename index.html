@@ -122,6 +122,21 @@
     pointer-events:none; border-radius:14px;
   }
 
+  /* Dedicated public follow QR slide — TV scan cycle only */
+#tvPublicFollowSlide[hidden]{display:none!important}
+#tvPublicFollowSlide{position:fixed;inset:0;z-index:1000;box-sizing:border-box;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.5vh;padding:2.5vh 4vw;background:radial-gradient(ellipse at 0 100%,#f1dce5,transparent 45%),radial-gradient(ellipse at 100% 0,#e8edf3,transparent 45%),#f8fafc;color:#7f1d3d;text-align:center;isolation:isolate}
+#tvPublicFollowSlide::before,#tvPublicFollowSlide::after{content:"";position:absolute;z-index:-1;width:35vw;height:35vw;border:2px solid #a73a5820;border-radius:50%;pointer-events:none}
+#tvPublicFollowSlide::before{top:-23vw;right:-9vw;box-shadow:0 0 0 2vw #a73a5809,0 0 0 5vw #a73a5807}
+#tvPublicFollowSlide::after{bottom:-23vw;left:-9vw;box-shadow:0 0 0 2vw #a73a5809,0 0 0 5vw #a73a5807}
+#tvPublicFollowSlide .tv-follow-logo{display:block;max-width:45vw;width:auto;height:9vh;object-fit:contain}
+#tvPublicFollowSlide h2{margin:0;font-size:clamp(26px,min(5.5vw,7.5vh),160px);font-weight:700;line-height:1.15;color:#7f1d3d}
+#tvPublicFollowSlide .tv-follow-code{display:block;width:min(48vh,65vw);height:min(48vh,65vw);object-fit:contain;background:#fff;image-rendering:pixelated;border:3px solid #a73a58;border-radius:1.8vh;box-shadow:0 1.2vh 4vh #7f1d3d20}
+#tvPublicFollowSlide .tv-follow-instruction{margin:0;font-size:clamp(17px,min(3vw,4.5vh),85px);font-weight:700;color:#334155;line-height:1.3}
+#tvPublicFollowSlide .tv-follow-link{direction:ltr;color:#7f1d3d;font-size:clamp(15px,2.6vh,58px);font-weight:700;line-height:1.2}
+#tvPublicFollowSlide .tv-follow-progress{position:absolute;bottom:0;left:0;right:0;height:.7vh;background:#eadce3}
+#tvPublicFollowSlide .tv-follow-progress span{display:block;height:100%;background:linear-gradient(90deg,#7f1d3d,#f3514c);transform-origin:right;animation:tvFollowCountdown 15s linear both}
+@keyframes tvFollowCountdown{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+
   /* ===== شاشة العرض الموحدة لـ 12 عيادة ===== */
   #view-tv{
     min-height:100vh;
@@ -10070,6 +10085,14 @@
 <li><strong>فاتك دورك؟</strong> يرجى إبلاغنا بوصولك.</li>
 <li><strong>لو فاتك دورك:</strong> بعد تسجيل حضورك، تنتظر دخول حالتين، ثم تدخل.</li>
 </ul></dialog>
+  <aside id="tvPublicFollowSlide" hidden aria-label="تابع دورك من هاتفك">
+    <img class="tv-follow-logo" src="logo.png" alt="مجمع الإصلاح الطبي">
+    <h2>تابع دورك من هاتفك</h2>
+    <img class="tv-follow-code" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAhAAAAIQAQAAAAD4e2okAAACEElEQVR4nO3cwY7DIAxFUTzK//8ys6gCzwTYNK5A3EgzbQg6go0FroPl9O3197UAAQEBAQEBAQEBAQEBAQEBMbmu+4u55pwsZWnL3T6vjQICAmIH4qpfa+bTOh3HfdaYCAQERDhx6c0nBtSYUFcZVlrbPqtMBAICIpy4Rg80PuRkEjECRgEBAbEDMYwXmr/wuYyAUUBAQOxAuHiRm+9ZVhXt56ujgICA2IGQeOFXEFayF/WvnwldYyIQEBDhhM3qwTU6jPutMREICIhwQuoveusHzXrePXLzG8kaE4GAgAgn3H4ku33H/UuqXrWlrjfWmAgEBEQ44fYjWs+pFRdZ4sfnqVZkrDERCAiIcMLais3R/TPnSbyAgDiMaN4f8fHAV3am0p6SrkXWmAgEBEQ40a2/uFcSvgZc9yFG/gIC4jyiW9/5zFh8WnX9Qf4CAuI4wr2f6jMT+l/fO2sjyRoTgYCACCdM85lt7sLvQJJ7xn4EAuI4oqwvdDVRWzQy9M7MeWkUEBAQOxDD87VSyXn6Sgz/9KVRQEBA7EBMztdqz+TzPdiPQEAcR0zP10rlvlcZzvoCAuIwYnheju5H6tV7S3WNiUBAQIQTk/P4TH49rRf5TgiIY4nh+Vr3veY2a17j5VFAQEDsQEzO13qe4dmvx1hjIhAQEOHE9Hytn40CAgICAgICAgICAgICAgICYnz9A1oAejxs6N0xAAAAAElFTkSuQmCC" alt="امسح الكود لفتح صفحة متابعة الأدوار">
+    <p class="tv-follow-instruction">امسح الكود وتابع دورك بسهولة</p>
+    <div class="tv-follow-link">queue.islah.me</div>
+    <div class="tv-follow-progress" aria-hidden="true"><span></span></div>
+  </aside>
   <button id="fsBtn" class="fixed bottom-4 left-4 bg-white/80 text-slate-600 text-xs px-3 py-2 rounded-lg shadow">ملء الشاشة</button>
 </section>
 
@@ -13466,16 +13489,17 @@ function stopScanCycle(){
   clearInterval(scanCycleTimer);
   scanCycleTimer = null;
   $("#view-qr").classList.remove("scan-cycle");
+  $("#tvPublicFollowSlide").hidden = true;
   document.querySelectorAll(".scan-legend b").forEach(b=>b.hidden=true);
 }
 function startScanCycle(){
   if(scanCycleTimer !== null) return;
   let codes = false;
   let until = performance.now() + 15000;
-  $("#view-qr").classList.add("scan-cycle");
+  setTvDisplayMode("all");show("tv");startClock();scheduleTvTextFit();
   const paint = ()=>{
-    if(codes){show("qr");renderQrDashboard();}
-    else {setTvDisplayMode("all");show("tv");startClock();scheduleTvTextFit();}
+    $("#tvPublicFollowSlide").hidden = !codes;
+    if(!codes) scheduleTvTextFit();
   };
   const tick = ()=>{
     if(location.hash !== "#/tv-scan-cycle"){stopScanCycle();return;}
@@ -13486,7 +13510,7 @@ function startScanCycle(){
       $("#twelveLatest").hidden = true;
       paint();
     }
-    const badge = document.querySelector((codes ? "#view-qr" : "#view-tv")+" .scan-legend b");
+    const badge = document.querySelector("#view-tv .scan-legend b");
     badge.hidden = false;
     badge.textContent = (codes ? "عرض الأدوار" : "مسح الكود") + " بعد " + ar(Math.ceil((until-now)/1000)) + " ث";
   };
