@@ -13234,6 +13234,7 @@ const RECEPTION_EMAIL = "reception@islah.clinic";
 const CLINICS_MANAGER_EMAIL = "clinics_manager@islah.clinic";
 const NURSING_MANAGER_EMAIL = "nursing_manager@islah.clinic";
 const ADMIN_EMAIL = "admin@islah.clinic";
+const SHARED_ADMIN_EMAIL = "shared-admin@islah.clinic";
 
 let staffManagerLoginRole = AUTH_SCOPE === "nursing-manager" ? "nursing_manager" : "clinics_manager";
 
@@ -13292,7 +13293,7 @@ function prepareStaffManagerLogin(role){
   if(message) message.textContent = "";
 }
 function isAdminUser(user = auth.currentUser){
-  return String(user?.email || "").toLowerCase() === ADMIN_EMAIL;
+  return [ADMIN_EMAIL, SHARED_ADMIN_EMAIL].includes(String(user?.email || "").toLowerCase());
 }
 
 const VIEWS = [
@@ -18363,7 +18364,7 @@ $("#adminLoginForm").addEventListener("submit", async event=>{
   const message = $("#adminLoginMessage");
   message.textContent = "";
 
-  if(username !== "zahran"){
+  if(username !== "zahran" && username !== "admin"){
     message.textContent = "اسم المستخدم غير صحيح";
     return;
   }
@@ -18376,7 +18377,7 @@ $("#adminLoginForm").addEventListener("submit", async event=>{
   button.textContent = "جاري الدخول...";
   try{
     await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-    await auth.signInWithEmailAndPassword(ADMIN_EMAIL, password);
+    await auth.signInWithEmailAndPassword(username === "admin" ? SHARED_ADMIN_EMAIL : ADMIN_EMAIL, password);
     $("#adminPassword").value = "";
     location.hash = "#/admin";
     route();
