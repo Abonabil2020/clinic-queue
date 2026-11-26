@@ -9199,6 +9199,15 @@ function redirectLegacyQueueFollow(){
       </div>
       </div>
     </details>
+    <details class="admin-fold" id="doctorPeriods">
+      <summary><span class="tool-label"><strong>تقرير فترات الأطباء</strong><small>أوقات الكشف والكشوف المقدّرة حسب يوم التشغيل</small></span></summary>
+      <div style="padding:1rem">
+        <label>يوم التشغيل <input type="date" id="doctorPeriodDate" required></label>
+        <button type="button" class="admin-audit-filter" id="doctorPeriodLoad">عرض التقرير</button>
+        <p id="doctorPeriodStatus" role="status"></p>
+        <div id="doctorPeriodRows"></div>
+      </div>
+    </details>
     <details id="nursingAccountPanel">
       <summary><span class="tool-icon"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="8" r="3"/><path d="M3 20v-2a6 6 0 0 1 11-3m4-4 4 1v3c0 3-4 5-4 5s-4-2-4-5v-3z"/></svg></span><span class="tool-label"><strong>حسابات التمريض</strong><small>إنشاء حساب أو إعادة تعيين كلمة السر</small></span></summary>
       <form id="nursingAccountForm">
@@ -12707,6 +12716,204 @@ $("#periodReportLoad").addEventListener("click",()=>{
   filterPeriodReport();
 });
 $("#periodReportSearch").addEventListener("input",filterPeriodReport);
+// تقرير فترات الأطباء: تحليل سجل العمليات عند الطلب في شاشة الأدمن.
+function buildDoctorPeriods(events){
+  const rooms = new Map(), periods = [];
+  function createPeriod(event, prepared){
+    const row = {
+      room:event.roomId, doctor:prepared ? doctorDisplayFromData(event.details) : "طبيب غير محدد",
+      prepared, start:null, end:null, endKind:"", cases:new Map(),
+      normal:null, recall:null, continuation:null, paused:false, last:event.createdAt
+    };
+    periods.push(row);
+    rooms.set(row.room,row);
+    return row;
+  }
+  function record(row, number, result){
+    if(!number) return;
+    const previous = row.cases.get(number);
+    if(previous === "done" || previous === "quick") return;
+    if(previous === "missed" && result !== "done" && result !== "quick") return;
+    if(previous === "estimated" && result !== "missed" && result !== "done" && result !== "quick") return;
+    row.cases.set(number,result);
+  }
+  function endNormal(row, known){
+    if(!row.normal) return;
+    const {number,elapsed} = row.normal;
+    record(row,number,known ? (elapsed > 120000 ? "estimated" : "short") : "unknown");
+    row.normal = null;
+  }
+  function close(row,time,kind){
+    endNormal(row,kind === "confirmed" && !row.recall && !row.continuation);
+    if(row.recall) row.cases.set(row.recall.number,"unknown");
+    row.end = time;
+    row.endKind = kind;
+    rooms.delete(row.room);
+  }
+  for(const event of events){
+    const {action,roomId,createdAt} = event;
+    if(!roomId) continue;
+    let row = rooms.get(roomId);
+    if(row){
+      const elapsed = createdAt-row.last;
+      if(!row.paused){
+        if(row.recall) row.recall.elapsed += elapsed;
+        else if(row.normal && !row.continuation) row.normal.elapsed += elapsed;
+      }
+      row.last = createdAt;
+    }
+    if(action === "clinic_prepared"){
+      if(row) close(row,createdAt,"estimated");
+      createPeriod(event,true);
+      continue;
+    }
+    if(!row){
+      if(action !== "queue_number" && action !== "recall_missed") continue;
+      row = createPeriod(event,false);
+    }
+    const numbers = reportDigits(event.summary).match(/\d+/g) || [];
+    const number = Number(numbers[0]);
+    switch(action){
+      case "queue_number": {
+        if(numbers.length !== 2) break;
+        const next = Number(numbers[1]);
+        if(next === number) break;
+        endNormal(row,row.normal?.number === number && !row.recall && !row.continuation);
+        if(row.recall) row.cases.set(row.recall.number,"unknown");
+        row.recall = null;
+        row.continuation = null;
+        if(next > 0){
+          if(row.prepared && row.start === null) row.start = createdAt;
+          row.normal = {number:next,elapsed:0};
+        }
+        break;
+      }
+      case "clinic_status":
+        if(event.summary?.includes("استراحة")) row.paused = true;
+        else if(event.summary?.includes("تعمل الآن")) row.paused = false;
+        break;
+      case "mark_missed":
+        if(row.normal?.number === number) row.normal = null;
+        else endNormal(row,true);
+        record(row,number,"missed");
+        break;
+      case "cancel_missed":
+        if(row.cases.get(number) === "missed") row.cases.set(number,"unknown");
+        if(row.recall?.number === number) row.recall = null;
+        break;
+      case "no_waiting":
+      case "continuation_add":
+        if(row.normal?.number === number) endNormal(row,true);
+        break;
+      case "continuation_call":
+        row.continuation = number;
+        break;
+      case "continuation_done":
+      case "continuation_back":
+        if(row.continuation === number) row.continuation = null;
+        break;
+      case "recall_missed":
+        if(number && row.recall?.number !== number) row.recall = {number,elapsed:0};
+        break;
+      case "recall_missed_again":
+        record(row,number,"missed");
+        row.recall = null;
+        break;
+      case "recall_done":
+      case "recall_done_with_continuation":
+        if(row.recall?.number === number) record(row,number,row.recall.elapsed <= 120000 ? "quick" : "done");
+        else if(!["quick","done"].includes(row.cases.get(number))) row.cases.set(number,"unknown");
+        row.recall = null;
+        break;
+      case "clinic_finished": close(row,createdAt,"confirmed"); break;
+      case "clinic_reset": close(row,null,"reset"); break;
+    }
+  }
+  for(const row of rooms.values()){
+    endNormal(row,false);
+    if(row.recall) row.cases.set(row.recall.number,"unknown");
+  }
+  return periods.map(row=>{
+    const counts = {estimated:0,done:0,quick:0,short:0,unknown:0,missed:0};
+    for(const result of row.cases.values()) counts[result]++;
+    return {room:row.room,doctor:row.doctor,prepared:row.prepared,start:row.start,end:row.end,
+      endKind:row.endKind,counts,total:counts.estimated+counts.done+counts.quick};
+  });
+}
+
+let doctorPeriodRequest = 0;
+function clearDoctorPeriods(){
+  doctorPeriodRequest++;
+  $("#doctorPeriodRows").replaceChildren();
+  $("#doctorPeriodStatus").textContent = "";
+  $("#doctorPeriodLoad").disabled = false;
+}
+function doctorPeriodToday(){
+  const date = auditCairoParts(auditDayBoundary(Date.now()+dailyVisitServerOffset));
+  return [date.year,String(date.month).padStart(2,"0"),String(date.day).padStart(2,"0")].join("-");
+}
+$("#doctorPeriods").addEventListener("toggle",()=>{
+  if($("#doctorPeriods").open && !$("#doctorPeriodDate").value) $("#doctorPeriodDate").value = doctorPeriodToday();
+});
+$("#doctorPeriodDate").addEventListener("change",clearDoctorPeriods);
+$("#doctorPeriodLoad").addEventListener("click",async ()=>{
+  if(!isAdminUser()) return;
+  clearDoctorPeriods();
+  const request = doctorPeriodRequest;
+  const active = ()=>request === doctorPeriodRequest && isAdminUser() && !$("#view-admin").classList.contains("hidden-view");
+  const day = $("#doctorPeriodDate").value;
+  const status = $("#doctorPeriodStatus");
+  if(!day || day > doctorPeriodToday()){ status.textContent = "اختر يوم تشغيل حاليًا أو سابقًا."; return; }
+  $("#doctorPeriodLoad").disabled = true;
+  status.textContent = "جارٍ إعداد التقرير…";
+  try{
+    const noon = Date.parse(day+"T12:00:00Z");
+    const start = auditDayBoundary(noon), end = auditDayBoundary(noon,1);
+    const query = auditLogsRef.orderByChild("createdAt").startAt(start).endAt(end-1);
+    let events;
+    if(adminAuditQuery && query.isEqual(adminAuditQuery) && adminAuditStatus !== "error"){
+      if(adminAuditStatus !== "ready"){ status.textContent = "سجل اليوم قيد التحميل. أعد المحاولة بعد اكتماله."; return; }
+      events = Array.from(adminAuditItems.values());
+    }else{
+      const snapshot = await query.once("value");
+      if(!active()) return;
+      events = [];
+      snapshot.forEach(child=>{ events.push({...child.val(),id:child.key}); });
+    }
+    const rows = buildDoctorPeriods(events.filter(e=>e.createdAt>=start && e.createdAt<end)
+      .sort((a,b)=>a.createdAt-b.createdAt || a.id.localeCompare(b.id)));
+    const fragment = document.createDocumentFragment();
+    const totals = {total:0,short:0,unknown:0};
+    for(const row of rows){
+      const section = document.createElement("article");
+      section.className = "admin-audit-item";
+      const title = document.createElement("strong");
+      title.textContent = row.doctor+" · حجرة "+ar(row.room);
+      const time = document.createElement("p");
+      const endText = row.end ? reportClock(row.end)+(row.endKind === "estimated" ? " (تقديرية)" : "") :
+        row.endKind === "reset" ? "غير مسجّلة قبل التصفير" : "غير مسجّلة";
+      const minutes = row.start && row.end ? Math.floor((row.end-row.start)/60000) : null;
+      time.textContent = "بداية الكشف: "+(row.start ? reportClock(row.start) : row.prepared ? "لم يُسجّل بدء الكشف" : "التجهيز غير مسجّل")+" · النهاية: "+endText+
+        (minutes === null ? "" : " · مدة الفترة: "+ar(minutes)+" د"+(row.endKind === "estimated" ? " (تقديرية)" : ""));
+      const counts = document.createElement("p");
+      counts.textContent = "الكشوف المحتسبة: "+ar(row.total)+" · منها فائت تم كشفه: "+ar(row.counts.done+row.counts.quick)+
+        " (إنهاء سريع: "+ar(row.counts.quick)+") · قصيرة: "+ar(row.counts.short)+" · غير محسومة: "+ar(row.counts.unknown);
+      section.append(title,time,counts);
+      fragment.append(section);
+      totals.total += row.total;
+      totals.short += row.counts.short;
+      totals.unknown += row.counts.unknown;
+    }
+    $("#doctorPeriodRows").replaceChildren(fragment);
+    status.textContent = rows.length ? "إجمالي كشوف المجمع المقدّرة: "+ar(totals.total)+" · قصيرة خارج الإجمالي: "+ar(totals.short)+
+      " · غير محسومة خارج الإجمالي: "+ar(totals.unknown) : "لا توجد فترات مسجّلة في هذا اليوم.";
+  }catch(error){
+    if(active()) status.textContent = "تعذّر إعداد التقرير. أعد المحاولة.";
+  }finally{
+    if(request === doctorPeriodRequest) $("#doctorPeriodLoad").disabled = false;
+  }
+});
+
 function startAdminAuditListener(){
   if(adminAuditQuery || !isAdminUser()) return;
   const now = Date.now()+dailyVisitServerOffset;
@@ -12751,6 +12958,7 @@ function startAdminAuditListener(){
 
 function stopAdminAuditListener(){
   clearPeriodReport();
+  clearDoctorPeriods();
   adminAuditQuery?.off();
   adminAuditQuery = null;
   clearTimeout(adminAuditTimer);
