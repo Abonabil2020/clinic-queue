@@ -15,7 +15,13 @@
 <link rel="preload" href="./fonts/RB-Regular.otf" as="font" type="font/otf" crossorigin>
 <link rel="preload" href="./fonts/RB-Bold.ttf" as="font" type="font/ttf" crossorigin>
 <script>
+function redirectLegacyQueueFollow(){
+  if(!["#/mobile", "#/mobile-third", "#/mobile-ground"].includes(location.hash)) return false;
+  location.replace("https://queue.islah.me/");
+  return true;
+}
 (function(){
+  if(redirectLegacyQueueFollow()) return;
   var individualNurse = new URLSearchParams(location.search).get("nurse-access") === "individual";
   if(individualNurse && (!location.hash || location.hash === "#")){
     var entry = new URL(location.href);
@@ -13519,9 +13525,7 @@ function startScanCycle(){
   scanCycleTimer = setInterval(tick,250);
 }
 function route(){
-  if(["#/mobile","#/mobile-third","#/mobile-ground"].includes(location.hash)){
-    show("mobile"); renderMobileFollow(); return;
-  }
+  if(redirectLegacyQueueFollow()) return;
   if(location.hash !== "#/tv-scan-cycle") stopScanCycle();
   if(!ensureAuthScope()) return;
   if(AUTH_SCOPE === "reception" && receptionManagerEntry() === "password"){
