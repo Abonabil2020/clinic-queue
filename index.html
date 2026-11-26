@@ -9201,10 +9201,51 @@ function redirectLegacyQueueFollow(){
     </details>
     <details class="admin-fold" id="doctorPeriods">
       <summary><span class="tool-label"><strong>تقرير فترات الأطباء</strong><small>أوقات الكشف والكشوف المقدّرة حسب يوم التشغيل</small></span></summary>
-      <div style="padding:1rem">
-        <label>يوم التشغيل <input type="date" id="doctorPeriodDate" required></label>
-        <button type="button" class="admin-audit-filter" id="doctorPeriodLoad">عرض التقرير</button>
-        <p id="doctorPeriodStatus" role="status"></p>
+      <style>
+        #doctorPeriods .dp-body{padding:clamp(12px,2vw,24px);background:#faf8f9;color:#342c32;text-align:start}
+        #doctorPeriods .dp-controls,#doctorPeriods .dp-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+        #doctorPeriods .dp-controls label{display:grid;gap:3px;font-weight:700}
+        #doctorPeriods input,#doctorPeriods #doctorPeriodLoad{border:1px solid #cbbfc5;border-radius:8px;padding:6px 12px;min-height:40px}
+        #doctorPeriods #doctorPeriodLoad{align-self:end;background:#71364c;color:white;font-weight:700}
+        #doctorPeriods .dp-guide{margin:10px 0;background:white;border:1px solid #dfd6dc;border-radius:10px;padding:8px 12px}
+        #doctorPeriods .dp-guide summary{cursor:pointer;color:#71364c;font-weight:700}
+        #doctorPeriods .dp-guide dl{margin:8px 0;line-height:1.6}
+        #doctorPeriods .dp-guide dt{font-weight:700;margin-top:6px}
+        #doctorPeriods .dp-guide dd{margin:0}
+        #doctorPeriods #doctorPeriodStatus:empty{display:none}
+        #doctorPeriods #doctorPeriodStatus{margin:12px 0}
+        #doctorPeriods .dp-summary{background:#f4eaf0;border-inline-start:4px solid #71364c;border-radius:10px;padding:12px 16px}
+        #doctorPeriods .dp-summary strong{font-size:2rem;color:#632f47;margin-inline-end:8px}
+        #doctorPeriods #doctorPeriodRows{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,345px),1fr));gap:12px}
+        #doctorPeriods .dp-card{min-width:0;background:white;border:1px solid #e1d9de;border-radius:12px;padding:14px}
+        #doctorPeriods .dp-head{justify-content:space-between;align-items:flex-start}
+        #doctorPeriods .dp-head h3{margin:0;font-size:1.05rem}
+        #doctorPeriods .dp-head small,#doctorPeriods .dp-times dt{color:#665b64}
+        #doctorPeriods .dp-count{background:#f4eaf0;color:#632f47;border-radius:8px;padding:4px 10px;text-align:center}
+        #doctorPeriods .dp-count strong,#doctorPeriods .dp-count small{display:block}
+        #doctorPeriods .dp-count strong{font-size:1.4rem}
+        #doctorPeriods .dp-times{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;border-top:1px solid #eee5ea;padding-top:10px;margin:12px 0 0}
+        #doctorPeriods .dp-times dd{font-weight:700;margin:3px 0 0}
+        #doctorPeriods .dp-note{margin:8px 0 0;font-size:.9rem}
+        @media(max-width:480px){#doctorPeriods .dp-times{grid-template-columns:1fr}#doctorPeriods .dp-times div{display:flex;justify-content:space-between;gap:8px}}
+      </style>
+      <div class="dp-body">
+        <div class="dp-controls">
+          <label>يوم التشغيل <input type="date" id="doctorPeriodDate" required></label>
+          <button type="button" id="doctorPeriodLoad">عرض التقرير</button>
+        </div>
+        <details class="dp-guide">
+          <summary>إزاي بنحسب الأرقام؟</summary>
+          <dl>
+            <dt>الكشوف المحتسبة</dt><dd>نحسب النداء العادي إذا تجاوز الكشف دقيقتين بعد خصم الاستراحة وكانت نهايته معروفة. ونحسب الفائت إذا عاد وسجّل التمريض إنهاء كشفه. يُحسب الرقم مرة واحدة في الفترة، والاستكمال لا يضيف كشفًا.</dd>
+            <dt>عاد من الفائت وتم كشفه</dt><dd>هذه الحالات داخلة في الإجمالي. «إنهاء سريع» يعني أن التمريض أنهى كشف الفائت خلال دقيقتين أو أقل من إعادة ندائه بعد خصم الاستراحة. من سُجّل «لم يحضر» ولم يعد لا يُحسب.</dd>
+            <dt>حالة قصيرة</dt><dd>نداء عادي استغرق دقيقتين أو أقل. يظهر خارج الإجمالي.</dd>
+            <dt>حالة غير محسومة</dt><dd>السجل لا يكفي لحسم احتسابها، مثل رقم بدأ كشفه ولم تُسجّل نهايته بعد. تظهر خارج الإجمالي.</dd>
+            <dt>بداية الكشف ومدة الفترة</dt><dd>البداية وقت أول رقم كشف بعد تجهيز العيادة. مدة الفترة من بداية الكشف إلى نهاية الفترة، وتشمل الاستراحات.</dd>
+            <dt>نهاية تقديرية</dt><dd>بدأ تجهيز فترة جديدة في الحجرة قبل تسجيل إنهاء الفترة السابقة، فاستُخدم وقت التجهيز لتقدير نهايتها ومدتها.</dd>
+          </dl>
+        </details>
+        <div id="doctorPeriodStatus" role="status"></div>
         <div id="doctorPeriodRows"></div>
       </div>
     </details>
@@ -12884,29 +12925,71 @@ $("#doctorPeriodLoad").addEventListener("click",async ()=>{
       .sort((a,b)=>a.createdAt-b.createdAt || a.id.localeCompare(b.id)));
     const fragment = document.createDocumentFragment();
     const totals = {total:0,short:0,unknown:0};
+    function element(tag,text,style){
+      const node = document.createElement(tag);
+      if(text !== undefined) node.textContent = text;
+      if(style) node.className = style;
+      return node;
+    }
+    function durationText(minutes){
+      if(minutes < 1) return "أقل من دقيقة";
+      const hours = Math.floor(minutes/60), rest = minutes%60;
+      const parts = [];
+      if(hours) parts.push(hours === 1 ? "ساعة" : hours === 2 ? "ساعتان" : ar(hours)+(hours<=10 ? " ساعات" : " ساعة"));
+      if(rest) parts.push(rest === 1 ? "دقيقة" : rest === 2 ? "دقيقتان" : ar(rest)+(rest<=10 ? " دقائق" : " دقيقة"));
+      return parts.join(" و");
+    }
+    function outsideCounts(short,unknown){
+      const parts = [];
+      if(short) parts.push("حالات قصيرة: "+ar(short));
+      if(unknown) parts.push("حالات غير محسومة: "+ar(unknown));
+      return parts.length ? "خارج الإجمالي · "+parts.join("، ") : "";
+    }
     for(const row of rows){
-      const section = document.createElement("article");
-      section.className = "admin-audit-item";
-      const title = document.createElement("strong");
-      title.textContent = row.doctor+" · حجرة "+ar(row.room);
-      const time = document.createElement("p");
-      const endText = row.end ? reportClock(row.end)+(row.endKind === "estimated" ? " (تقديرية)" : "") :
+      const section = element("article",undefined,"dp-card");
+      const head = element("header",undefined,"dp-head");
+      const name = element("div");
+      name.append(element("h3",row.doctor),element("small","حجرة "+ar(row.room)));
+      const count = element("div",undefined,"dp-count");
+      count.append(element("strong",ar(row.total)),element("small","كشوف محتسبة"));
+      head.append(name,count);
+      const estimated = row.endKind === "estimated";
+      const times = element("dl",undefined,"dp-times");
+      const endText = row.end ? reportClock(row.end)+(estimated ? " (تقديرية)" : "") :
         row.endKind === "reset" ? "غير مسجّلة قبل التصفير" : "غير مسجّلة";
       const minutes = row.start && row.end ? Math.floor((row.end-row.start)/60000) : null;
-      time.textContent = "بداية الكشف: "+(row.start ? reportClock(row.start) : row.prepared ? "لم يُسجّل بدء الكشف" : "التجهيز غير مسجّل")+" · النهاية: "+endText+
-        (minutes === null ? "" : " · مدة الفترة: "+ar(minutes)+" د"+(row.endKind === "estimated" ? " (تقديرية)" : ""));
-      const counts = document.createElement("p");
-      counts.textContent = "الكشوف المحتسبة: "+ar(row.total)+" · منها فائت تم كشفه: "+ar(row.counts.done+row.counts.quick)+
-        " (إنهاء سريع: "+ar(row.counts.quick)+") · قصيرة: "+ar(row.counts.short)+" · غير محسومة: "+ar(row.counts.unknown);
-      section.append(title,time,counts);
+      for(const [label,value] of [
+        ["بداية الكشف",row.start ? reportClock(row.start) : row.prepared ? "لم يُسجّل بدء الكشف" : "التجهيز غير مسجّل"],
+        ["نهاية الفترة",endText],
+        ["مدة الفترة",minutes === null ? "غير متاحة" : durationText(minutes)+(estimated ? " (تقديرية)" : "")]
+      ]){
+        const pair = element("div");
+        pair.append(element("dt",label),element("dd",value));
+        times.append(pair);
+      }
+      section.append(head,times);
+      const returned = row.counts.done+row.counts.quick;
+      if(returned){
+        const quick = row.counts.quick ? "، منها إنهاء سريع: "+ar(row.counts.quick) : "";
+        section.append(element("p","ضمن الكشوف المحتسبة · عاد من الفائت وتم كشفه: "+ar(returned)+quick,"dp-note"));
+      }
+      const outside = outsideCounts(row.counts.short,row.counts.unknown);
+      if(outside) section.append(element("p",outside,"dp-note"));
       fragment.append(section);
       totals.total += row.total;
       totals.short += row.counts.short;
       totals.unknown += row.counts.unknown;
     }
     $("#doctorPeriodRows").replaceChildren(fragment);
-    status.textContent = rows.length ? "إجمالي كشوف المجمع المقدّرة: "+ar(totals.total)+" · قصيرة خارج الإجمالي: "+ar(totals.short)+
-      " · غير محسومة خارج الإجمالي: "+ar(totals.unknown) : "لا توجد فترات مسجّلة في هذا اليوم.";
+    if(rows.length){
+      const summary = element("div",undefined,"dp-summary");
+      summary.append(element("strong",ar(totals.total)),element("span","إجمالي الكشوف المقدّرة للمجمع"));
+      const outside = outsideCounts(totals.short,totals.unknown);
+      if(outside) summary.append(element("p",outside,"dp-note"));
+      status.replaceChildren(summary);
+    }else{
+      status.textContent = "لا توجد فترات مسجّلة في هذا اليوم.";
+    }
   }catch(error){
     if(active()) status.textContent = "تعذّر إعداد التقرير. أعد المحاولة.";
   }finally{
