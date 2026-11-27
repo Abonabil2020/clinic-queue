@@ -9360,6 +9360,14 @@ function redirectLegacyQueueFollow(){
 #view-admin #queueFeedbackAdminPanel .qf-comment-head{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;color:#6c5e68;font-size:12px}
 #view-admin #queueFeedbackAdminPanel .qf-comment-stars{color:#a17321;font-weight:800}
 #view-admin #queueFeedbackAdminPanel .qf-comment-text{color:#2b3033;font-size:15px;line-height:1.8;white-space:pre-wrap;overflow-wrap:anywhere;margin:9px 0 0}
+#view-admin #queueFeedbackAdminPanel .qf-voice{margin-top:10px;padding:12px;border:1px solid #eadde3;border-radius:12px;background:#fbf7f9;display:grid;gap:9px}
+#view-admin #queueFeedbackAdminPanel .qf-voice-title{font-weight:700;color:#752e49;font-size:14px}
+#view-admin #queueFeedbackAdminPanel .qf-voice-actions{display:flex;flex-wrap:wrap;gap:8px}
+#view-admin #queueFeedbackAdminPanel .qf-voice-actions button{min-height:44px;padding:8px 14px;border-radius:10px;border:1px solid #752e49;background:#752e49;color:#fff;font-weight:700;font-size:13px}
+#view-admin #queueFeedbackAdminPanel .qf-voice-actions button+button{background:#fff;color:#752e49}
+#view-admin #queueFeedbackAdminPanel .qf-voice-actions button:disabled{opacity:.55;cursor:wait}
+#view-admin #queueFeedbackAdminPanel .qf-voice audio{width:100%;max-width:100%}
+#view-admin #queueFeedbackAdminPanel .qf-voice-status{font-size:12px;color:#6c5e68}
 #view-admin #queueFeedbackAdminPanel .qf-empty{padding:18px;text-align:center;background:#faf7f9;border:1px dashed #e2cbd4;border-radius:13px;color:#796c73}
 #view-admin #queueFeedbackAdminPanel .qf-more{display:block;margin:16px auto 0}
 /* Admin-only floating back-to-top button. */
@@ -19621,6 +19629,67 @@ route();
       sources.append(wrap);
     }
   }
+  const voiceAPI="https://europe-west1-islah-queue.cloudfunctions.net/getQueueVoiceFeedbackV1";
+  const voiceExtensions={"audio/webm":"webm","audio/mp4":"m4a","audio/ogg":"ogg"};
+  const voiceCleanups=new Set();
+  function clearVoicePlayers(){for(const cleanup of voiceCleanups)cleanup();}
+  function createVoicePlayer(id,meta){
+    const wrap=node("div","qf-voice");
+    const actions=node("div","qf-voice-actions");
+    const play=node("button","","▶ تشغيل التسجيل");
+    const download=node("button","","↓ تحميل التسجيل");
+    play.type=download.type="button";
+    const audio=node("audio");audio.controls=true;audio.preload="none";audio.hidden=true;
+    const message=node("div","qf-voice-status");message.setAttribute("role","status");
+    let objectURL=null,controller=null,epoch=0;
+    const allowed=()=>panel.open&&wrap.isConnected&&isAdminUser()&&!!auth.currentUser&&!document.getElementById("view-admin").classList.contains("hidden-view");
+    function cleanup(){
+      epoch++;controller?.abort();controller=null;
+      audio.pause();audio.removeAttribute("src");audio.load();audio.hidden=true;
+      if(objectURL)URL.revokeObjectURL(objectURL);
+      objectURL=null;play.disabled=download.disabled=false;message.textContent="";
+    }
+    voiceCleanups.add(cleanup);
+    async function request(action){
+      if(!allowed()||controller)return;
+      const user=auth.currentUser, currentEpoch=epoch;
+      const valid=()=>epoch===currentEpoch&&allowed()&&auth.currentUser===user;
+      const requestController=new AbortController();controller=requestController;
+      play.disabled=download.disabled=true;
+      const timer=setTimeout(()=>requestController.abort(),130000);
+      try{
+        if(!objectURL){
+          message.textContent="جارٍ تحميل التسجيل…";
+          const token=await user.getIdToken();if(!valid())return;
+          const url=new URL(voiceAPI);url.searchParams.set("id",id);
+          const response=await fetch(url,{headers:{Authorization:"Bearer "+token},cache:"no-store",signal:requestController.signal});
+          if(!response.ok)throw Error([401,403].includes(response.status)?"permission":"request");
+          const blob=await response.blob();
+          if(!valid())return;
+          if(blob.type.split(";")[0]!==meta.type||blob.size!==meta.size)throw Error("format");
+          objectURL=URL.createObjectURL(blob);
+        }
+        if(!valid())return;
+        message.textContent="";
+        if(action==="download"){
+          const link=node("a");link.href=objectURL;link.download="queue-feedback-"+id+"."+voiceExtensions[meta.type];
+          wrap.append(link);link.click();link.remove();
+        }else{
+          if(!audio.getAttribute("src"))audio.src=objectURL;
+          audio.hidden=false;
+          for(const other of comments.querySelectorAll("audio"))if(other!==audio)other.pause();
+          try{await audio.play();}catch{if(valid())message.textContent="اضغط تشغيل من مشغل الصوت للاستماع.";}
+        }
+      }catch(e){if(valid())message.textContent=e.message==="permission"?"لا توجد صلاحية للوصول إلى التسجيل.":"تعذّر تحميل التسجيل. حاول مرة أخرى.";}
+      finally{clearTimeout(timer);if(epoch===currentEpoch){controller=null;play.disabled=download.disabled=false;}}
+    }
+    play.addEventListener("click",()=>request("play"));
+    download.addEventListener("click",()=>request("download"));
+    audio.addEventListener("play",()=>{for(const other of comments.querySelectorAll("audio"))if(other!==audio)other.pause();});
+    audio.addEventListener("error",()=>{if(audio.getAttribute("src"))message.textContent="تعذّر تشغيل التسجيل على هذا المتصفح. يمكنك تحميله.";});
+    actions.append(play,download);wrap.append(node("div","qf-voice-title","🎙 تعليق صوتي"),actions,audio,message);
+    return wrap;
+  }
   function appendReviews(rows){
     const list=Array.isArray(rows)?rows:[];
     let written=0;
@@ -19628,7 +19697,9 @@ route();
       const reviewId=typeof entry?.id==="string"?entry.id:"";
       if(reviewId&&seenReviewIds.has(reviewId))return;
       const note=String(entry?.comment||"").trim();
-      if(!note)return;
+      const meta=entry?.audio;
+      const hasVoice=/^[-\w]{20}$/.test(reviewId)&&Object.prototype.hasOwnProperty.call(voiceExtensions,meta?.type)&&Number.isInteger(meta?.size)&&meta.size>0&&meta.size<=8*1024*1024;
+      if(!note&&!hasVoice)return;
       if(reviewId)seenReviewIds.add(reviewId);
       written++;
       const card=node("article","qf-comment");
@@ -19636,10 +19707,12 @@ route();
       const date=Number(entry.createdAt);
       head.append(node("span","",Number.isFinite(date)&&date>0?fmt.format(new Date(date)):"بدون تاريخ"));
       head.append(node("span","qf-comment-stars",labels[entry.source]||"تقييم"));
-      const p=node("p","qf-comment-text",note);
-      card.append(head,p);comments.append(card);
+      card.append(head);
+      if(note)card.append(node("p","qf-comment-text",note));
+      if(hasVoice)card.append(createVoicePlayer(reviewId,meta));
+      comments.append(card);
     });
-    if(!comments.children.length){comments.append(node("div","qf-empty","لا توجد آراء مكتوبة في التقييمات المعروضة."));}
+    if(!comments.children.length){comments.append(node("div","qf-empty","لا توجد آراء مكتوبة أو صوتية في التقييمات المعروضة."));}
     else if(written && comments.firstElementChild?.classList.contains("qf-empty"))comments.firstElementChild.remove();
   }
   async function load(reset){
@@ -19657,7 +19730,7 @@ route();
       const response=await fetch(url,{headers:{Authorization:"Bearer "+token},cache:"no-store",signal:controller.signal});
       if(!response.ok)throw Error(response.status===403?"permission":"request");
       const data=await response.json();
-      if(reset){comments.replaceChildren();seenReviewIds.clear();renderSummary(data.summary||{});}
+      if(reset){clearVoicePlayers();voiceCleanups.clear();comments.replaceChildren();seenReviewIds.clear();renderSummary(data.summary||{});}
       appendReviews(data.reviews);
       cursor=data.nextCursor||null;
       more.hidden=!(data.hasMore&&cursor);
@@ -19669,7 +19742,10 @@ route();
   }
   refresh.addEventListener("click",()=>load(true));
   more.addEventListener("click",()=>load(false));
-  panel.addEventListener("toggle",()=>{if(panel.open&&!loaded)load(true);});
+  panel.addEventListener("toggle",()=>{if(!panel.open)clearVoicePlayers();else if(!loaded)load(true);});
+  window.addEventListener("hashchange",()=>{if(location.hash!=="#/admin")clearVoicePlayers();});
+  window.addEventListener("pagehide",clearVoicePlayers);
+  auth.onAuthStateChanged(user=>{if(!isAdminUser(user)||!user)clearVoicePlayers();});
 })();
 </script>
 <script>
