@@ -19631,15 +19631,67 @@ route();
   }
   const voiceAPI="https://europe-west1-islah-queue.cloudfunctions.net/getQueueVoiceFeedbackV1";
   const voiceExtensions={"audio/webm":"webm","audio/mp4":"m4a","audio/ogg":"ogg"};
+  // MP3 export only: local encoder, loaded inside a worker on demand.
+  async function voiceMP3(objectURL,signal){
+    const check=()=>{if(signal.aborted)throw new DOMException("Aborted","AbortError");};
+    check();
+    const Offline=window.OfflineAudioContext||window.webkitOfflineAudioContext;
+    if(!Offline||!window.Worker)throw Error("mp3_unsupported");
+    const decoder=new Offline(1,1,44100);
+    const source=await fetch(objectURL,{signal});
+    const decoded=await decoder.decodeAudioData(await source.arrayBuffer());
+    check();
+    const channels=Array.from({length:decoded.numberOfChannels},(_,i)=>decoded.getChannelData(i));
+    const samples=new Int16Array(decoded.length);
+    // Mix to mono in small batches so even a long recording does not block the UI.
+    for(let start=0;start<samples.length;start+=65536){
+      check();
+      const end=Math.min(samples.length,start+65536);
+      for(let i=start;i<end;i++){
+        let v=0;for(const channel of channels)v+=channel[i];
+        v=Math.max(-1,Math.min(1,v/channels.length));samples[i]=v<0?v*32768:v*32767;
+      }
+      if(end<samples.length)await new Promise(resolve=>setTimeout(resolve,0));
+    }
+    const library=new URL("./lame.min.js",location.href).href;
+    const workerCode=`self.onmessage=function(event){try{
+      importScripts(event.data.library);
+      const input=new Int16Array(event.data.samples);
+      const encoder=new lamejs.Mp3Encoder(1,44100,96);
+      const parts=[];
+      for(let i=0;i<input.length;i+=1152){const chunk=encoder.encodeBuffer(input.subarray(i,i+1152));if(chunk.length)parts.push(new Int8Array(chunk));}
+      const tail=encoder.flush();if(tail.length)parts.push(new Int8Array(tail));
+      const blob=new Blob(parts,{type:"audio/mpeg"});if(!blob.size)throw Error("empty");
+      self.postMessage({blob});
+    }catch(e){self.postMessage({error:true});}};`;
+    return new Promise((resolve,reject)=>{
+      let worker,workerURL,finished=false;
+      const finish=(error,blob)=>{
+        if(finished)return;finished=true;signal.removeEventListener("abort",abort);
+        if(worker)worker.terminate();if(workerURL)URL.revokeObjectURL(workerURL);
+        if(error)reject(error);else resolve(blob);
+      };
+      const abort=()=>finish(new DOMException("Aborted","AbortError"));
+      if(signal.aborted){abort();return;}
+      signal.addEventListener("abort",abort,{once:true});
+      try{
+        workerURL=URL.createObjectURL(new Blob([workerCode],{type:"text/javascript"}));
+        worker=new Worker(workerURL);
+        worker.onmessage=event=>event.data.blob?finish(null,event.data.blob):finish(Error("mp3_encoder"));
+        worker.onerror=()=>finish(Error("mp3_encoder"));
+        worker.postMessage({library,samples:samples.buffer},[samples.buffer]);
+      }catch(error){finish(error);}
+    });
+  }
   const voiceCleanups=new Set();
   function clearVoicePlayers(){for(const cleanup of voiceCleanups)cleanup();}
   function createVoicePlayer(id,meta){
     const wrap=node("div","qf-voice");
     const actions=node("div","qf-voice-actions");
     const play=node("button","","▶ تشغيل التسجيل");
-    const download=node("button","","↓ تحميل التسجيل");
+    const download=node("button","","↓ تحميل MP3");
     play.type=download.type="button";
-    const audio=node("audio");audio.controls=true;audio.preload="none";audio.hidden=true;
+    const audio=node("audio");audio.controls=true;audio.setAttribute("controlslist","nodownload");audio.preload="none";audio.hidden=true;
     const message=node("div","qf-voice-status");message.setAttribute("role","status");
     let objectURL=null,controller=null,epoch=0;
     const allowed=()=>panel.open&&wrap.isConnected&&isAdminUser()&&!!auth.currentUser&&!document.getElementById("view-admin").classList.contains("hidden-view");
@@ -19672,21 +19724,26 @@ route();
         if(!valid())return;
         message.textContent="";
         if(action==="download"){
-          const link=node("a");link.href=objectURL;link.download="queue-feedback-"+id+"."+voiceExtensions[meta.type];
-          wrap.append(link);link.click();link.remove();
+          message.textContent="جارٍ تحويل التسجيل إلى MP3…";
+          const mp3=await voiceMP3(objectURL,requestController.signal);
+          if(!valid()||requestController.signal.aborted)return;
+          const mp3URL=URL.createObjectURL(mp3);
+          const link=node("a");link.href=mp3URL;link.download="queue-feedback-"+id+".mp3";
+          try{wrap.append(link);link.click();message.textContent="";}
+          finally{link.remove();setTimeout(()=>URL.revokeObjectURL(mp3URL),60000);}
         }else{
           if(!audio.getAttribute("src"))audio.src=objectURL;
           audio.hidden=false;
           for(const other of comments.querySelectorAll("audio"))if(other!==audio)other.pause();
           try{await audio.play();}catch{if(valid())message.textContent="اضغط تشغيل من مشغل الصوت للاستماع.";}
         }
-      }catch(e){if(valid())message.textContent=e.message==="permission"?"لا توجد صلاحية للوصول إلى التسجيل.":"تعذّر تحميل التسجيل. حاول مرة أخرى.";}
+      }catch(e){if(valid())message.textContent=e.message==="permission"?"لا توجد صلاحية للوصول إلى التسجيل.":action==="download"?"تعذّر تحميل أو تحويل التسجيل إلى MP3. تأكد من توفر مكتبة التحويل وتوافق المتصفح، ثم حاول مرة أخرى.":"تعذّر تحميل التسجيل. حاول مرة أخرى.";}
       finally{clearTimeout(timer);if(epoch===currentEpoch){controller=null;play.disabled=download.disabled=false;}}
     }
     play.addEventListener("click",()=>request("play"));
     download.addEventListener("click",()=>request("download"));
     audio.addEventListener("play",()=>{for(const other of comments.querySelectorAll("audio"))if(other!==audio)other.pause();});
-    audio.addEventListener("error",()=>{if(audio.getAttribute("src"))message.textContent="تعذّر تشغيل التسجيل على هذا المتصفح. يمكنك تحميله.";});
+    audio.addEventListener("error",()=>{if(audio.getAttribute("src"))message.textContent="تعذّر تشغيل التسجيل على هذا المتصفح. جرّب متصفحًا آخر.";});
     actions.append(play,download);wrap.append(node("div","qf-voice-title","🎙 تعليق صوتي"),actions,audio,message);
     return wrap;
   }
