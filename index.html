@@ -9236,8 +9236,19 @@ function redirectLegacyQueueFollow(){
         #doctorPeriods .dp-average{padding:9px 0;display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline}
         #doctorPeriods .dp-details{border-top:1px solid #e8dee3;padding-top:8px}
         #doctorPeriods .dp-details summary{cursor:pointer;color:#71364c;font-weight:700}
-        #doctorPeriods .dp-visit-times{width:100%;border-collapse:collapse;margin-top:8px}
-        #doctorPeriods .dp-visit-times :is(th,td){text-align:start;padding:6px 4px;border-bottom:1px solid #eee5ea}
+        #doctorPeriods .dp-visit-scroll{margin-top:8px;max-height:min(24rem,55vh);overflow:auto;border:1px solid #e6dae0;border-radius:9px}
+        #doctorPeriods .dp-visit-times{width:100%;table-layout:fixed;border-collapse:separate;border-spacing:0}
+        #doctorPeriods .dp-visit-times :is(th,td){padding:8px 6px;text-align:start;vertical-align:middle}
+        #doctorPeriods .dp-visit-times th{position:sticky;top:0;background:#f1e8ed;color:#512e40;z-index:1;font-size:.85rem}
+        #doctorPeriods .dp-visit-times th:first-child{width:20%}
+        #doctorPeriods .dp-visit-times th:nth-child(2){width:33%}
+        #doctorPeriods .dp-visit-times td:first-child{font-weight:700}
+        #doctorPeriods .dp-visit-times :is(th,td):nth-child(-n+2){text-align:center}
+        #doctorPeriods .dp-visit-times td:nth-child(2){direction:ltr;font-variant-numeric:tabular-nums}
+        #doctorPeriods .dp-visit-times tbody tr:nth-child(even){background:#faf7f9}
+        #doctorPeriods .dp-visit-times .dp-visit-short,#doctorPeriods .dp-visit-times :is(.dp-visit-done,.dp-visit-quick){display:inline-block;border-radius:5px;padding:2px 6px}
+        #doctorPeriods .dp-visit-times .dp-visit-short{background:#fff0d7;color:#70460f}
+        #doctorPeriods .dp-visit-times :is(.dp-visit-done,.dp-visit-quick){background:#e8f3f0;color:#265b50}
         #doctorPeriods .dp-detail-line{display:flex;justify-content:space-between;gap:10px;padding:5px 0}
         #doctorPeriods .dp-detail-title{margin:9px 0 2px;color:#655962;font-weight:700}
       </style>
@@ -13058,7 +13069,7 @@ function renderDoctorPeriodView(){
         visits.append(element("p","مدة الكشف تقديرية حسب توقيت العمليات المسجّلة في العيادة.","dp-note"));
         const table = element("table",undefined,"dp-visit-times");
         const header = table.createTHead().insertRow();
-        for(const title of ["رقم الدور","مدة الكشف المقدّرة","حالة الدور"]){
+        for(const title of ["رقم الدور","المدة (دقيقة:ثانية)","حالة الدور"]){
           const cell = element("th",title);
           cell.scope = "col";
           header.append(cell);
@@ -13068,14 +13079,18 @@ function renderDoctorPeriodView(){
         const body = table.createTBody();
         for(const [number,result] of [...row.cases].sort(([a],[b])=>a-b)){
           const elapsed = row.durations.get(number);
-          let duration = "المدة غير متاحة";
+          let duration = result === "missed" ? "—" : "المدة غير متاحة";
           if(result !== "unknown" && result !== "missed" && Number.isFinite(elapsed)){
             const seconds = Math.round(elapsed/1000);
-            duration = ar(Math.floor(seconds/60))+" د و"+ar(seconds%60)+" ث";
+            duration = String(Math.floor(seconds/60)).padStart(2,"0")+":"+String(seconds%60).padStart(2,"0");
           }
-          body.insertRow().append(element("td",ar(number)),element("td",duration),element("td",labels[result]));
+          const state = element("td");
+          state.append(element("span",labels[result],"dp-visit-"+result));
+          body.insertRow().append(element("td",ar(number)),element("td",duration),state);
         }
-        visits.append(table);
+        const scroll = element("div",undefined,"dp-visit-scroll");
+        scroll.append(table);
+        visits.append(scroll);
       });
       section.append(visits);
       fragment.append(section);
