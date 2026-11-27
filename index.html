@@ -9216,7 +9216,7 @@ function redirectLegacyQueueFollow(){
         #doctorPeriods #doctorPeriodStatus{margin:12px 0}
         #doctorPeriods .dp-summary{background:#f4eaf0;border-inline-start:4px solid #71364c;border-radius:10px;padding:12px 16px}
         #doctorPeriods .dp-summary strong{font-size:2rem;color:#632f47;margin-inline-end:8px}
-        #doctorPeriods .dp-group-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,345px),1fr));gap:12px}
+        #doctorPeriods #doctorPeriodRows{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,345px),1fr));gap:12px}
         #doctorPeriods .dp-card{min-width:0;background:white;border:1px solid #e1d9de;border-radius:12px;padding:14px}
         #doctorPeriods .dp-head{justify-content:space-between;align-items:flex-start}
         #doctorPeriods .dp-head h3{margin:0;font-size:1.05rem}
@@ -9231,10 +9231,7 @@ function redirectLegacyQueueFollow(){
         #doctorPeriods .dp-filter{display:flex;flex-wrap:wrap;gap:12px;align-items:end;margin:16px 0}
         #doctorPeriods .dp-filter[hidden]{display:none}
         #doctorPeriods .dp-filter label{display:grid;gap:4px;font-weight:700;flex:1 1 190px}
-        #doctorPeriods .dp-filter select,#doctorPeriods .dp-filter input{border:1px solid #cbbfc5;border-radius:8px;padding:8px;background:white;width:100%;min-height:40px}
-        #doctorPeriods .dp-group{margin:18px 0}
-        #doctorPeriods .dp-group-title{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap;padding:8px 0;border-bottom:2px solid #d7bdc8;margin-bottom:10px}
-        #doctorPeriods .dp-group-title h3{margin:0;color:#632f47}
+        #doctorPeriods .dp-filter input{border:1px solid #cbbfc5;border-radius:8px;padding:8px;background:white;width:100%;min-height:40px}
         #doctorPeriods .dp-schedule{margin:12px 0 0;color:#59394a;font-weight:700}
         #doctorPeriods .dp-average{padding:9px 0;display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline}
         #doctorPeriods .dp-details{border-top:1px solid #e8dee3;padding-top:8px}
@@ -9262,7 +9259,6 @@ function redirectLegacyQueueFollow(){
         <div id="doctorPeriodStatus" role="status"></div>
         <div id="doctorFilters" class="dp-filter" hidden>
           <label>بحث في الفترات<input type="search" id="doctorFilterText" placeholder="اسم الطبيب أو التخصص أو رقم الحجرة"></label>
-          <label>تجميع حسب<select id="doctorGroupBy"><option value="specialty">التخصص</option><option value="room">الحجرة</option></select></label>
         </div>
         <div id="doctorPeriodRows"></div>
       </div>
@@ -12896,14 +12892,19 @@ function buildDoctorPeriods(events){
   }
   return periods.map(row=>{
     const counts = {estimated:0,done:0,quick:0,short:0,unknown:0,missed:0};
-    for(const result of row.cases.values()) counts[result]++;
+    const shortNumbers = [];
+    for(const [number,result] of row.cases){
+      counts[result]++;
+      if(result === "short") shortNumbers.push(number);
+    }
+    shortNumbers.sort((a,b)=>a-b);
     let measured = 0, elapsedTotal = 0;
     for(const [number,duration] of row.durations){
       if(!["estimated","quick","done"].includes(row.cases.get(number))) continue;
       measured++;
       elapsedTotal += duration;
     }
-    return {specialty:row.specialty,hours:row.hours,measured,meanSeconds:measured ? Math.round(elapsedTotal/measured/1000) : null,
+    return {specialty:row.specialty,hours:row.hours,measured,shortNumbers,meanSeconds:measured ? Math.round(elapsedTotal/measured/1000) : null,
       room:row.room,doctor:row.doctor,prepared:row.prepared,start:row.start,end:row.end,
       endKind:row.endKind,counts,total:counts.estimated+counts.done+counts.quick};
   });
@@ -12989,78 +12990,64 @@ function renderDoctorPeriodView(){
     }
     const fragment = document.createDocumentFragment();
     const tokens = reportSearchKey($("#doctorFilterText").value).trim().split(/\s+/).filter(Boolean);
-    const byRoom = $("#doctorGroupBy").value === "room";
-    const groups = new Map();
     for(const row of rows){
       const key = reportSearchKey([row.doctor,row.specialty,"حجرة",row.room].join(" "));
       if(!tokens.every(token=>key.includes(token))) continue;
-      const group = byRoom ? String(row.room) : row.specialty;
-      if(!groups.has(group)) groups.set(group,[]);
-      groups.get(group).push(row);
-    }
-    for(const group of [...groups.keys()].sort((a,b)=>a.localeCompare(b,"ar",{numeric:true}))){
-      const members = groups.get(group);
-      const block = element("section",undefined,"dp-group");
-      const heading = element("header",undefined,"dp-group-title");
-      heading.append(element("h3",byRoom ? "حجرة "+ar(group) : group),
-        element("small","الفترات المعروضة: "+ar(members.length)+" · كشوفها: "+ar(members.reduce((sum,row)=>sum+row.total,0))));
-      const cards = element("div",undefined,"dp-group-cards");
-      for(const row of members){
-        const section = element("article",undefined,"dp-card");
-        const head = element("header",undefined,"dp-head");
-        const name = element("div");
-        name.append(element("h3",row.doctor),element("small",row.specialty+" · حجرة "+ar(row.room)));
-        const count = element("div",undefined,"dp-count");
-        count.append(element("strong",ar(row.total)),element("small","كشوف محتسبة"));
-        head.append(name,count);
-        const estimated = row.endKind === "estimated";
-        const times = element("dl",undefined,"dp-times");
-        const endText = row.end ? reportClock(row.end)+(estimated ? " (تقديرية)" : "") :
-          row.endKind === "reset" ? "غير مسجّلة قبل التصفير" : "غير مسجّلة";
-        const minutes = row.start && row.end ? Math.floor((row.end-row.start)/60000) : null;
-        for(const [label,value] of [
-          ["بداية الكشف",row.start ? reportClock(row.start) : row.prepared ? "لم يُسجّل بدء الكشف" : "التجهيز غير مسجّل"],
-          ["نهاية الفترة",endText],
-          ["مدة الفترة",minutes === null ? "غير متاحة" : durationText(minutes)+(estimated ? " (تقديرية)" : "")]
-        ]){
-          const pair = element("div");
-          pair.append(element("dt",label),element("dd",value));
-          times.append(pair);
-        }
-        const hours = row.hours;
-        const scheduled = validClinicHours(hours) ? "من "+clinicHourText(hours.from)+" إلى "+clinicHourText(hours.to) : "الموعد غير مسجّل";
-        section.append(head,element("p","موعد العيادة المقرر: "+scheduled,"dp-schedule"),times);
-        const average = element("div",undefined,"dp-average");
-        const sec = row.meanSeconds;
-        average.append(element("span","متوسط مدة الكشف المقدّرة"),element("strong",sec === null ? "غير متاح" :
-          ar(Math.floor(sec/60))+" د و"+ar(sec%60)+" ث"));
-        if(row.measured) average.append(element("small","محسوب من "+ar(row.measured)+" كشف"));
-        section.append(average);
-        const details = element("details",undefined,"dp-details");
-        details.append(element("summary","تفاصيل العدد"));
-        function detail(label,value){
-          const line = element("div",undefined,"dp-detail-line");
-          line.append(element("span",label),element("strong",ar(value)));
-          details.append(line);
-        }
-        details.append(element("p","ضمن الإجمالي","dp-detail-title"));
-        detail("كشوف النداء العادي",row.counts.estimated);
-        const returned = row.counts.done+row.counts.quick;
-        if(returned) detail("عادوا من الفائت وتم كشفهم",returned);
-        if(row.counts.quick) detail("↳ منهم إنهاء سريع",row.counts.quick);
-        if(row.counts.short || row.counts.unknown || row.counts.missed){
-          details.append(element("p","خارج الإجمالي","dp-detail-title"));
-          if(row.counts.short) detail("حالات قصيرة",row.counts.short);
-          if(row.counts.unknown) detail("حالات غير محسومة",row.counts.unknown);
-          if(row.counts.missed) detail("لم يحضر",row.counts.missed);
-        }
-        section.append(details);
-        cards.append(section);
+      const section = element("article",undefined,"dp-card");
+      const head = element("header",undefined,"dp-head");
+      const name = element("div");
+      name.append(element("h3",row.doctor),element("small",row.specialty+" · حجرة "+ar(row.room)));
+      const count = element("div",undefined,"dp-count");
+      count.append(element("strong",ar(row.total)),element("small","كشوف محتسبة"));
+      head.append(name,count);
+      const estimated = row.endKind === "estimated";
+      const times = element("dl",undefined,"dp-times");
+      const endText = row.end ? reportClock(row.end)+(estimated ? " (تقديرية)" : "") :
+        row.endKind === "reset" ? "غير مسجّلة قبل التصفير" : "غير مسجّلة";
+      const minutes = row.start && row.end ? Math.floor((row.end-row.start)/60000) : null;
+      for(const [label,value] of [
+        ["بداية الكشف",row.start ? reportClock(row.start) : row.prepared ? "لم يُسجّل بدء الكشف" : "التجهيز غير مسجّل"],
+        ["نهاية الفترة",endText],
+        ["مدة الفترة",minutes === null ? "غير متاحة" : durationText(minutes)+(estimated ? " (تقديرية)" : "")]
+      ]){
+        const pair = element("div");
+        pair.append(element("dt",label),element("dd",value));
+        times.append(pair);
       }
-      block.append(heading,cards);
-      fragment.append(block);
+      const hours = row.hours;
+      const scheduled = validClinicHours(hours) ? "من "+clinicHourText(hours.from)+" إلى "+clinicHourText(hours.to) : "الموعد غير مسجّل";
+      section.append(head,element("p","موعد العيادة المقرر: "+scheduled,"dp-schedule"),times);
+      const average = element("div",undefined,"dp-average");
+      const sec = row.meanSeconds;
+      average.append(element("span","متوسط مدة الكشف المقدّرة"),element("strong",sec === null ? "غير متاح" :
+        ar(Math.floor(sec/60))+" د و"+ar(sec%60)+" ث"));
+      if(row.measured) average.append(element("small","محسوب من "+ar(row.measured)+" كشف"));
+      section.append(average);
+      const details = element("details",undefined,"dp-details");
+      details.append(element("summary","تفاصيل العدد"));
+      function detail(label,value){
+        const line = element("div",undefined,"dp-detail-line");
+        line.append(element("span",label),element("strong",ar(value)));
+        details.append(line);
+      }
+      details.append(element("p","ضمن الإجمالي","dp-detail-title"));
+      detail("كشوف النداء العادي",row.counts.estimated);
+      const returned = row.counts.done+row.counts.quick;
+      if(returned) detail("عادوا من الفائت وتم كشفهم",returned);
+      if(row.counts.quick) detail("↳ منهم إنهاء سريع",row.counts.quick);
+      if(row.counts.short || row.counts.unknown || row.counts.missed){
+        details.append(element("p","خارج الإجمالي","dp-detail-title"));
+        if(row.counts.short){
+            detail("حالات قصيرة",row.counts.short);
+            details.append(element("p","أرقام الأدوار: "+row.shortNumbers.map(number=>ar(number)).join("، "),"dp-note"));
+          }
+        if(row.counts.unknown) detail("حالات غير محسومة",row.counts.unknown);
+        if(row.counts.missed) detail("لم يحضر",row.counts.missed);
+      }
+      section.append(details);
+      fragment.append(section);
     }
-    if(!groups.size && rows.length) fragment.append(element("p","لا توجد فترات تطابق البحث."));
+    if(!fragment.childElementCount && rows.length) fragment.append(element("p","لا توجد فترات تطابق البحث."));
     $("#doctorPeriodRows").replaceChildren(fragment);
     const status = $("#doctorPeriodStatus");
     const totals = {total:0,short:0,unknown:0};
@@ -13080,7 +13067,6 @@ function renderDoctorPeriodView(){
     }
 }
 $("#doctorFilterText").addEventListener("input",renderDoctorPeriodView);
-$("#doctorGroupBy").addEventListener("change",renderDoctorPeriodView);
 
 function startAdminAuditListener(){
   if(adminAuditQuery || !isAdminUser()) return;
