@@ -9129,27 +9129,6 @@ function redirectLegacyQueueFollow(){
       <div id="adminRoomGrid" class="admin-room-grid"></div>
     </details>
 
-    <details id="queueFeedbackAdminPanel" class="admin-fold admin-audit-panel">
-      <summary><span class="tool-icon" aria-hidden="true">★</span><span class="tool-label"><strong>تقييمات تجربة الأدوار</strong><small>متوسط التقييم وآراء المرضى المحفوظة</small></span></summary>
-      <div class="qf-admin-content">
-        <p class="qf-admin-intro">التقييمات محفوظة دون تصفير يومي. يتم تحميل النتائج فقط عند فتح هذا القسم.</p>
-        <div class="qf-controls"><button class="qf-btn" id="queueFeedbackRefresh" type="button">عرض / تحديث التقييمات</button></div>
-        <p class="qf-status" id="queueFeedbackStatus" role="status" aria-live="polite">اضغط عرض التقييمات لقراءة النتائج.</p>
-        <div id="queueFeedbackResults" hidden>
-          <div class="qf-stats">
-            <div class="qf-stat"><small>إجمالي التقييمات</small><strong id="queueFeedbackTotal">—</strong></div>
-            <div class="qf-stat"><small>الرضا العام</small><strong id="queueFeedbackOverall">—</strong></div>
-          </div>
-          <h3 class="qf-heading">متوسط الأسئلة الأربعة</h3>
-          <div id="queueFeedbackQuestions"></div>
-          <h3 class="qf-heading">طريقة متابعة الأدوار</h3>
-          <div class="qf-sources" id="queueFeedbackSources"></div>
-          <h3 class="qf-heading">آراء ومقترحات المرضى</h3>
-          <div class="qf-comments" id="queueFeedbackComments"></div>
-          <button class="qf-btn qf-more" id="queueFeedbackMore" type="button" hidden>عرض المزيد من الآراء</button>
-        </div>
-      </div>
-    </details>
     <details id="periodReport" class="admin-fold admin-audit-panel">
       <summary><span class="tool-icon"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4m10-4v4M3 10h18m-13 5h3m3 0h2"/></svg></span><span class="tool-label"><strong>تجهيز فترات العيادات</strong><small>مواعيد العيادات وتقرير استلام التمريض</small></span></summary>
       <style>
@@ -9200,7 +9179,7 @@ function redirectLegacyQueueFollow(){
       </div>
     </details>
     <details class="admin-fold" id="doctorPeriods">
-      <summary><span class="tool-label"><strong>تقرير فترات الأطباء</strong><small>أوقات الكشف والكشوف المقدّرة حسب يوم التشغيل</small></span></summary>
+      <summary><span class="tool-icon"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="3"/><path d="M8 15v2m4-6v6m4-9v9"/></svg></span><span class="tool-label"><strong>تقرير فترات الأطباء</strong><small>أوقات الكشف والكشوف المقدّرة حسب يوم التشغيل</small></span></summary>
       <style>
         #doctorPeriods .dp-body{padding:clamp(12px,2vw,24px);background:#faf8f9;color:#342c32;text-align:start}
         #doctorPeriods .dp-controls,#doctorPeriods .dp-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
@@ -9254,7 +9233,7 @@ function redirectLegacyQueueFollow(){
       </style>
       <div class="dp-body">
         <div class="dp-controls">
-          <label>يوم التشغيل <input type="date" id="doctorPeriodDate" required></label>
+          <label>يوم التشغيل <input type="date" lang="en-GB" dir="ltr" id="doctorPeriodDate" required></label>
           <button type="button" id="doctorPeriodLoad">عرض التقرير</button>
         </div>
         <details class="dp-guide">
@@ -9274,6 +9253,27 @@ function redirectLegacyQueueFollow(){
           <label>بحث في الفترات<input type="search" id="doctorFilterText" placeholder="اسم الطبيب أو التخصص أو رقم الحجرة"></label>
         </div>
         <div id="doctorPeriodRows"></div>
+      </div>
+    </details>
+    <details id="queueFeedbackAdminPanel" class="admin-fold admin-audit-panel">
+      <summary><span class="tool-icon" aria-hidden="true">★</span><span class="tool-label"><strong>تقييمات تجربة متابعة الأدوار</strong><small>متوسط التقييم وآراء المرضى المحفوظة</small></span></summary>
+      <div class="qf-admin-content">
+        <p class="qf-admin-intro">التقييمات محفوظة دون تصفير يومي. يتم تحميل النتائج فقط عند فتح هذا القسم.</p>
+        <div class="qf-controls"><button class="qf-btn" id="queueFeedbackRefresh" type="button">عرض / تحديث التقييمات</button></div>
+        <p class="qf-status" id="queueFeedbackStatus" role="status" aria-live="polite">اضغط عرض التقييمات لقراءة النتائج.</p>
+        <div id="queueFeedbackResults" hidden>
+          <div class="qf-stats">
+            <div class="qf-stat"><small>إجمالي التقييمات</small><strong id="queueFeedbackTotal">—</strong></div>
+            <div class="qf-stat"><small>الرضا العام</small><strong id="queueFeedbackOverall">—</strong></div>
+          </div>
+          <h3 class="qf-heading">متوسط الأسئلة الأربعة</h3>
+          <div id="queueFeedbackQuestions"></div>
+          <h3 class="qf-heading">طريقة متابعة الأدوار</h3>
+          <div class="qf-sources" id="queueFeedbackSources"></div>
+          <h3 class="qf-heading">آراء ومقترحات المرضى</h3>
+          <div class="qf-comments" id="queueFeedbackComments"></div>
+          <button class="qf-btn qf-more" id="queueFeedbackMore" type="button" hidden>عرض المزيد من الآراء</button>
+        </div>
       </div>
     </details>
     <details id="nursingAccountPanel">
@@ -9305,12 +9305,12 @@ function redirectLegacyQueueFollow(){
       </form>
     </details>
     <details class="admin-fold admin-audit-panel">
-      <summary><span class="tool-icon"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11a9 9 0 1 1 2 7M3 5v6h6m3-5v6l4 2"/></svg></span><span class="tool-label"><strong>سجل تحديثات النظام</strong><small>مراجعة العمليات والبحث في تحديثات اليوم</small></span></summary>
+      <summary><span class="tool-icon"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11a9 9 0 1 1 2 7M3 5v6h6m3-5v6l4 2"/></svg></span><span class="tool-label"><strong>سجل تحديثات النظام</strong><small>مراجعة العمليات حسب يوم التشغيل</small></span></summary>
       <div class="admin-audit-head">
         <div>
-          <p class="admin-audit-subtitle">عمليات اليوم من ٣ الفجر إلى ٣ الفجر بتوقيت القاهرة.</p>
+          <p class="admin-audit-subtitle">يبدأ يوم التشغيل الساعة ٣ فجرًا بتوقيت القاهرة.</p>
         </div>
-        <span class="admin-audit-live">متابعة مباشرة</span>
+        <span id="adminAuditMode" class="admin-audit-live">متابعة مباشرة</span>
       </div>
       <div class="admin-audit-toolbar" id="adminAuditToolbar">
         <button type="button" class="admin-audit-filter active" data-audit-filter="all">الكل</button>
@@ -9322,6 +9322,7 @@ function redirectLegacyQueueFollow(){
         <span id="adminAuditCount" class="admin-audit-count num">٠ تحديث</span>
       </div>
       <div class="admin-audit-toolbar admin-audit-search">
+        <label>يوم التشغيل <select id="adminAuditDay"></select></label>
         <label>بحث <input id="adminAuditSearch" type="search" placeholder="الاسم، العيادة، الحجرة أو رقم الدور"></label>
         <label>نوع العملية <select id="adminAuditType"><option value="">كل العمليات</option></select></label>
         <label>من <input id="adminAuditFrom" type="time"></label>
@@ -12501,6 +12502,7 @@ const AUDIT_ACTION_GROUPS = [
 ];
 const AUDIT_PAGE_SIZE = 40;
 const adminAuditItems = new Map();
+let auditArchive = null;
 let adminAuditFilter = "all";
 let adminAuditQuery = null;
 let adminAuditTimer;
@@ -12565,23 +12567,24 @@ function renderAdminAuditLog(){
     from:$("#adminAuditFrom").value,
     to:$("#adminAuditTo").value
   };
-  const filtered = Array.from(adminAuditItems.values())
+  const status = auditArchive ? auditArchive.status : adminAuditStatus;
+  const filtered = Array.from(auditArchive ? auditArchive.items : adminAuditItems.values())
     .filter(item=>auditMatches(item,desired))
     .sort((a,b)=>b.createdAt-a.createdAt || (a.id < b.id ? 1 : -1));
-  count.textContent = adminAuditStatus === "ready"
+  count.textContent = status === "ready"
     ? ar(Math.min(adminAuditLimit,filtered.length)) + " من " + ar(filtered.length) + " نتيجة"
     : "—";
-  more.hidden = adminAuditStatus !== "ready" || filtered.length <= adminAuditLimit;
+  more.hidden = status !== "ready" || filtered.length <= adminAuditLimit;
 
   const fragment = document.createDocumentFragment();
-  if(adminAuditStatus !== "ready" || !filtered.length){
+  if(status !== "ready" || !filtered.length){
     const empty = document.createElement("div");
     empty.className = "admin-audit-empty";
     empty.textContent = {
-      loading:"جارٍ تحميل سجل تحديثات اليوم...",
+      loading:"جارٍ تحميل سجل اليوم المختار...",
       error:"تعذر تحميل سجل التحديثات.",
-      ready:"مفيش عمليات مطابقة في سجل اليوم."
-    }[adminAuditStatus];
+      ready:"مفيش عمليات مطابقة في اليوم المختار."
+    }[status];
     fragment.append(empty);
   }else{
     filtered.slice(0,adminAuditLimit).forEach(item=>fragment.append(renderAdminAuditItem(item,open)));
@@ -12664,7 +12667,7 @@ function renderAdminAuditItem(item,open){
 }
 
 function queueAdminAuditRender(){
-  if(adminAuditFrame !== undefined) return;
+  if(auditArchive || adminAuditFrame !== undefined) return;
   adminAuditFrame = requestAnimationFrame(()=>{
     adminAuditFrame = undefined;
     renderAdminAuditLog();
@@ -12983,7 +12986,7 @@ function renderDoctorPeriodView(){
   const rows = doctorPeriodRowsCache;
     function element(tag,text,style){
       const node = document.createElement(tag);
-      if(text !== undefined) node.textContent = text;
+      if(text !== undefined) node.textContent = reportDigits(text);
       if(style) node.className = style;
       return node;
     }
@@ -12991,14 +12994,14 @@ function renderDoctorPeriodView(){
       if(minutes < 1) return "أقل من دقيقة";
       const hours = Math.floor(minutes/60), rest = minutes%60;
       const parts = [];
-      if(hours) parts.push(hours === 1 ? "ساعة" : hours === 2 ? "ساعتان" : ar(hours)+(hours<=10 ? " ساعات" : " ساعة"));
-      if(rest) parts.push(rest === 1 ? "دقيقة" : rest === 2 ? "دقيقتان" : ar(rest)+(rest<=10 ? " دقائق" : " دقيقة"));
+      if(hours) parts.push(hours === 1 ? "ساعة" : hours === 2 ? "ساعتان" : String(hours)+(hours<=10 ? " ساعات" : " ساعة"));
+      if(rest) parts.push(rest === 1 ? "دقيقة" : rest === 2 ? "دقيقتان" : String(rest)+(rest<=10 ? " دقائق" : " دقيقة"));
       return parts.join(" و");
     }
     function outsideCounts(short,unknown){
       const parts = [];
-      if(short) parts.push("حالات قصيرة: "+ar(short));
-      if(unknown) parts.push("حالات غير محسومة: "+ar(unknown));
+      if(short) parts.push("حالات قصيرة: "+String(short));
+      if(unknown) parts.push("حالات غير محسومة: "+String(unknown));
       return parts.length ? "خارج الإجمالي · "+parts.join("، ") : "";
     }
     const fragment = document.createDocumentFragment();
@@ -13009,9 +13012,9 @@ function renderDoctorPeriodView(){
       const section = element("article",undefined,"dp-card");
       const head = element("header",undefined,"dp-head");
       const name = element("div");
-      name.append(element("h3",row.doctor),element("small",row.specialty+" · حجرة "+ar(row.room)));
+      name.append(element("h3",row.doctor),element("small",row.specialty+" · حجرة "+String(row.room)));
       const count = element("div",undefined,"dp-count");
-      count.append(element("strong",ar(row.total)),element("small","كشوف محتسبة"));
+      count.append(element("strong",String(row.total)),element("small","كشوف محتسبة"));
       head.append(name,count);
       const estimated = row.endKind === "estimated";
       const times = element("dl",undefined,"dp-times");
@@ -13033,14 +13036,14 @@ function renderDoctorPeriodView(){
       const average = element("div",undefined,"dp-average");
       const sec = row.meanSeconds;
       average.append(element("span","متوسط مدة الكشف المقدّرة"),element("strong",sec === null ? "غير متاح" :
-        ar(Math.floor(sec/60))+" د و"+ar(sec%60)+" ث"));
-      if(row.measured) average.append(element("small","محسوب من "+ar(row.measured)+" كشف"));
+        String(Math.floor(sec/60))+" د و"+String(sec%60)+" ث"));
+      if(row.measured) average.append(element("small","محسوب من "+String(row.measured)+" كشف"));
       section.append(average);
       const details = element("details",undefined,"dp-details");
       details.append(element("summary","تفاصيل العدد"));
       function detail(label,value){
         const line = element("div",undefined,"dp-detail-line");
-        line.append(element("span",label),element("strong",ar(value)));
+        line.append(element("span",label),element("strong",String(value)));
         details.append(line);
       }
       details.append(element("p","ضمن الإجمالي","dp-detail-title"));
@@ -13052,7 +13055,7 @@ function renderDoctorPeriodView(){
         details.append(element("p","خارج الإجمالي","dp-detail-title"));
         if(row.counts.short){
             detail("حالات قصيرة",row.counts.short);
-            details.append(element("p","أرقام الأدوار: "+row.shortNumbers.map(number=>ar(number)).join("، "),"dp-note"));
+            details.append(element("p","أرقام الأدوار: "+row.shortNumbers.map(number=>String(number)).join("، "),"dp-note"));
           }
         if(row.counts.unknown) detail("حالات غير محسومة",row.counts.unknown);
         if(row.counts.missed) detail("لم يحضر",row.counts.missed);
@@ -13086,7 +13089,7 @@ function renderDoctorPeriodView(){
           }
           const state = element("td");
           state.append(element("span",labels[result],"dp-visit-"+result));
-          body.insertRow().append(element("td",ar(number)),element("td",duration),state);
+          body.insertRow().append(element("td",String(number)),element("td",duration),state);
         }
         const scroll = element("div",undefined,"dp-visit-scroll");
         scroll.append(table);
@@ -13106,7 +13109,7 @@ function renderDoctorPeriodView(){
     }
     if(rows.length){
       const summary = element("div",undefined,"dp-summary");
-      summary.append(element("strong",ar(totals.total)),element("span","إجمالي الكشوف المقدّرة للمجمع"));
+      summary.append(element("strong",String(totals.total)),element("span","إجمالي الكشوف المقدّرة للمجمع"));
       const outside = outsideCounts(totals.short,totals.unknown);
       if(outside) summary.append(element("p",outside,"dp-note"));
       status.replaceChildren(summary);
@@ -13116,12 +13119,48 @@ function renderDoctorPeriodView(){
 }
 $("#doctorFilterText").addEventListener("input",renderDoctorPeriodView);
 
+function setAuditDayOptions(now){
+  const select = $("#adminAuditDay");
+  select.replaceChildren();
+  for(let offset=0;offset<7;offset++){
+    const start = auditDayBoundary(now,-offset);
+    const date = auditCairoParts(start);
+    const label = [date.year,String(date.month).padStart(2,"0"),String(date.day).padStart(2,"0")].join("-");
+    select.add(new Option(offset ? label : "اليوم · "+label,String(start)));
+  }
+  $("#adminAuditMode").textContent = "متابعة مباشرة";
+}
+
+$("#adminAuditDay").addEventListener("change",async event=>{
+  if(!isAdminUser() || !adminAuditQuery) return;
+  const select = event.currentTarget;
+  const archive = select.selectedIndex > 0 ? {items:[],status:"loading"} : null;
+  auditArchive = archive;
+  adminAuditLimit = AUDIT_PAGE_SIZE;
+  $("#adminAuditMode").textContent = archive ? "سجل سابق" : "متابعة مباشرة";
+  renderAdminAuditLog();
+  if(!archive) return;
+  const start = Number(select.value);
+  const end = Number(select.options[select.selectedIndex-1].value);
+  try{
+    const snapshot = await auditLogsRef.orderByChild("createdAt").startAt(start).endAt(end-1).once("value");
+    if(auditArchive !== archive || !isAdminUser()) return;
+    snapshot.forEach(child=>{ archive.items.push({...child.val(),id:child.key}); });
+    archive.status = "ready";
+  }catch(error){
+    if(auditArchive !== archive || !isAdminUser()) return;
+    archive.status = "error";
+  }
+  renderAdminAuditLog();
+});
+
 function startAdminAuditListener(){
   if(adminAuditQuery || !isAdminUser()) return;
   const now = Date.now()+dailyVisitServerOffset;
   const start = auditDayBoundary(now);
   const end = auditDayBoundary(now,1);
   const query = auditLogsRef.orderByChild("createdAt").startAt(start).endAt(end-1);
+  setAuditDayOptions(now);
   adminAuditQuery = query;
   adminAuditStatus = "loading";
   renderAdminAuditLog();
@@ -13159,6 +13198,7 @@ function startAdminAuditListener(){
 }
 
 function stopAdminAuditListener(){
+  auditArchive = null;
   clearPeriodReport();
   clearDoctorPeriods();
   adminAuditQuery?.off();
