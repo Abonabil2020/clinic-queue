@@ -9114,6 +9114,29 @@ function redirectLegacyQueueFollow(){
 #view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer #tvActivityPanel .tv-activity-head{font-size:clamp(11px,1.8vh,36px)!important;line-height:1.05!important}
 #view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer #tvActivityPanel .tv-activity-item{font-size:clamp(11px,min(1.25vw,1.85vh),38px)!important;line-height:1.05!important}
 #view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer #tvActivityPanel .third-activity-number{font-size:1.15em!important;font-weight:900!important}
+
+/* Fixed third floor only: centered doctor, larger current number, unified footer. */
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .queue-card[data-status] .queue-doctor{width:100%!important;max-width:100%!important;justify-self:stretch!important;text-align:center!important;box-sizing:border-box!important;padding-inline:.15em!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .queue-card:is([data-status="active"],[data-status="break"])[data-waiting="false"] .queue-number{font-size:clamp(48px,min(37cqi,19vh),400px)!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer{background:#fff!important;border:1px solid #e0cbd3!important;border-radius:10px!important;box-shadow:none!important;gap:.65vw!important;padding:.35vh .65vw!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer .tv-footer-ticker{border:0!important;background:transparent!important;flex:1 1 0!important;box-shadow:none!important;padding:0 .3vw!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer #tvActivityPanel{background:#f5f8f7!important;border:0!important;border-inline-end:1px solid #e0cbd3!important;border-radius:6px!important;padding:.2vh .55vw!important;gap:.15vh!important;flex:0 0 34%!important;width:34%!important;max-width:34%!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer #tvActivityPanel:not(:has(.tv-activity-item)){display:none!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer .tv-footer-message{font-size:clamp(12px,min(1.45vw,2.15vh),44px)!important;line-height:1.15!important;text-align:center!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer :is(.third-guidance-first,.third-guidance-second){justify-content:center!important;text-align:center!important;padding-inline:.2em!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer .third-guidance-second{border-top:1px solid #eadde1!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer #tvActivityPanel .tv-activity-head{font-size:clamp(10px,1.45vh,30px)!important;line-height:1.1!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer #tvActivityPanel .tv-activity-list{gap:.18vh!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer #tvActivityPanel .tv-activity-item{font-size:clamp(10px,min(1.16vw,1.6vh),34px)!important;line-height:1.15!important;padding:0 .35vw!important}
+@media(min-width:901px) and (orientation:landscape){
+ #view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer:not(:has(#tvActivityPanel .tv-activity-item)) .tv-footer-message{grid-template-columns:minmax(0,1fr) minmax(0,1.55fr)!important;grid-template-rows:minmax(0,1fr)!important;column-gap:1vw!important;font-size:clamp(12px,min(1.5vw,2.3vh),46px)!important}
+ #view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer:not(:has(#tvActivityPanel .tv-activity-item)) .third-guidance-second{border-top:0!important;border-inline-start:1px solid #eadde1!important}
+}
+@media(max-width:900px),(orientation:portrait){
+ #view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer #tvActivityPanel{flex:1 1 100%!important;width:100%!important;max-width:100%!important;border-inline-end:0!important;border-bottom:1px solid #eadde1!important}
+ #view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer .tv-footer-ticker{flex:1 1 100%!important;padding:5px!important}
+ #view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer .tv-footer-message{font-size:clamp(12px,2.6vw,20px)!important}
+}
 </style>
 </head>
 <body>
