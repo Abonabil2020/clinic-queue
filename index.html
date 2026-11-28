@@ -8987,6 +8987,20 @@ function redirectLegacyQueueFollow(){
 #view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer #tvActivityPanel .tv-activity-head strong{display:block!important;font-size:inherit!important}
 #view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer #tvActivityPanel .tv-activity-head{justify-content:flex-start!important}
 #view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer .tv-footer-ticker{width:auto!important;max-width:none!important;order:0!important}
+/* Fixed third-floor readability only; preserve the footer and card dimensions. */
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .queue-card-body[data-twelve-hours]::after{font-size:clamp(11px,3.7cqi,30px)!important;line-height:1.3}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .queue-card .continuation-summary{font-size:clamp(12px,4.35cqi,42px)!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .queue-card .continuation-public{font-size:clamp(15px,5.6cqi,54px)!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .queue-missed-summary-head{font-size:clamp(11px,4.15cqi,40px)!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .queue-missed-summary :is(.queue-missed-empty,.queue-public-more){font-size:clamp(11px,4cqi,40px)!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .queue-missed-summary :is(.queue-public-chip,.queue-missed-count){font-size:clamp(12px,5cqi,48px)!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer #tvActivityPanel .tv-activity-list{gap:.35vh!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer #tvActivityPanel .tv-activity-text .third-activity-specialty{color:#84213f;font-weight:700}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer-message .third-guidance-emphasis{color:#84213f;font-weight:700;text-decoration:underline;text-underline-offset:.16em}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer-message{color:#334155!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) #fsBtn{opacity:0!important;transition:opacity .15s ease!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) #fsBtn:is(:hover,:focus-visible){opacity:1!important}
+:fullscreen #view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) #fsBtn{display:none!important}
 </style>
 </head>
 <body>
@@ -11728,7 +11742,18 @@ function setTvDisplayMode(mode = "all"){
   const ticker = footer.querySelector(".tv-footer-ticker");
   const guidance = thirdFixed ? "تواجد أمام العيادة قبل دورك بوقت كافٍ. وإذا فاتك دورك، أبلغنا فور وصولك أمام العيادة، وانتظر حالتين بعد تسجيل حضورك." : "يرجى التواجد أمام العيادة قبل دورك بحالتين؛ وفي حال فوات دورك، تنتظر دخول حالتين بعد حضورك إلى المجمع.";
   ticker.setAttribute("aria-label", guidance);
-  ticker.querySelector(".tv-footer-message").textContent = guidance;
+  const guidanceNode = ticker.querySelector(".tv-footer-message");
+  guidanceNode.textContent = guidance;
+  if(thirdFixed){
+    const parts = guidance.split(/(إذا فاتك دورك|انتظر حالتين)/u);
+    guidanceNode.replaceChildren(...parts.map((part,index)=>{
+      if(index % 2 === 0) return document.createTextNode(part);
+      const strong = document.createElement("strong");
+      strong.className = "third-guidance-emphasis";
+      strong.textContent = part;
+      return strong;
+    }));
+  }
   const activityWasInFooter = activity.parentElement === footer;
   if(thirdFixed) footer.insertBefore(activity, ticker);
   else if(activity.parentElement !== overview.querySelector(".tv-topbar")) overview.querySelector(".tv-topbar").appendChild(activity);
@@ -11863,6 +11888,14 @@ function renderTvActivityPanel(highlight = false){
       if(tvDisplayMode === "third"){
         const compact = item.text.replace(/^(.*?)\s*—\s*غرفة\s*[0-9٠-٩۰-۹]+\s*(?=[:—]|$)/u, (_, name)=>thirdTvSpecialtyLabel(name));
         msg.textContent = compact.replace(/:\s*بدأت العيادة العمل/u, " — بدء الكشف").replace(/:\s*اكتمل العدد المتاح لهذه الفترة/u, " — إغلاق الحجز").replace(/:\s*/u, " — ");
+        const separator = msg.textContent.indexOf(" — ");
+        if(separator > 0){
+          const text = msg.textContent;
+          const specialty = document.createElement("strong");
+          specialty.className = "third-activity-specialty";
+          specialty.textContent = text.slice(0,separator);
+          msg.replaceChildren(specialty,document.createTextNode(text.slice(separator)));
+        }
       }else msg.textContent = item.text;
 
       row.append(time,msg);
