@@ -9028,6 +9028,22 @@ function redirectLegacyQueueFollow(){
 #view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer #tvActivityPanel .tv-activity-item:nth-child(2){background:#edf1f5!important}
 #view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .queue-card .continuation-public{font-size:clamp(17px,6.3cqi,60px)!important}
 #view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .queue-missed-summary .queue-public-chip{font-size:clamp(13px,5.6cqi,54px)!important}
+/* Fixed third-floor presentation only: conditional details and readability. */
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .queue-card-body[data-third-hours]::after{content:attr(data-third-hours);font-size:clamp(10px,3.65cqi,34px)!important;white-space:nowrap!important;line-height:1.25!important;text-wrap:nowrap}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .queue-card:not([data-third-has-continuation="true"]) .continuation-summary{visibility:hidden!important;min-height:0!important;padding:0!important;border:0!important;height:0!important;overflow:hidden!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .queue-card:not(:has(.queue-public-chip)) .queue-missed-summary{visibility:hidden!important;height:0!important;padding:0!important;border:0!important;min-height:0!important;overflow:hidden!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .queue-missed-summary-head{font-size:clamp(12px,4.2cqi,40px)!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .queue-missed-summary .queue-public-chip{font-size:clamp(13px,5.8cqi,56px)!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .queue-card .continuation-public{font-size:clamp(17px,6.5cqi,62px)!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .queue-number-box .booking-badge[data-booking="closed"]{font-size:clamp(11px,3.9cqi,38px)!important;font-weight:800!important;line-height:1.18!important;padding:.3em!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .queue-card:is([data-status="active"],[data-status="break"])[data-waiting="false"] .queue-number-box{display:grid!important;grid-template-rows:minmax(2.5em,1fr) auto minmax(2.5em,1fr)!important;align-items:center!important;justify-items:center!important;align-content:stretch!important;gap:0!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .queue-card:is([data-status="active"],[data-status="break"])[data-waiting="false"] .queue-number-label{grid-row:1;align-self:end;text-align:center}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .queue-card:is([data-status="active"],[data-status="break"])[data-waiting="false"] .queue-number{grid-row:2;align-self:center}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .queue-card:is([data-status="active"],[data-status="break"])[data-waiting="false"] .booking-badge{grid-row:3;align-self:start}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-clock-value{font-size:clamp(19px,3.15vh,58px)!important;line-height:1!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-date-value{font-size:clamp(10px,1.55vh,30px)!important;line-height:1.15!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer .tv-footer-message{caret-color:transparent!important;user-select:none!important;text-align:center!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer .tv-footer-message::after{display:none!important}
 </style>
 </head>
 <body>
@@ -11767,7 +11783,7 @@ function setTvDisplayMode(mode = "all"){
   const activity = overview.querySelector("#tvActivityPanel");
   const footer = overview.querySelector(".tv-footer");
   const ticker = footer.querySelector(".tv-footer-ticker");
-  const guidance = thirdFixed ? "تواجد أمام العيادة قبل دورك بوقت كافٍ. وإذا فاتك دورك، أبلغنا فور وصولك أمام العيادة، وانتظر حالتين بعد تسجيل حضورك." : "يرجى التواجد أمام العيادة قبل دورك بحالتين؛ وفي حال فوات دورك، تنتظر دخول حالتين بعد حضورك إلى المجمع.";
+  const guidance = thirdFixed ? "تواجد أمام العيادة قبل دورك بوقت كافٍ. فاتك دورك؟ أبلغنا فور وصولك أمام العيادة، وانتظر حالتين بعد تسجيل حضورك." : "يرجى التواجد أمام العيادة قبل دورك بحالتين؛ وفي حال فوات دورك، تنتظر دخول حالتين بعد حضورك إلى المجمع.";
   ticker.setAttribute("aria-label", guidance);
   const guidanceNode = ticker.querySelector(".tv-footer-message");
   guidanceNode.textContent = guidance;
@@ -11776,7 +11792,7 @@ function setTvDisplayMode(mode = "all"){
     const first = document.createElement("span");
     first.className = "third-guidance-first";
     first.textContent = guidance.slice(0,firstEnd);
-    const parts = guidance.slice(firstEnd).split(/(إذا فاتك دورك|انتظر حالتين)/u);
+    const parts = guidance.slice(firstEnd).split(/(فاتك دورك؟|انتظر حالتين)/u);
     guidanceNode.replaceChildren(first,...parts.map((part,index)=>{
       if(index % 2 === 0) return document.createTextNode(part);
       const strong = document.createElement("strong");
@@ -11819,7 +11835,7 @@ function setTvDisplayMode(mode = "all"){
       const clinicName = card.querySelector(".queue-clinic-name");
       const roomBadge = card.querySelector(".room-badge");
       if(clinicName) clinicName.textContent = tvDisplayMode === "third" ? thirdTvSpecialtyLabel(card.dataset.clinicName || room.place) : (card.dataset.clinicName || room.place);
-      if(roomBadge) roomBadge.textContent = "غرفة " + room.id;
+      if(roomBadge) roomBadge.textContent = "غرفة " + (thirdFixed ? ar(room.id) : room.id);
     });
     tv.querySelector(".third-floor .floor-title").textContent = "عيادات الدور الثالث";
     tv.querySelector(".ground-floor .floor-title").textContent = "عيادات الدور الأرضي";
@@ -12117,6 +12133,9 @@ function updateQueueCard(room, data){
   const cardBody = card.querySelector(".queue-card-body");
   if(validClinicHours(data.clinicHours)) cardBody.dataset.twelveHours = clinicHoursLabel(data.clinicHours);
   else delete cardBody.dataset.twelveHours;
+  // Display-only compact hours; consumed solely by the fixed third-floor CSS.
+  if(validClinicHours(data.clinicHours)) cardBody.dataset.thirdHours = "موعد: " + clinicHourText(data.clinicHours.from).replace(/ /g, "") + " – " + clinicHourText(data.clinicHours.to).replace(/ /g, "");
+  else delete cardBody.dataset.thirdHours;
   card.dataset.hasDoctor = doctor && doctor !== "—" && doctor !== "لا يوجد طبيب مسجل" ? "true" : "false";
   card.dataset.status = status;
   card.dataset.recall = recallMode ? "true" : "false";
@@ -12145,6 +12164,7 @@ function updateQueueCard(room, data){
   const continuationNumbers = Object.entries(data.continuationTurns || {}).filter(([,v])=>v && v.status !== "done").map(([k])=>Number(k)).filter(n=>Number.isInteger(n)&&n>0).sort((a,b)=>a-b);
   const summary = card.querySelector(".continuation-public");
   const shown = continuationNumbers.slice(0,4);
+  card.dataset.thirdHasContinuation = continuationNumbers.length ? "true" : "false";
   summary.textContent = shown.length ? shown.map(ar).join(tvDisplayMode === "all" ? " │ " : " · ") + (continuationNumbers.length > 4 ? " +" + ar(continuationNumbers.length - 4) : "") : "—";
   if(recallMode && data.recallKind === "continuation"){
     card.querySelector(".queue-status-label").textContent = "استكمال كشف";
@@ -12270,7 +12290,10 @@ function fitTvText(){
     const availableHeight=box.clientHeight-px(boxStyle.paddingTop)-px(boxStyle.paddingBottom)
       -siblings.reduce((sum,node)=>sum+node.getBoundingClientRect().height,0)
       -px(boxStyle.rowGap)*siblings.length;
-    fit(number,availableWidth,availableHeight);
+    const thirdFixed = tv.classList.contains("tv-floor-only") && tv.classList.contains("tv-floor-third") && !tv.classList.contains("tv-third-slideshow") && !tv.classList.contains("tv-paged") && !tv.classList.contains("tv-individual");
+    const centered = thirdFixed && card.matches(':is([data-status="active"],[data-status="break"])[data-waiting="false"]');
+    const reserved = centered ? 2 * Math.max(...siblings.map(node=>node.getBoundingClientRect().height), 2.5 * px(boxStyle.fontSize)) : 0;
+    fit(number,availableWidth,centered ? Math.min(availableHeight,box.clientHeight-px(boxStyle.paddingTop)-px(boxStyle.paddingBottom)-reserved) : availableHeight);
     // If an unusually small viewport needs more room, reduce the upper text rows together.
     for(let pass=0;pass<8 && body.scrollHeight>body.clientHeight+1;pass++){
       [name,doctor,status,label].forEach(node=>{
