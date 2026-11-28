@@ -8958,23 +8958,29 @@ function redirectLegacyQueueFollow(){
 #view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .room-badge{min-width:0!important;max-width:none!important;white-space:nowrap!important;font-size:clamp(12px,4.4cqi,46px)!important;line-height:1.2!important;padding:.16em .4em!important}
 #view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .scan-legend{font-size:clamp(13px,min(1.3vw,2.1vh),42px)!important;gap:.2em 1.15em!important;padding:.24em .5em!important}
 #view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .scan-legend span::before{width:1em;height:1em;flex:none}
-#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:.8vw!important;padding:.45vh .65vw!important;min-height:8vh!important;max-height:none!important;overflow:visible!important}
-#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer-ticker{flex:1 1 0!important;min-width:0!important;max-width:100%!important;overflow:visible!important}
-#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer-track{width:100%!important;max-width:100%!important;overflow:visible!important}
-#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer-message{display:block!important;width:100%!important;max-width:100%!important;white-space:normal!important;overflow-wrap:normal!important;font-size:clamp(15px,min(1.55vw,2.6vh),55px)!important;line-height:1.35!important;font-weight:700!important;color:#84213f!important;animation:none!important;transform:none!important}
-#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer #tvActivityPanel{position:static!important;inset:auto!important;transform:none!important;display:flex!important;flex:0 0 25%!important;width:25%!important;min-width:0!important;max-width:25%!important;height:auto!important;min-height:0!important;max-height:10vh!important;box-sizing:border-box;justify-content:center!important;padding:.35em .55em!important;gap:.2em!important;overflow:auto!important;border-radius:9px!important;direction:rtl}
-#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer #tvActivityPanel .tv-activity-head{min-height:0!important;padding:0!important;justify-content:flex-start!important;gap:.4em!important;font-size:clamp(12px,min(1.15vw,1.8vh),38px)!important}
-#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer #tvActivityPanel .tv-activity-head strong{display:block!important;font-size:inherit!important;white-space:normal!important}
-#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer #tvActivityPanel .tv-activity-count{position:static!important;min-width:1.5em!important;height:1.5em!important;font-size:.8em!important;display:grid;place-items:center;margin-inline-start:auto!important}
-#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer #tvActivityPanel.expanded .tv-activity-item{font-size:clamp(11px,min(1.05vw,1.6vh),34px)!important;line-height:1.22!important;padding:.08em 0!important;gap:.3em!important}
-#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer #tvActivityPanel.expanded .tv-activity-text{white-space:normal!important;overflow-wrap:anywhere!important}
-#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer #tvActivityPanel.expanded .tv-activity-list{max-height:6vh!important;overflow:auto!important;gap:.15em!important}
-@media(max-width:900px){
- #view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer{flex-wrap:wrap!important;padding:8px!important;min-height:0!important}
- #view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer #tvActivityPanel{flex:1 1 100%!important;width:100%!important;max-width:100%!important;max-height:none!important}
- #view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer #tvActivityPanel.expanded .tv-activity-list{max-height:none!important}
- #view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer-ticker{flex:1 1 100%!important}
- #view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer-message{font-size:clamp(15px,3vw,24px)!important}
+/* Fixed third-floor footer: two persistent updates, no layout shift. */
+@media (orientation:landscape) and (min-width:901px){
+ #view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual):not(.hidden-view){grid-template-rows:clamp(40px,7vh,124px) auto minmax(0,1fr) clamp(58px,7.4vh,142px)!important}
+ #view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer{height:100%!important;min-height:0!important;max-height:100%!important;flex-wrap:nowrap!important;overflow:hidden!important}
+}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer{display:flex!important;box-sizing:border-box;align-items:stretch!important;direction:rtl!important;background:#faf8f9!important;gap:.65vw!important;padding:.35vh .65vw!important;border-top:1px solid #e4dce1!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer-ticker{display:flex!important;align-items:center!important;justify-content:center!important;margin:0!important;padding:.15vh .6vw!important;box-sizing:border-box;border:0!important;border-radius:8px!important;box-shadow:none!important;background:#f5eef1!important;min-height:0!important;height:100%!important;overflow:hidden!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer-track{display:flex!important;align-items:center!important;justify-content:center!important;padding:0!important;margin:0!important;min-height:0!important;overflow:hidden!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer-message{font-size:clamp(12px,min(1.2vw,1.9vh),39px)!important;line-height:1.35!important;padding:0!important;margin:0!important;color:#84213f!important;text-align:center!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer-message::before{display:none!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer #tvActivityPanel{flex:0 0 35%!important;width:35%!important;max-width:35%!important;height:100%!important;min-height:0!important;max-height:none!important;display:grid!important;grid-template-rows:auto minmax(0,1fr)!important;align-content:stretch!important;justify-content:stretch!important;gap:.12vh!important;padding:.2vh .5vw!important;overflow:hidden!important;pointer-events:none!important;cursor:default!important;animation:none!important;box-shadow:none!important;background:#fff!important;border:1px solid #e1e5ea!important;border-radius:8px!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer #tvActivityPanel .tv-activity-head{font-size:clamp(11px,min(.95vw,1.45vh),30px)!important;line-height:1.1!important;padding:0!important;min-height:0!important;height:auto!important;color:#64748b!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer #tvActivityPanel .tv-activity-count,#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer #tvActivityPanel .tv-activity-mark,#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer #tvActivityPanel .tv-activity-time{display:none!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer #tvActivityPanel .tv-activity-list{display:grid!important;grid-template-rows:repeat(2,minmax(0,1fr))!important;gap:.1vh!important;max-height:none!important;min-height:0!important;overflow:hidden!important;width:100%!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer #tvActivityPanel .tv-activity-item{display:flex!important;align-items:center!important;min-width:0!important;min-height:0!important;gap:0!important;padding:0!important;line-height:1.15!important;font-size:clamp(11px,min(1.05vw,1.65vh),34px)!important;animation:none!important;overflow:hidden!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer #tvActivityPanel .tv-activity-text{display:block!important;width:100%!important;min-width:0!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;color:#334155!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer #tvActivityPanel .tv-activity-empty{font-size:clamp(11px,1.45vh,28px)!important;align-self:center!important}
+@media(max-width:900px),(orientation:portrait){
+ #view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer{flex-wrap:wrap!important;height:auto!important;max-height:none!important;padding:8px!important;gap:6px!important}
+ #view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer #tvActivityPanel{flex:1 1 100%!important;width:100%!important;max-width:100%!important;height:76px!important;padding:5px 9px!important}
+ #view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer #tvActivityPanel .tv-activity-item{font-size:14px!important}
+ #view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer-ticker{height:auto!important;padding:7px!important;flex:1 1 100%!important}
+ #view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer-message{font-size:clamp(14px,2.6vw,20px)!important}
 }
 </style>
 </head>
@@ -11718,8 +11724,10 @@ function setTvDisplayMode(mode = "all"){
   const guidance = thirdFixed ? "تواجد أمام العيادة قبل دورك بوقت كافٍ. وإذا فاتك دورك، أبلغنا فور وصولك أمام العيادة، وانتظر حالتين بعد تسجيل حضورك." : "يرجى التواجد أمام العيادة قبل دورك بحالتين؛ وفي حال فوات دورك، تنتظر دخول حالتين بعد حضورك إلى المجمع.";
   ticker.setAttribute("aria-label", guidance);
   ticker.querySelector(".tv-footer-message").textContent = guidance;
+  const activityWasInFooter = activity.parentElement === footer;
   if(thirdFixed) footer.insertBefore(activity, ticker);
   else if(activity.parentElement !== overview.querySelector(".tv-topbar")) overview.querySelector(".tv-topbar").appendChild(activity);
+  if(activityWasInFooter !== thirdFixed) renderTvActivityPanel(false);
   overview.classList.toggle("tv-twelve", tvDisplayMode === "all");
   if(tvDisplayMode === "all"){
     overview.querySelectorAll(".queue-clinic-name,.queue-doctor,.queue-status,.queue-number-label,.queue-number")
@@ -11847,7 +11855,10 @@ function renderTvActivityPanel(highlight = false){
 
       const msg = document.createElement("span");
       msg.className = "tv-activity-text";
-      msg.textContent = item.text;
+      if(tvDisplayMode === "third"){
+        const compact = item.text.replace(/^(.*?)\s*—\s*غرفة\s*[0-9٠-٩۰-۹]+\s*(?=[:—]|$)/u, (_, name)=>thirdTvSpecialtyLabel(name));
+        msg.textContent = compact.replace(/:\s*بدأت العيادة العمل/u, " — بدء الكشف").replace(/:\s*اكتمل العدد المتاح لهذه الفترة/u, " — إغلاق الحجز").replace(/:\s*/u, " — ");
+      }else msg.textContent = item.text;
 
       row.append(time,msg);
       list.appendChild(row);
