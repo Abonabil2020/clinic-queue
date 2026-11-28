@@ -8982,6 +8982,11 @@ function redirectLegacyQueueFollow(){
  #view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer-ticker{height:auto!important;padding:7px!important;flex:1 1 100%!important}
  #view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer-message{font-size:clamp(14px,2.6vw,20px)!important}
 }
+/* Keep the third-floor activity panel in the footer flow, including expanded state. */
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer #tvActivityPanel{position:static!important;inset:auto!important;transform:none!important;grid-area:auto!important;order:-1!important;align-self:stretch!important;box-sizing:border-box!important;min-width:0!important;margin:0!important;transition:none!important;z-index:auto!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer #tvActivityPanel .tv-activity-head strong{display:block!important;font-size:inherit!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer #tvActivityPanel .tv-activity-head{justify-content:flex-start!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer .tv-footer-ticker{width:auto!important;max-width:none!important;order:0!important}
 </style>
 </head>
 <body>
