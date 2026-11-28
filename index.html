@@ -9044,6 +9044,17 @@ function redirectLegacyQueueFollow(){
 #view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-date-value{font-size:clamp(10px,1.55vh,30px)!important;line-height:1.15!important}
 #view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer .tv-footer-message{caret-color:transparent!important;user-select:none!important;text-align:center!important}
 #view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer .tv-footer-message::after{display:none!important}
+/* Fixed third floor: stable reserved rows and readable clinical details. */
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .queue-card[data-status] .queue-card-body,#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .queue-card[data-status] .queue-card-body[data-twelve-hours]{grid-template-rows: minmax(0,auto) minmax(0,auto) minmax(0,auto) minmax(0,1fr) clamp(30px,5.1vh,96px)!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .queue-card[data-status] .queue-number-box{grid-area:1/2/5/3!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .queue-card[data-status] .continuation-summary{grid-area:4/1!important;min-height:clamp(44px,7.3vh,140px)!important;box-sizing:border-box!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .queue-card:not([data-third-has-continuation="true"]) .continuation-summary{visibility:hidden!important;min-height:clamp(44px,7.3vh,140px)!important;height:auto!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .queue-card[data-status] .queue-missed-summary{grid-area:5/1/6/3!important;align-self:stretch!important;height:100%!important;min-height:0!important;box-sizing:border-box!important;flex-wrap:nowrap!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .queue-card:not(:has(.queue-public-chip)) .queue-missed-summary{visibility:hidden!important;height:100%!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .queue-card[data-status] .queue-doctor{font-size:clamp(14px,5.8cqi,56px)!important;line-height:1.18!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .queue-card[data-status] .queue-status{font-size:clamp(11px,4.15cqi,40px)!important;line-height:1.2!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .queue-card-body[data-third-hours]::after{font-size:clamp(11px,4.4cqi,42px)!important;white-space:normal!important;text-wrap:balance!important;line-height:1.3!important;overflow-wrap:normal!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .queue-card[data-status] .queue-number-box .booking-badge[data-booking="closed"]{font-size:clamp(11px,3.9cqi,38px)!important}
 </style>
 </head>
 <body>
@@ -11835,7 +11846,7 @@ function setTvDisplayMode(mode = "all"){
       const clinicName = card.querySelector(".queue-clinic-name");
       const roomBadge = card.querySelector(".room-badge");
       if(clinicName) clinicName.textContent = tvDisplayMode === "third" ? thirdTvSpecialtyLabel(card.dataset.clinicName || room.place) : (card.dataset.clinicName || room.place);
-      if(roomBadge) roomBadge.textContent = "غرفة " + (thirdFixed ? ar(room.id) : room.id);
+      if(roomBadge) roomBadge.textContent = "غرفة " + room.id;
     });
     tv.querySelector(".third-floor .floor-title").textContent = "عيادات الدور الثالث";
     tv.querySelector(".ground-floor .floor-title").textContent = "عيادات الدور الأرضي";
