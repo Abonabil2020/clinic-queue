@@ -9001,6 +9001,22 @@ function redirectLegacyQueueFollow(){
 #view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) #fsBtn{opacity:0!important;transition:opacity .15s ease!important}
 #view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) #fsBtn:is(:hover,:focus-visible){opacity:1!important}
 :fullscreen #view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) #fsBtn{display:none!important}
+/* Third-floor footer visual refinement; fixed dimensions unchanged. */
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer .tv-footer-ticker{background:#fff!important;border:1px solid #eadce1!important;border-radius:9px!important;padding:.2vh .65vw!important;gap:.6vw!important;text-align:right!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer .tv-footer-ticker::before{content:"i"!important;display:grid!important;place-items:center;position:static!important;inset:auto!important;transform:none!important;animation:none!important;flex:0 0 auto;width:clamp(20px,3.4vh,64px)!important;height:clamp(20px,3.4vh,64px)!important;border:1px solid #e5cbd5!important;border-radius:50%!important;background:#f8edf1!important;color:#84213f!important;font:700 clamp(15px,2.3vh,44px)/1 Arial,sans-serif!important;box-shadow:none!important;margin:0!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer .tv-footer-track{flex:1 1 0!important;width:auto!important;min-width:0!important;justify-content:flex-start!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer .tv-footer-message{text-align:right!important;font-size:clamp(12px,min(1.24vw,1.85vh),40px)!important;line-height:1.25!important;font-weight:700!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer .third-guidance-first{display:block;color:#84213f;margin:0 0 .14vh}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer .third-guidance-emphasis{text-decoration:none!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer #tvActivityPanel{background:#fff!important;border-color:#dce4e9!important;border-radius:9px!important;padding:.22vh .45vw!important;gap:.18vh!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer #tvActivityPanel .tv-activity-head{color:#84213f!important;font-size:clamp(11px,1.45vh,30px)!important;gap:.3vw!important;line-height:1.05!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer #tvActivityPanel .tv-activity-head::before{content:"";display:block;flex:0 0 auto;width:.9em;height:.9em;background:#84213f;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4'/%3E%3C/svg%3E") center/contain no-repeat}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer #tvActivityPanel .tv-activity-list{gap:.22vh!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer #tvActivityPanel .tv-activity-item{border-radius:4px!important;background:#f0f6f3!important;padding:0 .4vw!important;font-size:clamp(11px,min(1.1vw,1.6vh),34px)!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer #tvActivityPanel .tv-activity-text{color:#334155!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer #tvActivityPanel .third-activity-specialty{color:#16634c!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer #tvActivityPanel .third-activity-number{color:#16634c;font-size:1.08em;font-weight:700}
+@media(max-width:900px),(orientation:portrait){#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer .tv-footer-message{font-size:clamp(14px,2.6vw,20px)!important}#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer #tvActivityPanel .tv-activity-item{font-size:14px!important}}
 </style>
 </head>
 <body>
@@ -11745,8 +11761,12 @@ function setTvDisplayMode(mode = "all"){
   const guidanceNode = ticker.querySelector(".tv-footer-message");
   guidanceNode.textContent = guidance;
   if(thirdFixed){
-    const parts = guidance.split(/(إذا فاتك دورك|انتظر حالتين)/u);
-    guidanceNode.replaceChildren(...parts.map((part,index)=>{
+    const firstEnd = guidance.indexOf(".") + 1;
+    const first = document.createElement("span");
+    first.className = "third-guidance-first";
+    first.textContent = guidance.slice(0,firstEnd);
+    const parts = guidance.slice(firstEnd).split(/(إذا فاتك دورك|انتظر حالتين)/u);
+    guidanceNode.replaceChildren(first,...parts.map((part,index)=>{
       if(index % 2 === 0) return document.createTextNode(part);
       const strong = document.createElement("strong");
       strong.className = "third-guidance-emphasis";
@@ -11894,7 +11914,14 @@ function renderTvActivityPanel(highlight = false){
           const specialty = document.createElement("strong");
           specialty.className = "third-activity-specialty";
           specialty.textContent = text.slice(0,separator);
-          msg.replaceChildren(specialty,document.createTextNode(text.slice(separator)));
+          const detail = text.slice(separator);
+          const numberMatch = detail.match(/^( — الدور الحالي\s+)([0-9٠-٩۰-۹]+)$/u);
+          if(numberMatch){
+            const number = document.createElement("strong");
+            number.className = "third-activity-number";
+            number.textContent = numberMatch[2];
+            msg.replaceChildren(specialty,document.createTextNode(numberMatch[1]),number);
+          }else msg.replaceChildren(specialty,document.createTextNode(detail));
         }
       }else msg.textContent = item.text;
 
