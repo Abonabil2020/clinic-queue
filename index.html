@@ -9090,6 +9090,30 @@ function redirectLegacyQueueFollow(){
 #view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer #tvActivityPanel{padding:.3vh .65vw!important;gap:.15vh!important}
 #view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer #tvActivityPanel .tv-activity-list{gap:.22vh!important}
 #view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer #tvActivityPanel .tv-activity-item{font-size:clamp(11px,min(1.2vw,1.7vh),36px)!important;line-height:1.05!important;padding:0 .6vw!important}
+/* Fixed third floor: larger stable numbers and two clear guidance rows. */
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .queue-card[data-status] .queue-card-body, #view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .queue-card[data-status] .queue-card-body[data-twelve-hours]{grid-template-rows:minmax(0,1.15fr) minmax(0,.85fr) minmax(0,.9fr) clamp(44px,7.3vh,140px) clamp(30px,5.1vh,96px)!important;column-gap:.5vw!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .queue-card[data-status] .queue-doctor{text-align:center!important;align-self:center!important;line-height:1.15!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .queue-card[data-status] .queue-status{justify-self:center!important;align-self:center!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .queue-card:is([data-status="active"],[data-status="break"])[data-waiting="false"] .queue-number-box, #view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .queue-card:is([data-status="active"],[data-status="break"])[data-waiting="false"][data-recall="true"] .queue-number-box{grid-template-rows:minmax(0,1fr) minmax(0,1.75fr) minmax(0,1fr)!important;row-gap:0!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .queue-card:is([data-status="active"],[data-status="break"])[data-waiting="false"] .queue-number{font-size:clamp(48px,min(32cqi,17vh),360px)!important;line-height:1!important;align-self:center!important;justify-self:center!important;margin:0!important;padding:0!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .queue-card:is([data-status="active"],[data-status="break"])[data-waiting="false"] .queue-number-label{align-self:end!important;margin:0 0 .18em!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .queue-card:is([data-status="active"],[data-status="break"])[data-waiting="false"] .booking-badge{align-self:center!important;margin:0!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .queue-card:is([data-status="active"],[data-status="break"])[data-waiting="false"][data-recall="true"] .third-reached{align-self:center!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .queue-card:is([data-status="active"],[data-status="break"])[data-waiting="false"][data-recall="true"]:has(.third-reached) .booking-badge{align-self:end!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .queue-card:is([data-status="active"],[data-status="break"])[data-waiting="false"][data-recall="true"]:has(.booking-badge[data-booking="closed"]) .third-reached{align-self:start!important;font-size:clamp(9px,3.1cqi,30px)!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .queue-card:is([data-status="active"],[data-status="break"])[data-waiting="false"][data-recall="true"]:has(.third-reached) .booking-badge[data-booking="closed"]{font-size:clamp(9px,2.7cqi,26px)!important;line-height:1.05!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer .tv-footer-ticker::before{display:none!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer .tv-footer-track{flex:1 1 100%!important;max-width:100%!important;width:100%!important;height:100%!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer .tv-footer-message{display:grid!important;grid-template-rows:repeat(2,minmax(0,1fr));width:100%!important;height:100%!important;text-align:right!important;font-size:clamp(12px,min(1.48vw,2.22vh),45px)!important;line-height:1.13!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer .third-guidance-first, #view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer .third-guidance-second{display:flex!important;align-items:center;justify-content:flex-start;gap:.4em;margin:0!important;padding:0 .25em;min-width:0;color:#334155}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer .third-guidance-second{border-top:1px solid #eadde1}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer .third-guidance-first::before, #view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer .third-guidance-second::before{content:"";flex:0 0 1.05em;height:1.05em;background:#84213f}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer .third-guidance-first::before{mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M12 6v6l4 2'/%3E%3C/svg%3E") center/contain no-repeat}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer .third-guidance-second::before{mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M12 6v7m0 3v2'/%3E%3C/svg%3E") center/contain no-repeat}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer .third-guidance-second strong{color:#84213f;font-weight:800}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer #tvActivityPanel .tv-activity-head{font-size:clamp(11px,1.8vh,36px)!important;line-height:1.05!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer #tvActivityPanel .tv-activity-item{font-size:clamp(11px,min(1.25vw,1.85vh),38px)!important;line-height:1.05!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer #tvActivityPanel .third-activity-number{font-size:1.15em!important;font-weight:900!important}
 </style>
 </head>
 <body>
@@ -11839,13 +11863,18 @@ function setTvDisplayMode(mode = "all"){
     first.className = "third-guidance-first";
     first.textContent = guidance.slice(0,firstEnd);
     const parts = guidance.slice(firstEnd).split(/(فاتك دورك؟|انتظر حالتين)/u);
-    guidanceNode.replaceChildren(first,...parts.map((part,index)=>{
+    const second = document.createElement("span");
+    second.className = "third-guidance-second";
+    const secondText = document.createElement("span");
+    secondText.append(...parts.map((part,index)=>{
       if(index % 2 === 0) return document.createTextNode(part);
       const strong = document.createElement("strong");
       strong.className = "third-guidance-emphasis";
       strong.textContent = part;
       return strong;
     }));
+    second.appendChild(secondText);
+    guidanceNode.replaceChildren(first,second);
   }
   const activityWasInFooter = activity.parentElement === footer;
   if(thirdFixed) footer.insertBefore(activity, ticker);
@@ -12354,7 +12383,8 @@ function fitTvText(){
     const thirdFixed = tv.classList.contains("tv-floor-only") && tv.classList.contains("tv-floor-third") && !tv.classList.contains("tv-third-slideshow") && !tv.classList.contains("tv-paged") && !tv.classList.contains("tv-individual");
     const centered = thirdFixed && card.matches(':is([data-status="active"],[data-status="break"])[data-waiting="false"]');
     const reserved = centered ? 2 * Math.max(...siblings.map(node=>node.getBoundingClientRect().height), 2.5 * px(boxStyle.fontSize)) : 0;
-    fit(number,availableWidth,centered ? Math.min(availableHeight,box.clientHeight-px(boxStyle.paddingTop)-px(boxStyle.paddingBottom)-reserved) : availableHeight);
+    const centerRowHeight = (box.clientHeight-px(boxStyle.paddingTop)-px(boxStyle.paddingBottom))*1.75/3.75;
+    fit(number,availableWidth,centered ? Math.min(availableHeight,centerRowHeight) : availableHeight);
     // If an unusually small viewport needs more room, reduce the upper text rows together.
     for(let pass=0;pass<8 && body.scrollHeight>body.clientHeight+1;pass++){
       [name,doctor,status,label].forEach(node=>{
