@@ -9055,6 +9055,22 @@ function redirectLegacyQueueFollow(){
 #view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .queue-card[data-status] .queue-status{font-size:clamp(11px,4.15cqi,40px)!important;line-height:1.2!important}
 #view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .queue-card-body[data-third-hours]::after{font-size:clamp(11px,4.4cqi,42px)!important;white-space:normal!important;text-wrap:balance!important;line-height:1.3!important;overflow-wrap:normal!important}
 #view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .queue-card[data-status] .queue-number-box .booking-badge[data-booking="closed"]{font-size:clamp(11px,3.9cqi,38px)!important}
+/* Fixed third-floor only: label spacing, recall progress and footer clarity. */
+#view-tv .third-reached{display:none}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .queue-card:is([data-status="active"],[data-status="break"])[data-waiting="false"] .queue-number-label{align-self:end!important;margin-bottom:.45em!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .queue-card[data-status] .queue-number-box .booking-badge[data-booking="closed"]{font-size:clamp(10px,3.35cqi,32px)!important;padding:.25em!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .queue-card[data-status] .queue-status{grid-area:3/1!important;align-self:start!important;margin-top:.22em!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .queue-card-body[data-third-hours]::after{grid-area:2/1!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .queue-card-body:not([data-third-hours]) .queue-status{grid-area:2/1!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .queue-card:is([data-status="active"],[data-status="break"])[data-waiting="false"][data-recall="true"] .queue-number-box{grid-template-rows:minmax(0,1fr) auto auto minmax(0,1fr)!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .queue-card:is([data-status="active"],[data-status="break"])[data-waiting="false"][data-recall="true"] .third-reached{display:block!important;grid-row:3;align-self:center;justify-self:stretch;text-align:center;color:var(--ink);font-size:clamp(10px,3.6cqi,34px);font-weight:800;line-height:1.2;padding:.12em 0;white-space:nowrap}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .queue-card:is([data-status="active"],[data-status="break"])[data-waiting="false"][data-recall="true"] .booking-badge{grid-row:4!important;align-self:start!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer .tv-footer-message{font-size:clamp(12px,min(1.4vw,2.05vh),42px)!important;line-height:1.22!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer #tvActivityPanel .tv-activity-head{font-size:clamp(11px,1.65vh,32px)!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer #tvActivityPanel .tv-activity-list{gap:.28vh!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer #tvActivityPanel .tv-activity-item{font-size:clamp(12px,min(1.3vw,1.9vh),39px)!important;line-height:1.15!important;padding:0 .55vw!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .tv-footer .tv-footer-ticker{border-color:#e0cbd3!important}
+#view-tv#view-tv.tv-floor-only.tv-floor-third:not(.tv-third-slideshow):not(.tv-paged):not(.tv-individual) .scan-legend{caret-color:transparent!important}
 </style>
 </head>
 <body>
@@ -12180,6 +12196,21 @@ function updateQueueCard(room, data){
   if(recallMode && data.recallKind === "continuation"){
     card.querySelector(".queue-status-label").textContent = "استكمال كشف";
     card.querySelector(".queue-number-label").textContent = "استكمال كشف";
+  }
+  // Third-floor presentation only: show the original queue position during a recall.
+  if(room.floor === "third"){
+    const numberBox = card.querySelector(".queue-number-box");
+    let reached = numberBox.querySelector(".third-reached");
+    if(recallMode && !closed && !waitingAtZero){
+      if(!reached){
+        reached = document.createElement("span");
+        reached.className = "third-reached";
+        numberBox.appendChild(reached);
+      }
+      reached.textContent = "وصل الكشف إلى: " + ar(typeof data.previousDisplay === "number" ? data.previousDisplay : current);
+    }else if(reached){
+      reached.remove();
+    }
   }
   /* ملخص الأدوار الفائتة داخل كارت العيادة على شاشة العرض */
   const publicMissed = Object.entries(data.missedTurns || {})
